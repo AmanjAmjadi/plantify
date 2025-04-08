@@ -3,285 +3,510 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PlantPal - Plant Identification & Care</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <title>PlantPal - Plant Identification and Care</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#5D5CDE',
-                        secondary: '#8ACFB7',
-                        light: '#FFFFFF',
-                        dark: '#181818',
-                        success: '#4CAF50',
-                        danger: '#F44336',
-                        warning: '#FF9800',
-                    }
-                }
-            }
-        }
-    </script>
+    <script src="https://unpkg.com/marked@4.0.2/marked.min.js"></script>
     <style>
-        /* Handle dark mode */
+        :root {
+            --primary-color: #5D5CDE;
+            --accent-color: #4CAF50;
+            --danger-color: #f44336;
+            --light-bg: #FFFFFF;
+            --dark-bg: #181818;
+            --light-text: #333333;
+            --dark-text: #F5F5F5;
+            --light-card: #F9F9F9;
+            --dark-card: #2A2A2A;
+        }
+
         .dark {
-            color-scheme: dark;
+            --bg-primary: var(--dark-bg);
+            --text-primary: var(--dark-text);
+            --card-bg: var(--dark-card);
         }
-        .dark body {
-            background-color: #181818;
-            color: #e5e5e5;
+
+        :not(.dark) {
+            --bg-primary: var(--light-bg);
+            --text-primary: var(--light-text);
+            --card-bg: var(--light-card);
         }
-        .animate-fade-in {
-            animation: fadeIn 0.5s ease-in-out;
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
         }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #4b4ab8;
+        }
+
+        .btn-accent {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .btn-accent:hover {
+            background-color: #3d8b40;
+        }
+
+        .plant-card {
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .dark .plant-card {
+            border-color: #444;
+        }
+
         .plant-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
-        .plant-card {
-            transition: all 0.3s ease;
-        }
-        .tab-indicator {
-            transition: transform 0.3s ease;
-        }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(93, 92, 222, 0.5);
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(93, 92, 222, 0.7);
-        }
-        /* Notification badge */
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background-color: #F44336;
-            color: white;
+
+        .loader {
+            border: 4px solid rgba(0, 0, 0, 0.1);
             border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 10px;
+            border-top: 4px solid var(--primary-color);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        .dark .loader {
+            border-color: rgba(255, 255, 255, 0.1);
+            border-top-color: var(--primary-color);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .garden-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        #videoElement {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        #captureButton {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
             display: flex;
             justify-content: center;
             align-items: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        #captureInnerButton {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            border-radius: 0 0 0.5rem 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .search-result-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .dark .search-result-item {
+            border-bottom-color: #444;
+        }
+
+        .search-result-item:hover {
+            background-color: rgba(93, 92, 222, 0.1);
+        }
+
+        .custom-file-upload {
+            display: inline-block;
+            cursor: pointer;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .custom-file-upload input[type="file"] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            min-width: 100%;
+            min-height: 100%;
+            font-size: 100px;
+            text-align: right;
+            filter: alpha(opacity=0);
+            opacity: 0;
+            outline: none;
+            cursor: pointer;
+            display: block;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.3s ease-out;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .water-progress-bar {
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .water-progress {
+            height: 100%;
+            background-color: #3498db;
+            border-radius: 4px;
+        }
+
+        .sun-progress-bar {
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .sun-progress {
+            height: 100%;
+            background-color: #f1c40f;
+            border-radius: 4px;
+        }
+        
+        @media (max-width: 640px) {
+            .garden-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            }
         }
     </style>
 </head>
-<body class="bg-light dark:bg-dark flex flex-col min-h-screen">
-    <!-- Header -->
-    <header class="bg-white dark:bg-gray-900 shadow-md py-4">
-        <div class="container mx-auto px-4 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <i class="fas fa-leaf text-primary text-2xl"></i>
-                <h1 class="text-xl font-bold text-gray-800 dark:text-white">PlantPal</h1>
+<body class="min-h-screen pb-20">
+    <div id="notification" class="notification">
+        <div id="notification-message"></div>
+    </div>
+
+    <nav class="bg-white shadow-md dark:bg-gray-800 fixed bottom-0 left-0 right-0 z-10">
+        <div class="container mx-auto">
+            <div class="flex justify-around items-center h-16">
+                <button id="tab-identify" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/4">
+                    <i class="fas fa-camera text-xl mb-1"></i>
+                    <span>Identify</span>
+                </button>
+                <button id="tab-search" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/4">
+                    <i class="fas fa-search text-xl mb-1"></i>
+                    <span>Search</span>
+                </button>
+                <button id="tab-garden" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/4">
+                    <i class="fas fa-leaf text-xl mb-1"></i>
+                    <span>My Garden</span>
+                </button>
+                <button id="tab-care" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/4">
+                    <i class="fas fa-calendar-check text-xl mb-1"></i>
+                    <span>Care</span>
+                </button>
             </div>
-            <div id="notifications" class="relative cursor-pointer">
-                <i class="fas fa-bell text-gray-600 dark:text-gray-300 text-xl"></i>
-                <div id="notificationBadge" class="notification-badge hidden">0</div>
+        </div>
+    </nav>
+
+    <header class="bg-white shadow-md dark:bg-gray-800 mb-5 p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-primary-color">PlantPal</h1>
+            <div class="flex items-center">
+                <button id="theme-toggle" class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-color">
+                    <i class="fas fa-moon dark:hidden"></i>
+                    <i class="fas fa-sun hidden dark:block"></i>
+                </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="flex-grow container mx-auto px-4 py-6">
-        <!-- Welcome Screen (initially visible) -->
-        <div id="welcomeScreen" class="animate-fade-in bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md mx-auto mt-10">
-            <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Welcome to PlantPal</h2>
-            <p class="text-gray-600 dark:text-gray-300 mb-4">
-                Your personal plant identification and care assistant.
-                Identify plants by taking photos, track your garden, and receive care reminders.
-            </p>
-            <button id="startApp" class="w-full bg-primary hover:bg-opacity-90 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
-                Get Started
-            </button>
-        </div>
-
-        <!-- App Tabs (initially hidden) -->
-        <div id="appContent" class="hidden animate-fade-in">
-            <!-- Tabs navigation -->
-            <div class="flex justify-around items-center bg-white dark:bg-gray-800 rounded-lg shadow-md mb-6 relative">
-                <button class="tab-btn flex-1 py-4 px-2 text-center font-medium text-primary" data-tab="identify">
-                    <i class="fas fa-camera block mx-auto mb-1"></i>
-                    Identify
-                </button>
-                <button class="tab-btn flex-1 py-4 px-2 text-center font-medium text-gray-500 dark:text-gray-400" data-tab="search">
-                    <i class="fas fa-search block mx-auto mb-1"></i>
-                    Search
-                </button>
-                <button class="tab-btn flex-1 py-4 px-2 text-center font-medium text-gray-500 dark:text-gray-400" data-tab="garden">
-                    <i class="fas fa-seedling block mx-auto mb-1"></i>
-                    My Garden
-                </button>
-                <div class="tab-indicator absolute bottom-0 h-1 bg-primary rounded-t-lg" style="width: 33.33%; left: 0;"></div>
+    <main class="container mx-auto px-4 pb-16">
+        <!-- Identify Tab -->
+        <div id="identify-tab" class="tab-content active">
+            <div class="text-center mb-6">
+                <h2 class="text-xl font-semibold mb-2">Identify Your Plant</h2>
+                <p class="text-gray-600 dark:text-gray-300">Take a photo or upload an image of a plant to identify it</p>
             </div>
 
-            <!-- Tab content -->
-            <div id="identify" class="tab-content animate-fade-in">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
-                    <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Identify a Plant</h2>
-                    <p class="text-gray-600 dark:text-gray-300 mb-4">Take a photo or upload an image of a plant to identify it</p>
-                    
-                    <div class="flex flex-col space-y-4">
-                        <button id="captureBtn" class="bg-primary hover:bg-opacity-90 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
-                            <i class="fas fa-camera mr-2"></i> Take a Photo
-                        </button>
-                        <div class="relative">
-                            <input type="file" id="uploadInput" accept="image/*" class="hidden">
-                            <button id="uploadBtn" class="w-full bg-white dark:bg-gray-700 border-2 border-primary text-primary dark:text-white font-bold py-3 px-4 rounded-lg transition duration-300">
-                                <i class="fas fa-upload mr-2"></i> Upload Image
-                            </button>
-                        </div>
-                    </div>
-
-                    <div id="previewContainer" class="hidden mt-6">
-                        <div class="relative">
-                            <img id="imagePreview" class="w-full h-auto rounded-lg shadow-md" src="" alt="Plant preview">
-                            <button id="cancelUpload" class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 transition duration-300">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <button id="identifyBtn" class="w-full mt-4 bg-success hover:bg-opacity-90 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
-                            <i class="fas fa-leaf mr-2"></i> Identify Plant
-                        </button>
-                    </div>
-
-                    <div id="loadingIndicator" class="hidden mt-6 text-center">
-                        <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-                        <p class="mt-4 text-gray-600 dark:text-gray-300">Identifying your plant...</p>
-                    </div>
-                </div>
-
-                <div id="resultContainer" class="hidden bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-                    <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Identification Results</h2>
-                    <div id="plantResult" class="space-y-4"></div>
-                </div>
-            </div>
-
-            <div id="search" class="tab-content animate-fade-in hidden">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
-                    <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Search Plants</h2>
-                    <p class="text-gray-600 dark:text-gray-300 mb-4">Search for plants by name to add to your garden</p>
-                    
-                    <div class="relative">
-                        <input type="text" id="searchInput" class="w-full text-base px-4 py-3 pl-10 border border-gray-300 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Search for plants...">
-                        <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    </div>
-                    
-                    <div id="searchLoadingIndicator" class="hidden mt-6 text-center">
-                        <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-                        <p class="mt-2 text-gray-600 dark:text-gray-300">Searching...</p>
-                    </div>
-                </div>
-
-                <div id="searchResults" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-            </div>
-
-            <div id="garden" class="tab-content animate-fade-in hidden">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
-                    <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4">My Garden</h2>
-                    <p class="text-gray-600 dark:text-gray-300 mb-4">Manage your saved plants and care reminders</p>
-                    
-                    <div id="emptyGarden" class="text-center py-8">
-                        <i class="fas fa-seedling text-5xl text-gray-300 dark:text-gray-600 mb-4"></i>
-                        <p class="text-gray-500 dark:text-gray-400">Your garden is empty. Identify or search for plants to add them here.</p>
-                    </div>
-                </div>
-
-                <div id="gardenPlants" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-            </div>
-        </div>
-
-        <!-- Plant Detail Modal -->
-        <div id="plantModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto mx-4">
-                <div class="relative">
-                    <img id="modalPlantImage" class="w-full h-48 object-cover rounded-t-lg" src="" alt="Plant image">
-                    <button id="closeModal" class="absolute top-2 right-2 bg-black bg-opacity-50 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-opacity-70 transition duration-300">
-                        <i class="fas fa-times"></i>
+            <div class="flex flex-col items-center gap-4 mb-8">
+                <div class="camera-container mb-4 hidden" id="camera-container">
+                    <video id="videoElement" autoplay playsinline></video>
+                    <button id="captureButton" type="button">
+                        <div id="captureInnerButton"></div>
                     </button>
                 </div>
-                <div class="p-6">
-                    <h2 id="modalPlantName" class="text-xl font-bold text-gray-800 dark:text-white mb-2"></h2>
-                    <p id="modalPlantType" class="text-gray-600 dark:text-gray-400 mb-4"></p>
+                
+                <canvas id="capturedPhoto" class="hidden rounded-lg max-w-full"></canvas>
+                
+                <div class="flex gap-4">
+                    <button id="startCameraButton" class="btn-primary">
+                        <i class="fas fa-camera mr-2"></i>Take Photo
+                    </button>
                     
-                    <div class="mb-4">
-                        <h3 class="font-bold text-gray-700 dark:text-gray-300 mb-2">Care Instructions</h3>
-                        <div class="flex flex-wrap gap-3 mb-4">
-                            <div class="flex items-center bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm">
-                                <i class="fas fa-tint mr-2"></i>
-                                <span id="modalWaterNeeds"></span>
+                    <label class="custom-file-upload btn-primary cursor-pointer">
+                        <i class="fas fa-upload mr-2"></i>Upload Image
+                        <input type="file" id="imageUpload" accept="image/*">
+                    </label>
+                </div>
+                
+                <div id="sampleImagesContainer" class="w-full mt-4">
+                    <p class="text-gray-600 dark:text-gray-300 mb-2">Or try with a sample image:</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        <img src="https://images.unsplash.com/photo-1566902249079-7406419ca6cd?auto=format&fit=crop&w=150&h=150" 
+                            class="rounded-lg cursor-pointer sample-image" alt="Sample Rose">
+                        <img src="https://images.unsplash.com/photo-1589143365143-b8124d09e511?auto=format&fit=crop&w=150&h=150" 
+                            class="rounded-lg cursor-pointer sample-image" alt="Sample Sunflower">
+                        <img src="https://images.unsplash.com/photo-1566759996867-8d76ce950967?auto=format&fit=crop&w=150&h=150" 
+                            class="rounded-lg cursor-pointer sample-image" alt="Sample Lavender">
+                    </div>
+                </div>
+            </div>
+
+            <div id="identificationResults" class="hidden">
+                <div id="loadingIdentification" class="text-center py-10">
+                    <div class="loader"></div>
+                    <p class="mt-3 text-gray-600 dark:text-gray-300">Identifying your plant...</p>
+                </div>
+
+                <div id="identificationContent" class="hidden">
+                    <div class="card p-4">
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="md:w-1/3">
+                                <img id="identifiedPlantImage" src="" alt="Identified Plant" class="w-full h-48 object-cover rounded-lg">
                             </div>
-                            <div class="flex items-center bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-3 py-1 rounded-full text-sm">
-                                <i class="fas fa-sun mr-2"></i>
-                                <span id="modalSunNeeds"></span>
+                            <div class="md:w-2/3">
+                                <h3 id="identifiedPlantName" class="text-xl font-semibold"></h3>
+                                <p id="identifiedPlantScientific" class="text-gray-600 dark:text-gray-400 italic mb-2"></p>
+                                <div id="identifiedPlantInfo" class="mb-4"></div>
+                                <button id="addToGardenButton" class="btn-accent">
+                                    <i class="fas fa-plus mr-2"></i>Add to My Garden
+                                </button>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="mb-6">
-                        <h3 class="font-bold text-gray-700 dark:text-gray-300 mb-2">About this Plant</h3>
-                        <div id="modalPlantDescription" class="text-gray-600 dark:text-gray-300 text-sm"></div>
-                    </div>
-                    
-                    <div id="modalGardenActions" class="flex space-x-3">
-                        <button id="addToGardenBtn" class="flex-1 bg-primary hover:bg-opacity-90 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
-                            <i class="fas fa-plus mr-2"></i> Add to Garden
-                        </button>
-                        <button id="removeFromGardenBtn" class="hidden flex-1 bg-danger hover:bg-opacity-90 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
-                            <i class="fas fa-trash mr-2"></i> Remove
-                        </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Tab -->
+        <div id="search-tab" class="tab-content">
+            <div class="text-center mb-6">
+                <h2 class="text-xl font-semibold mb-2">Search Plants</h2>
+                <p class="text-gray-600 dark:text-gray-300">Find plants by name or characteristics</p>
+            </div>
+
+            <div class="search-container mb-6">
+                <div class="flex">
+                    <input type="text" id="searchInput" placeholder="Search for plants..." 
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-l-md text-base focus:outline-none focus:ring-2 focus:ring-primary-color">
+                    <button id="searchButton" class="btn-primary rounded-l-none">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div id="searchResults" class="search-results hidden"></div>
+            </div>
+
+            <div id="searchLoading" class="hidden text-center py-10">
+                <div class="loader"></div>
+                <p class="mt-3 text-gray-600 dark:text-gray-300">Searching plants...</p>
+            </div>
+
+            <div id="searchContent" class="hidden">
+                <div class="card p-4">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="md:w-1/3">
+                            <img id="searchPlantImage" src="" alt="Searched Plant" class="w-full h-48 object-cover rounded-lg">
+                        </div>
+                        <div class="md:w-2/3">
+                            <h3 id="searchPlantName" class="text-xl font-semibold"></h3>
+                            <p id="searchPlantScientific" class="text-gray-600 dark:text-gray-400 italic mb-2"></p>
+                            <div id="searchPlantInfo" class="mb-4"></div>
+                            <button id="searchAddToGardenButton" class="btn-accent">
+                                <i class="fas fa-plus mr-2"></i>Add to My Garden
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Notifications Modal -->
-        <div id="notificationsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto mx-4">
-                <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                    <h2 class="text-xl font-bold text-gray-800 dark:text-white">Care Reminders</h2>
-                    <button id="closeNotifications" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div id="notificationsList" class="p-4">
-                    <div id="emptyNotifications" class="text-center py-8">
-                        <i class="fas fa-bell-slash text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
-                        <p class="text-gray-500 dark:text-gray-400">No care reminders at the moment.</p>
-                    </div>
-                </div>
+        <!-- Garden Tab -->
+        <div id="garden-tab" class="tab-content">
+            <div class="text-center mb-6">
+                <h2 class="text-xl font-semibold mb-2">My Garden</h2>
+                <p class="text-gray-600 dark:text-gray-300">Your collection of saved plants</p>
+            </div>
+
+            <div id="emptyGarden" class="text-center py-10">
+                <i class="fas fa-seedling text-4xl text-gray-400 mb-3"></i>
+                <p class="text-gray-600 dark:text-gray-300">Your garden is empty. Add plants by identifying or searching for them.</p>
+            </div>
+
+            <div id="gardenContent" class="garden-grid hidden">
+                <!-- Plant cards will be dynamically added here -->
+            </div>
+        </div>
+
+        <!-- Care Tab -->
+        <div id="care-tab" class="tab-content">
+            <div class="text-center mb-6">
+                <h2 class="text-xl font-semibold mb-2">Plant Care</h2>
+                <p class="text-gray-600 dark:text-gray-300">Upcoming care tasks for your plants</p>
+            </div>
+
+            <div id="emptyCare" class="text-center py-10">
+                <i class="fas fa-calendar-day text-4xl text-gray-400 mb-3"></i>
+                <p class="text-gray-600 dark:text-gray-300">No care tasks scheduled. Add plants to your garden to see care schedules.</p>
+            </div>
+
+            <div id="careContent" class="space-y-4 hidden">
+                <!-- Care tasks will be dynamically added here -->
             </div>
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white dark:bg-gray-900 shadow-inner py-4 mt-auto">
-        <div class="container mx-auto px-4 text-center text-gray-600 dark:text-gray-400 text-sm">
-            <p>&copy; 2023 PlantPal - Plant Identification & Care App</p>
+    <!-- Plant Detail Modal -->
+    <div id="plantDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md mx-4 max-h-90vh overflow-y-auto">
+            <div class="p-5">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold" id="modalPlantName"></h3>
+                    <button id="closeModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="mb-4">
+                    <img id="modalPlantImage" src="" alt="Plant" class="w-full h-48 object-cover rounded-lg">
+                </div>
+                <p id="modalPlantScientific" class="text-gray-600 dark:text-gray-400 italic mb-2"></p>
+                <div id="modalPlantInfo" class="mb-4"></div>
+                
+                <div class="mb-4">
+                    <h4 class="font-semibold mb-2">Care Schedule</h4>
+                    <div class="mb-3">
+                        <div class="flex justify-between mb-1">
+                            <span>Water</span>
+                            <span id="modalWaterStatus">2 days ago</span>
+                        </div>
+                        <div class="water-progress-bar">
+                            <div id="modalWaterProgress" class="water-progress" style="width: 30%;"></div>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="flex justify-between mb-1">
+                            <span>Sunlight</span>
+                            <span id="modalSunlightStatus">4 days ago</span>
+                        </div>
+                        <div class="sun-progress-bar">
+                            <div id="modalSunProgress" class="sun-progress" style="width: 60%;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button id="modalWaterButton" class="flex-1 btn-primary">
+                        <i class="fas fa-tint mr-2"></i>Water Now
+                    </button>
+                    <button id="modalRemoveButton" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded">
+                        <i class="fas fa-trash-alt mr-2"></i>Remove
+                    </button>
+                </div>
+            </div>
         </div>
-    </footer>
+    </div>
 
     <script>
-        // Handle dark mode
+        // Check for dark mode preference
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             document.documentElement.classList.add('dark');
         }
+
+        // Listen for changes in color scheme preference
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
             if (event.matches) {
                 document.documentElement.classList.add('dark');
@@ -290,1004 +515,759 @@
             }
         });
 
-        // App state
-        const state = {
-            apiKey: "2b10YcHzngO4p0I5CDccGCof3e", // PlantNet API key
-            currentPlant: null,
-            gardenPlants: [],
-            notifications: [],
-            searchResults: []
-        };
+        // Global variables
+        let garden = JSON.parse(localStorage.getItem('garden')) || [];
+        let currentPlant = null;
+        let selectedPlantId = null;
+        let stream = null;
 
-        // DOM Elements
-        const elements = {
-            welcomeScreen: document.getElementById('welcomeScreen'),
-            startApp: document.getElementById('startApp'),
-            appContent: document.getElementById('appContent'),
-            tabButtons: document.querySelectorAll('.tab-btn'),
-            tabIndicator: document.querySelector('.tab-indicator'),
-            tabContents: document.querySelectorAll('.tab-content'),
-            captureBtn: document.getElementById('captureBtn'),
-            uploadBtn: document.getElementById('uploadBtn'),
-            uploadInput: document.getElementById('uploadInput'),
-            previewContainer: document.getElementById('previewContainer'),
-            imagePreview: document.getElementById('imagePreview'),
-            cancelUpload: document.getElementById('cancelUpload'),
-            identifyBtn: document.getElementById('identifyBtn'),
-            loadingIndicator: document.getElementById('loadingIndicator'),
-            searchInput: document.getElementById('searchInput'),
-            searchResults: document.getElementById('searchResults'),
-            searchLoadingIndicator: document.getElementById('searchLoadingIndicator'),
-            resultContainer: document.getElementById('resultContainer'),
-            plantResult: document.getElementById('plantResult'),
-            gardenPlants: document.getElementById('gardenPlants'),
-            emptyGarden: document.getElementById('emptyGarden'),
-            plantModal: document.getElementById('plantModal'),
-            closeModal: document.getElementById('closeModal'),
-            modalPlantImage: document.getElementById('modalPlantImage'),
-            modalPlantName: document.getElementById('modalPlantName'),
-            modalPlantType: document.getElementById('modalPlantType'),
-            modalPlantDescription: document.getElementById('modalPlantDescription'),
-            modalWaterNeeds: document.getElementById('modalWaterNeeds'),
-            modalSunNeeds: document.getElementById('modalSunNeeds'),
-            addToGardenBtn: document.getElementById('addToGardenBtn'),
-            removeFromGardenBtn: document.getElementById('removeFromGardenBtn'),
-            notifications: document.getElementById('notifications'),
-            notificationBadge: document.getElementById('notificationBadge'),
-            notificationsModal: document.getElementById('notificationsModal'),
-            closeNotifications: document.getElementById('closeNotifications'),
-            notificationsList: document.getElementById('notificationsList'),
-            emptyNotifications: document.getElementById('emptyNotifications'),
-            garden: document.getElementById('garden')
-        };
+        // DOM elements
+        const tabs = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const themeToggle = document.getElementById('theme-toggle');
+        const notification = document.getElementById('notification');
+        const notificationMessage = document.getElementById('notification-message');
+        const startCameraButton = document.getElementById('startCameraButton');
+        const cameraContainer = document.getElementById('camera-container');
+        const captureButton = document.getElementById('captureButton');
+        const videoElement = document.getElementById('videoElement');
+        const capturedPhoto = document.getElementById('capturedPhoto');
+        const imageUpload = document.getElementById('imageUpload');
+        const sampleImages = document.querySelectorAll('.sample-image');
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const searchResults = document.getElementById('searchResults');
+        const addToGardenButton = document.getElementById('addToGardenButton');
+        const searchAddToGardenButton = document.getElementById('searchAddToGardenButton');
+        const closeModalButton = document.getElementById('closeModal');
+        const plantDetailModal = document.getElementById('plantDetailModal');
+        const modalWaterButton = document.getElementById('modalWaterButton');
+        const modalRemoveButton = document.getElementById('modalRemoveButton');
 
-        // Initialize the app
-        function initApp() {
-            // Load saved data from localStorage
-            loadSavedData();
+        // Utility functions
+        function showNotification(message, duration = 3000) {
+            notificationMessage.textContent = message;
+            notification.classList.add('show');
             
-            // Event listeners for welcome screen
-            elements.startApp.addEventListener('click', () => {
-                elements.welcomeScreen.classList.add('hidden');
-                elements.appContent.classList.remove('hidden');
-            });
-            
-            // Tab navigation
-            elements.tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const tabName = button.getAttribute('data-tab');
-                    switchTab(tabName);
-                });
-            });
-            
-            // Identify tab events
-            elements.captureBtn.addEventListener('click', initiateCapture);
-            elements.uploadBtn.addEventListener('click', () => elements.uploadInput.click());
-            elements.uploadInput.addEventListener('change', handleImageUpload);
-            elements.cancelUpload.addEventListener('click', cancelUpload);
-            elements.identifyBtn.addEventListener('click', identifyPlant);
-            
-            // Search tab events
-            elements.searchInput.addEventListener('input', debounce(searchPlants, 500));
-            
-            // Plant modal events
-            elements.closeModal.addEventListener('click', () => elements.plantModal.classList.add('hidden'));
-            elements.addToGardenBtn.addEventListener('click', addToGarden);
-            elements.removeFromGardenBtn.addEventListener('click', removeFromGarden);
-            
-            // Notification events
-            elements.notifications.addEventListener('click', toggleNotifications);
-            elements.closeNotifications.addEventListener('click', () => elements.notificationsModal.classList.add('hidden'));
-            
-            // Check for updates every minute
-            setInterval(checkForUpdates, 60000);
-            
-            // If we have existing data, skip to the app
-            const savedData = localStorage.getItem('plantPalData');
-            if (savedData) {
-                elements.welcomeScreen.classList.add('hidden');
-                elements.appContent.classList.remove('hidden');
-            }
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, duration);
         }
 
-        // Switch between tabs
-        function switchTab(tabName) {
-            // Update tab buttons
-            elements.tabButtons.forEach(btn => {
-                if (btn.getAttribute('data-tab') === tabName) {
-                    btn.classList.add('text-primary');
-                    btn.classList.remove('text-gray-500', 'dark:text-gray-400');
+        function switchTab(tabId) {
+            // Update active tab button
+            tabs.forEach(tab => {
+                if (tab.id === `tab-${tabId}`) {
+                    tab.classList.add('text-primary-color');
                 } else {
-                    btn.classList.remove('text-primary');
-                    btn.classList.add('text-gray-500', 'dark:text-gray-400');
+                    tab.classList.remove('text-primary-color');
                 }
             });
-            
-            // Move tab indicator
-            const activeIndex = Array.from(elements.tabButtons).findIndex(btn => btn.getAttribute('data-tab') === tabName);
-            elements.tabIndicator.style.left = `${activeIndex * 33.33}%`;
             
             // Show active tab content
-            elements.tabContents.forEach(content => {
-                if (content.id === tabName) {
-                    content.classList.remove('hidden');
+            tabContents.forEach(content => {
+                if (content.id === `${tabId}-tab`) {
+                    content.classList.add('active');
                 } else {
-                    content.classList.add('hidden');
+                    content.classList.remove('active');
                 }
             });
-            
-            // If switching to garden tab, refresh garden
-            if (tabName === 'garden') {
-                renderGarden();
+        }
+
+        // Generate a unique ID for plants
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        // Camera and image functions
+        async function startCamera() {
+            try {
+                // Request camera access
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                
+                // Show camera container and video
+                videoElement.srcObject = stream;
+                cameraContainer.classList.remove('hidden');
+                startCameraButton.classList.add('hidden');
+                capturedPhoto.classList.add('hidden');
+                
+                return true;
+            } catch (err) {
+                console.error("Error accessing camera:", err);
+                showNotification("Error accessing camera. Please check permissions.");
+                return false;
             }
         }
 
-        // Save API key and start app
-        function saveApiKey() {
-            const apiKey = elements.apiKeyInput.value.trim();
-            if (!apiKey) {
-                alert('Please enter a valid API key');
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                videoElement.srcObject = null;
+            }
+            cameraContainer.classList.add('hidden');
+            startCameraButton.classList.remove('hidden');
+        }
+
+        function captureImage() {
+            if (!stream) return;
+            
+            // Setup canvas for capturing
+            const canvas = capturedPhoto;
+            canvas.width = videoElement.videoWidth;
+            canvas.height = videoElement.videoHeight;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw video frame to canvas
+            ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+            
+            // Stop the camera and display captured photo
+            stopCamera();
+            canvas.classList.remove('hidden');
+            
+            // Process the captured image
+            processImage(canvas);
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file || !file.type.match('image.*')) {
+                showNotification("Please select a valid image file");
                 return;
             }
             
-            state.apiKey = apiKey;
-            saveData();
-            
-            elements.apiKeyForm.classList.add('hidden');
-            elements.appContent.classList.remove('hidden');
-        }
-
-        // Capture image with camera
-        function initiateCapture() {
-            // Request camera access and create input
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.capture = 'environment'; // Prefer back camera
-            input.addEventListener('change', handleImageUpload);
-            input.click();
-        }
-
-        // Handle image upload from file or camera
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            // Show preview
             const reader = new FileReader();
-            reader.onload = e => {
-                elements.imagePreview.src = e.target.result;
-                elements.previewContainer.classList.remove('hidden');
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // Setup canvas for uploaded image
+                    const canvas = capturedPhoto;
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Draw image to canvas
+                    ctx.drawImage(img, 0, 0);
+                    
+                    // Display canvas and hide camera button
+                    canvas.classList.remove('hidden');
+                    cameraContainer.classList.add('hidden');
+                    
+                    // Process the uploaded image
+                    processImage(canvas);
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
 
-        // Cancel image upload
-        function cancelUpload() {
-            elements.previewContainer.classList.add('hidden');
-            elements.uploadInput.value = '';
-            elements.imagePreview.src = '';
+        function handleSampleImage(event) {
+            const img = event.target;
+            
+            // Setup canvas for sample image
+            const canvas = capturedPhoto;
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw sample image to canvas
+            ctx.drawImage(img, 0, 0);
+            
+            // Display canvas and hide camera
+            canvas.classList.remove('hidden');
+            cameraContainer.classList.add('hidden');
+            
+            // Process the sample image
+            processImage(canvas);
         }
 
-        // Identify plant from image
-        async function identifyPlant() {
-            if (!elements.imagePreview.src) return;
+        // This is a placeholder function until the Teachable Machine model is ready
+        function processImage(canvas) {
+            document.getElementById('identificationResults').classList.remove('hidden');
+            document.getElementById('loadingIdentification').classList.remove('hidden');
+            document.getElementById('identificationContent').classList.add('hidden');
             
-            // Show loading indicator
-            elements.previewContainer.classList.add('hidden');
-            elements.loadingIndicator.classList.remove('hidden');
-            elements.resultContainer.classList.add('hidden');
+            // Simulate identification delay (this will be replaced with actual model)
+            setTimeout(() => {
+                // Get image data from canvas for future integration with Teachable Machine
+                const imageData = canvas.toDataURL('image/jpeg');
+                
+                // For now, we'll use a sample result
+                // This will be replaced with actual model predictions
+                const samplePlants = [
+                    {
+                        id: 'rose',
+                        commonName: 'Rose',
+                        scientificName: 'Rosa',
+                        info: 'Roses are woody perennial flowering plants. They form a group of plants that can be erect shrubs, climbing, or trailing, with stems that are often armed with sharp prickles.',
+                        image: 'https://images.unsplash.com/photo-1566902249079-7406419ca6cd?auto=format&fit=crop&w=400&h=300',
+                        waterDays: 3,
+                        sunlightHours: 6
+                    },
+                    {
+                        id: 'sunflower',
+                        commonName: 'Sunflower',
+                        scientificName: 'Helianthus annuus',
+                        info: 'Sunflowers are annual plants with big, daisy-like flower faces of bright yellow petals and brown centers that develop seeds. They are native to North America.',
+                        image: 'https://images.unsplash.com/photo-1589143365143-b8124d09e511?auto=format&fit=crop&w=400&h=300',
+                        waterDays: 7,
+                        sunlightHours: 8
+                    },
+                    {
+                        id: 'lavender',
+                        commonName: 'Lavender',
+                        scientificName: 'Lavandula',
+                        info: 'Lavender is a perennial shrub with purple flowers that bloom in late spring to early summer. It is native to the Mediterranean and is highly valued for its fragrance.',
+                        image: 'https://images.unsplash.com/photo-1566759996867-8d76ce950967?auto=format&fit=crop&w=400&h=300',
+                        waterDays: 14,
+                        sunlightHours: 7
+                    }
+                ];
+                
+                // Randomly select a sample plant for demo
+                const randomIndex = Math.floor(Math.random() * samplePlants.length);
+                currentPlant = samplePlants[randomIndex];
+                
+                // Update identification results
+                document.getElementById('identifiedPlantName').textContent = currentPlant.commonName;
+                document.getElementById('identifiedPlantScientific').textContent = currentPlant.scientificName;
+                document.getElementById('identifiedPlantInfo').innerHTML = currentPlant.info;
+                document.getElementById('identifiedPlantImage').src = currentPlant.image;
+                
+                // Hide loading and show results
+                document.getElementById('loadingIdentification').classList.add('hidden');
+                document.getElementById('identificationContent').classList.remove('hidden');
+            }, 2000);
+        }
+
+        // GBIF API functions
+        async function searchPlantsByName(query) {
+            document.getElementById('searchLoading').classList.remove('hidden');
+            document.getElementById('searchContent').classList.add('hidden');
             
             try {
-                // Get base64 image
-                const base64Image = elements.imagePreview.src.split(',')[1];
-                
-                // Use PlantNet API to identify the plant
-                const result = await identifyPlantWithAPI(base64Image);
-                
-                // Display results
-                renderIdentificationResults(result);
-            } catch (error) {
-                console.error('Error identifying plant:', error);
-                elements.plantResult.innerHTML = `
-                    <div class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 p-4 rounded-lg">
-                        <p>Error identifying plant. Please try again.</p>
-                    </div>
-                `;
-                elements.resultContainer.classList.remove('hidden');
-            } finally {
-                elements.loadingIndicator.classList.add('hidden');
-            }
-        }
-
-        // Search plants by name
-        async function searchPlants() {
-            const query = elements.searchInput.value.trim();
-            if (query.length < 2) {
-                elements.searchResults.innerHTML = '';
-                return;
-            }
-            
-            // Show loading indicator
-            elements.searchLoadingIndicator.classList.remove('hidden');
-            elements.searchResults.innerHTML = '';
-            
-            try {
-                // Use database to search for plants
-                const results = await searchPlantDatabase(query);
-                state.searchResults = results;
-                
-                // Render search results
-                renderSearchResults(results);
-            } catch (error) {
-                console.error('Error searching plants:', error);
-                elements.searchResults.innerHTML = `
-                    <div class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 p-4 rounded-lg col-span-full">
-                        <p>Error searching plants. Please try again.</p>
-                    </div>
-                `;
-            } finally {
-                elements.searchLoadingIndicator.classList.add('hidden');
-            }
-        }
-
-        // Add plant to garden
-        function addToGarden() {
-            const plant = state.currentPlant;
-            if (!plant) return;
-            
-            // Check if plant is already in garden
-            const existingIndex = state.gardenPlants.findIndex(p => p.id === plant.id);
-            if (existingIndex !== -1) {
-                alert('This plant is already in your garden');
-                return;
-            }
-            
-            // Add water and sunlight schedule
-            plant.waterSchedule = generateWaterSchedule(plant.waterNeeds);
-            plant.sunSchedule = generateSunSchedule(plant.sunNeeds);
-            plant.lastWatered = new Date().toISOString();
-            plant.lastSunCheck = new Date().toISOString();
-            
-            // Add to garden
-            state.gardenPlants.push(plant);
-            saveData();
-            
-            // Update UI
-            elements.plantModal.classList.add('hidden');
-            
-            // If in garden tab, refresh garden
-            if (!elements.garden.classList.contains('hidden')) {
-                renderGarden();
-            }
-            
-            // Show confirmation
-            alert('Plant added to your garden!');
-        }
-
-        // Remove plant from garden
-        function removeFromGarden() {
-            const plant = state.currentPlant;
-            if (!plant) return;
-            
-            // Remove from garden
-            state.gardenPlants = state.gardenPlants.filter(p => p.id !== plant.id);
-            saveData();
-            
-            // Update UI
-            elements.plantModal.classList.add('hidden');
-            
-            // If in garden tab, refresh garden
-            if (!elements.garden.classList.contains('hidden')) {
-                renderGarden();
-            }
-        }
-
-        // Show plant details in modal
-        function showPlantDetails(plant, fromGarden = false) {
-            state.currentPlant = plant;
-            
-            // Set modal content
-            elements.modalPlantImage.src = plant.image;
-            elements.modalPlantName.textContent = plant.name;
-            elements.modalPlantType.textContent = plant.type;
-            elements.modalPlantDescription.innerHTML = marked.parse(plant.description);
-            elements.modalWaterNeeds.textContent = plant.waterNeeds;
-            elements.modalSunNeeds.textContent = plant.sunNeeds;
-            
-            // Show/hide appropriate buttons
-            if (fromGarden) {
-                elements.addToGardenBtn.classList.add('hidden');
-                elements.removeFromGardenBtn.classList.remove('hidden');
-            } else {
-                elements.addToGardenBtn.classList.remove('hidden');
-                elements.removeFromGardenBtn.classList.add('hidden');
-            }
-            
-            // Show modal
-            elements.plantModal.classList.remove('hidden');
-        }
-
-        // Toggle notifications panel
-        function toggleNotifications() {
-            elements.notificationsModal.classList.toggle('hidden');
-            
-            // Clear notification badge
-            elements.notificationBadge.classList.add('hidden');
-            elements.notificationBadge.textContent = '0';
-            
-            // Reset notifications
-            state.notifications.forEach(n => n.read = true);
-            saveData();
-            
-            // Render notifications
-            renderNotifications();
-        }
-
-        // Check for care updates
-        function checkForUpdates() {
-            const now = new Date();
-            let newNotifications = 0;
-            
-            // Check each plant for care needs
-            state.gardenPlants.forEach(plant => {
-                const lastWatered = new Date(plant.lastWatered);
-                const waterDays = plant.waterSchedule;
-                const daysSinceWatered = Math.floor((now - lastWatered) / (1000 * 60 * 60 * 24));
-                
-                // Check if plant needs water
-                if (daysSinceWatered >= waterDays) {
-                    // Add notification
-                    const notificationId = `water-${plant.id}-${now.getTime()}`;
-                    const existingNotification = state.notifications.find(n => n.id === notificationId);
-                    
-                    if (!existingNotification) {
-                        state.notifications.push({
-                            id: notificationId,
-                            type: 'water',
-                            plantId: plant.id,
-                            plantName: plant.name,
-                            message: `Your ${plant.name} needs water`,
-                            time: now.toISOString(),
-                            read: false
-                        });
-                        newNotifications++;
-                    }
-                }
-                
-                // Check for sunlight needs (similar logic)
-                const lastSunCheck = new Date(plant.lastSunCheck);
-                const sunDays = plant.sunSchedule;
-                const daysSinceSunCheck = Math.floor((now - lastSunCheck) / (1000 * 60 * 60 * 24));
-                
-                if (daysSinceSunCheck >= sunDays) {
-                    const notificationId = `sun-${plant.id}-${now.getTime()}`;
-                    const existingNotification = state.notifications.find(n => n.id === notificationId);
-                    
-                    if (!existingNotification) {
-                        state.notifications.push({
-                            id: notificationId,
-                            type: 'sun',
-                            plantId: plant.id,
-                            plantName: plant.name,
-                            message: `Check if your ${plant.name} is getting enough sunlight`,
-                            time: now.toISOString(),
-                            read: false
-                        });
-                        newNotifications++;
-                    }
-                }
-            });
-            
-            // If we have new notifications, update the badge
-            if (newNotifications > 0) {
-                const unreadCount = state.notifications.filter(n => !n.read).length;
-                elements.notificationBadge.textContent = unreadCount;
-                elements.notificationBadge.classList.remove('hidden');
-                saveData();
-            }
-        }
-
-        // Mark plant as watered
-        function markPlantWatered(plantId) {
-            const plant = state.gardenPlants.find(p => p.id === plantId);
-            if (plant) {
-                plant.lastWatered = new Date().toISOString();
-                saveData();
-                
-                // Remove related notifications
-                state.notifications = state.notifications.filter(n => !(n.plantId === plantId && n.type === 'water'));
-                
-                // Update notifications
-                renderNotifications();
-                
-                // If in garden tab, refresh garden
-                if (!elements.garden.classList.contains('hidden')) {
-                    renderGarden();
-                }
-            }
-        }
-
-        // Mark plant as sun-checked
-        function markPlantSunChecked(plantId) {
-            const plant = state.gardenPlants.find(p => p.id === plantId);
-            if (plant) {
-                plant.lastSunCheck = new Date().toISOString();
-                saveData();
-                
-                // Remove related notifications
-                state.notifications = state.notifications.filter(n => !(n.plantId === plantId && n.type === 'sun'));
-                
-                // Update notifications
-                renderNotifications();
-                
-                // If in garden tab, refresh garden
-                if (!elements.garden.classList.contains('hidden')) {
-                    renderGarden();
-                }
-            }
-        }
-
-        // Render identification results
-        function renderIdentificationResults(plant) {
-            if (!plant) {
-                elements.plantResult.innerHTML = `
-                    <div class="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 p-4 rounded-lg">
-                        <p>Sorry, we couldn't identify this plant. Please try again with a clearer image.</p>
-                    </div>
-                `;
-            } else {
-                elements.plantResult.innerHTML = `
-                    <div class="bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden">
-                        <img src="${plant.image}" alt="${plant.name}" class="w-full h-48 object-cover">
-                        <div class="p-4">
-                            <h3 class="font-bold text-lg text-gray-800 dark:text-white">${plant.name}</h3>
-                            <p class="text-gray-600 dark:text-gray-300 text-sm">${plant.type}</p>
-                            
-                            <div class="flex flex-wrap gap-2 mt-3">
-                                <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-xs">
-                                    <i class="fas fa-tint mr-1"></i> ${plant.waterNeeds}
-                                </span>
-                                <span class="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded-full text-xs">
-                                    <i class="fas fa-sun mr-1"></i> ${plant.sunNeeds}
-                                </span>
-                            </div>
-                            
-                            <button class="view-details-btn w-full mt-4 bg-primary hover:bg-opacity-90 text-white text-sm font-bold py-2 px-3 rounded-lg transition duration-300">
-                                View Details
-                            </button>
-                        </div>
-                    </div>
-                `;
-                
-                // Store current plant for later use
-                state.currentPlant = plant;
-                
-                // Add event listener to view details button
-                const detailsBtn = elements.plantResult.querySelector('.view-details-btn');
-                detailsBtn.addEventListener('click', () => showPlantDetails(plant));
-            }
-            
-            elements.resultContainer.classList.remove('hidden');
-        }
-
-        // Render search results
-        function renderSearchResults(results) {
-            if (!results || results.length === 0) {
-                elements.searchResults.innerHTML = `
-                    <div class="col-span-full bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 p-4 rounded-lg">
-                        <p>No plants found. Try a different search term.</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            elements.searchResults.innerHTML = results.map(plant => `
-                <div class="plant-card bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden cursor-pointer" data-plant-id="${plant.id}">
-                    <img src="${plant.image}" alt="${plant.name}" class="w-full h-40 object-cover">
-                    <div class="p-4">
-                        <h3 class="font-bold text-gray-800 dark:text-white">${plant.name}</h3>
-                        <p class="text-gray-600 dark:text-gray-300 text-sm">${plant.type}</p>
-                        
-                        <div class="flex flex-wrap gap-2 mt-3">
-                            <span class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-2 py-1 rounded-full text-xs">
-                                <i class="fas fa-tint mr-1"></i> ${plant.waterNeeds}
-                            </span>
-                            <span class="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded-full text-xs">
-                                <i class="fas fa-sun mr-1"></i> ${plant.sunNeeds}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-            
-            // Add event listeners to plant cards
-            document.querySelectorAll('.plant-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    const plantId = card.getAttribute('data-plant-id');
-                    const plant = state.searchResults.find(p => p.id === plantId);
-                    if (plant) {
-                        showPlantDetails(plant);
-                    }
-                });
-            });
-        }
-
-        // Render garden
-        function renderGarden() {
-            if (state.gardenPlants.length === 0) {
-                elements.emptyGarden.classList.remove('hidden');
-                elements.gardenPlants.innerHTML = '';
-                return;
-            }
-            
-            elements.emptyGarden.classList.add('hidden');
-            
-            elements.gardenPlants.innerHTML = state.gardenPlants.map(plant => {
-                const lastWatered = new Date(plant.lastWatered);
-                const now = new Date();
-                const daysSinceWatered = Math.floor((now - lastWatered) / (1000 * 60 * 60 * 24));
-                const waterDays = plant.waterSchedule;
-                const waterStatus = daysSinceWatered >= waterDays ? 'danger' : (daysSinceWatered >= waterDays - 1 ? 'warning' : 'good');
-                
-                const lastSunCheck = new Date(plant.lastSunCheck);
-                const daysSinceSunCheck = Math.floor((now - lastSunCheck) / (1000 * 60 * 60 * 24));
-                const sunDays = plant.sunSchedule;
-                const sunStatus = daysSinceSunCheck >= sunDays ? 'danger' : (daysSinceSunCheck >= sunDays - 1 ? 'warning' : 'good');
-                
-                return `
-                    <div class="plant-card bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden" data-plant-id="${plant.id}">
-                        <div class="relative">
-                            <img src="${plant.image}" alt="${plant.name}" class="w-full h-40 object-cover">
-                            <div class="absolute bottom-0 right-0 flex space-x-1 m-2">
-                                <button class="water-plant-btn bg-white dark:bg-gray-800 text-blue-500 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-blue-100 dark:hover:bg-gray-700 transition duration-300" data-plant-id="${plant.id}">
-                                    <i class="fas fa-tint ${waterStatus === 'danger' ? 'text-red-500' : (waterStatus === 'warning' ? 'text-yellow-500' : '')}"></i>
-                                </button>
-                                <button class="sun-check-btn bg-white dark:bg-gray-800 text-yellow-500 rounded-full w-8 h-8 flex items-center justify-center shadow-md hover:bg-yellow-100 dark:hover:bg-gray-700 transition duration-300" data-plant-id="${plant.id}">
-                                    <i class="fas fa-sun ${sunStatus === 'danger' ? 'text-red-500' : (sunStatus === 'warning' ? 'text-yellow-500' : '')}"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="p-4">
-                            <h3 class="font-bold text-gray-800 dark:text-white">${plant.name}</h3>
-                            <p class="text-gray-600 dark:text-gray-300 text-sm">${plant.type}</p>
-                            
-                            <div class="flex justify-between items-center mt-3">
-                                <div class="text-xs text-gray-500 dark:text-gray-400">
-                                    <div class="flex items-center ${waterStatus === 'danger' ? 'text-red-500' : (waterStatus === 'warning' ? 'text-yellow-500' : 'text-blue-500')}">
-                                        <i class="fas fa-tint mr-1"></i> 
-                                        ${waterStatus === 'danger' ? 'Needs water now!' : (waterStatus === 'warning' ? 'Water soon' : 'Recently watered')}
-                                    </div>
-                                    <div class="flex items-center mt-1 ${sunStatus === 'danger' ? 'text-red-500' : (sunStatus === 'warning' ? 'text-yellow-500' : 'text-yellow-500')}">
-                                        <i class="fas fa-sun mr-1"></i> 
-                                        ${sunStatus === 'danger' ? 'Check sunlight now!' : (sunStatus === 'warning' ? 'Check sun soon' : 'Sunlight OK')}
-                                    </div>
-                                </div>
-                                <button class="view-garden-plant-btn bg-primary hover:bg-opacity-90 text-white text-sm font-bold py-1 px-3 rounded-lg transition duration-300">
-                                    Details
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            // Add event listeners
-            elements.gardenPlants.querySelectorAll('.view-garden-plant-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const plantId = e.target.closest('.plant-card').getAttribute('data-plant-id');
-                    const plant = state.gardenPlants.find(p => p.id === plantId);
-                    if (plant) {
-                        showPlantDetails(plant, true);
-                    }
-                });
-            });
-            
-            elements.gardenPlants.querySelectorAll('.water-plant-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const plantId = btn.getAttribute('data-plant-id');
-                    markPlantWatered(plantId);
-                });
-            });
-            
-            elements.gardenPlants.querySelectorAll('.sun-check-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const plantId = btn.getAttribute('data-plant-id');
-                    markPlantSunChecked(plantId);
-                });
-            });
-        }
-
-        // Render notifications
-        function renderNotifications() {
-            if (state.notifications.length === 0) {
-                elements.emptyNotifications.classList.remove('hidden');
-                elements.notificationsList.innerHTML = '';
-                return;
-            }
-            
-            elements.emptyNotifications.classList.add('hidden');
-            
-            // Sort notifications by time (newest first)
-            const sortedNotifications = [...state.notifications].sort((a, b) => new Date(b.time) - new Date(a.time));
-            
-            elements.notificationsList.innerHTML = sortedNotifications.map(notification => {
-                const time = new Date(notification.time);
-                const formattedTime = time.toLocaleDateString() + ' ' + time.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                
-                return `
-                    <div class="notification-item bg-white dark:bg-gray-700 rounded-lg shadow-sm p-3 mb-3 ${notification.read ? '' : 'border-l-4 border-primary'}">
-                        <div class="flex items-start">
-                            <div class="flex-shrink-0 mr-3">
-                                <i class="fas ${notification.type === 'water' ? 'fa-tint text-blue-500' : 'fa-sun text-yellow-500'} text-lg"></i>
-                            </div>
-                            <div class="flex-grow">
-                                <h4 class="font-medium text-gray-800 dark:text-white">${notification.message}</h4>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">${formattedTime}</p>
-                            </div>
-                            <button class="care-action-btn flex-shrink-0 bg-primary hover:bg-opacity-90 text-white text-xs font-medium py-1 px-2 rounded transition duration-300" 
-                                    data-plant-id="${notification.plantId}" 
-                                    data-type="${notification.type}">
-                                ${notification.type === 'water' ? 'Water Now' : 'Check Sun'}
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            
-            // Add event listeners to buttons
-            elements.notificationsList.querySelectorAll('.care-action-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const plantId = btn.getAttribute('data-plant-id');
-                    const type = btn.getAttribute('data-type');
-                    
-                    if (type === 'water') {
-                        markPlantWatered(plantId);
-                    } else if (type === 'sun') {
-                        markPlantSunChecked(plantId);
-                    }
-                });
-            });
-        }
-
-        // Generate water schedule based on plant needs
-        function generateWaterSchedule(waterNeeds) {
-            switch (waterNeeds.toLowerCase()) {
-                case 'daily':
-                    return 1;
-                case 'frequently':
-                case 'high':
-                    return 2;
-                case 'moderate':
-                case 'medium':
-                    return 4;
-                case 'low':
-                case 'infrequently':
-                    return 7;
-                case 'very low':
-                case 'rarely':
-                    return 14;
-                default:
-                    return 3; // Default to moderate
-            }
-        }
-
-        // Generate sun schedule based on plant needs
-        function generateSunSchedule(sunNeeds) {
-            switch (sunNeeds.toLowerCase()) {
-                case 'full sun':
-                case 'direct sun':
-                    return 1; // Check daily
-                case 'partial sun':
-                case 'medium light':
-                    return 2; // Check every other day
-                case 'indirect light':
-                case 'partial shade':
-                    return 3; // Check every 3 days
-                case 'shade':
-                case 'low light':
-                    return 5; // Check every 5 days
-                default:
-                    return 2; // Default to every other day
-            }
-        }
-
-        // Utility function to debounce function calls
-        function debounce(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        }
-
-        // Save app data using localStorage
-        function saveData() {
-            const data = {
-                apiKey: state.apiKey,
-                gardenPlants: state.gardenPlants,
-                notifications: state.notifications
-            };
-            
-            try {
-                localStorage.setItem('plantPalData', JSON.stringify(data));
-            } catch (err) {
-                console.error("Error saving data:", err);
-            }
-        }
-
-        // Load saved data from localStorage
-        function loadSavedData() {
-            try {
-                const savedData = localStorage.getItem('plantPalData');
-                if (savedData) {
-                    const data = JSON.parse(savedData);
-                    if (data.gardenPlants) state.gardenPlants = data.gardenPlants;
-                    if (data.notifications) state.notifications = data.notifications;
-                    
-                    // Update notification badge if there are unread notifications
-                    const unreadCount = state.notifications.filter(n => !n.read).length;
-                    if (unreadCount > 0) {
-                        elements.notificationBadge.textContent = unreadCount;
-                        elements.notificationBadge.classList.remove('hidden');
-                    }
-                }
-            } catch (err) {
-                console.error("Error loading data:", err);
-                // Initialize with empty data if loading fails
-                state.gardenPlants = [];
-                state.notifications = [];
-            }
-        }
-
-        // Use PlantNet API to identify plants
-        async function identifyPlantWithAPI(base64Image) {
-            try {
-                // Convert base64 to blob
-                const byteCharacters = atob(base64Image);
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-                const blob = new Blob([byteArray], { type: 'image/jpeg' });
-                
-                // Create FormData
-                const formData = new FormData();
-                formData.append('images', blob, 'plant.jpg');
-                
-                // Call PlantNet API
-                const response = await fetch(`https://my-api.plantnet.org/v2/identify/all?api-key=${state.apiKey}`, {
-                    method: 'POST',
-                    body: formData
-                });
-                
+                // Use GBIF API to search for plants
+                const response = await fetch(`https://api.gbif.org/v1/species/search?q=${encodeURIComponent(query)}&rank=SPECIES&kingdom=Plantae&limit=10`);
                 const data = await response.json();
                 
-                if (!response.ok) {
-                    throw new Error(data.message || 'Error identifying plant');
+                if (data.results && data.results.length > 0) {
+                    return data.results.map(result => ({
+                        key: result.key,
+                        scientificName: result.scientificName,
+                        commonName: result.vernacularNames && result.vernacularNames.length > 0 
+                            ? result.vernacularNames[0].vernacularName 
+                            : result.scientificName
+                    }));
+                }
+                return [];
+            } catch (error) {
+                console.error("Error searching GBIF:", error);
+                showNotification("Error searching plants. Please try again.");
+                return [];
+            } finally {
+                document.getElementById('searchLoading').classList.add('hidden');
+            }
+        }
+
+        async function getPlantDetails(speciesKey) {
+            document.getElementById('searchLoading').classList.remove('hidden');
+            
+            try {
+                // Get species details from GBIF API
+                const response = await fetch(`https://api.gbif.org/v1/species/${speciesKey}`);
+                const data = await response.json();
+                
+                // Get occurrence data for images
+                const occurrenceResponse = await fetch(`https://api.gbif.org/v1/occurrence/search?taxonKey=${speciesKey}&limit=5&mediaType=StillImage`);
+                const occurrenceData = await occurrenceResponse.json();
+                
+                let imageUrl = 'https://via.placeholder.com/400x300?text=No+Image+Available';
+                
+                // Try to find an image in the occurrences
+                if (occurrenceData.results && occurrenceData.results.length > 0) {
+                    for (const result of occurrenceData.results) {
+                        if (result.media && result.media.length > 0) {
+                            const mediaItem = result.media.find(m => m.type === 'StillImage');
+                            if (mediaItem && mediaItem.identifier) {
+                                imageUrl = mediaItem.identifier;
+                                break;
+                            }
+                        }
+                    }
                 }
                 
-                if (data.results && data.results.length > 0) {
-                    // Get the best match (first result)
-                    const bestMatch = data.results[0];
-                    
-                    // Create plant object
-                    return {
-                        id: `plant-${Date.now()}`,
-                        name: bestMatch.species.scientificNameWithoutAuthor,
-                        commonNames: bestMatch.species.commonNames || [],
-                        type: bestMatch.species.family.scientificNameWithoutAuthor || 'Unknown Family',
-                        image: bestMatch.images[0].url.m || bestMatch.images[0].url.o,
-                        description: `${bestMatch.species.scientificNameWithoutAuthor} (${bestMatch.species.commonNames?.join(', ') || 'No common name'}) is a plant in the ${bestMatch.species.family.scientificNameWithoutAuthor} family.`,
-                        waterNeeds: determineWaterNeeds(bestMatch.species.family.scientificNameWithoutAuthor),
-                        sunNeeds: determineSunNeeds(bestMatch.species.family.scientificNameWithoutAuthor),
-                        score: bestMatch.score
-                    };
-                } else {
-                    return null; // No matches found
-                }
+                // Generate plant info
+                // In a real app, you would want to get this information from a database
+                // For now, we'll use some placeholder text
+                const waterDays = Math.floor(Math.random() * 10) + 2; // Random between 2-12 days
+                const sunlightHours = Math.floor(Math.random() * 6) + 3; // Random between 3-8 hours
+                
+                currentPlant = {
+                    id: data.key,
+                    scientificName: data.scientificName,
+                    commonName: data.vernacularNames && data.vernacularNames.length > 0 
+                        ? data.vernacularNames[0].vernacularName 
+                        : data.scientificName,
+                    info: `${data.scientificName} belongs to the ${data.family} family. ` +
+                          `Native to various regions, it's known for its adaptability and beauty. ` +
+                          `This plant prefers ${sunlightHours} hours of sunlight and should be watered every ${waterDays} days.`,
+                    image: imageUrl,
+                    waterDays: waterDays,
+                    sunlightHours: sunlightHours
+                };
+                
+                // Update search results
+                document.getElementById('searchPlantName').textContent = currentPlant.commonName;
+                document.getElementById('searchPlantScientific').textContent = currentPlant.scientificName;
+                document.getElementById('searchPlantInfo').textContent = currentPlant.info;
+                document.getElementById('searchPlantImage').src = currentPlant.image;
+                
+                document.getElementById('searchContent').classList.remove('hidden');
+                
+                return currentPlant;
             } catch (error) {
-                console.error('PlantNet API error:', error);
+                console.error("Error getting plant details:", error);
+                showNotification("Error loading plant details. Please try again.");
+                document.getElementById('searchContent').classList.add('hidden');
                 return null;
+            } finally {
+                document.getElementById('searchLoading').classList.add('hidden');
             }
         }
-        
-        // Search plant database (fallback to sample data for now)
-        async function searchPlantDatabase(query) {
-            try {
-                // In a production app, you would use a real plant database API
-                // As a fallback, we'll use sample data here
-                const samplePlants = getAllSamplePlants();
-                return samplePlants.filter(plant => 
-                    plant.name.toLowerCase().includes(query.toLowerCase()) || 
-                    plant.type.toLowerCase().includes(query.toLowerCase())
-                );
-            } catch (error) {
-                console.error('Error searching plants:', error);
-                return [];
+
+        function displaySearchResults(results) {
+            searchResults.innerHTML = '';
+            
+            if (results.length === 0) {
+                const noResults = document.createElement('div');
+                noResults.className = 'search-result-item';
+                noResults.textContent = 'No plants found';
+                searchResults.appendChild(noResults);
+            } else {
+                results.forEach(plant => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'search-result-item';
+                    resultItem.textContent = plant.commonName;
+                    resultItem.addEventListener('click', () => {
+                        searchResults.classList.add('hidden');
+                        getPlantDetails(plant.key);
+                    });
+                    searchResults.appendChild(resultItem);
+                });
+            }
+            
+            searchResults.classList.remove('hidden');
+        }
+
+        // Garden management functions
+        function addToGarden(plant) {
+            // Check if plant already exists in garden
+            const existingIndex = garden.findIndex(p => p.id === plant.id);
+            
+            if (existingIndex >= 0) {
+                showNotification(`${plant.commonName} is already in your garden!`);
+                return;
+            }
+            
+            // Add water and sun tracking
+            const now = new Date();
+            const newPlant = {
+                ...plant,
+                id: plant.id || generateId(),
+                added: now.toISOString(),
+                lastWatered: now.toISOString(),
+                nextWater: new Date(now.getTime() + (plant.waterDays * 24 * 60 * 60 * 1000)).toISOString(),
+                waterInterval: plant.waterDays, // in days
+                sunlightNeeded: plant.sunlightHours // hours per day
+            };
+            
+            garden.push(newPlant);
+            
+            // Save to localStorage
+            localStorage.setItem('garden', JSON.stringify(garden));
+            
+            // Update UI
+            renderGarden();
+            renderCare();
+            
+            showNotification(`${plant.commonName} added to your garden!`);
+            
+            // Switch to garden tab
+            switchTab('garden');
+        }
+
+        function removeFromGarden(plantId) {
+            const plantIndex = garden.findIndex(p => p.id === plantId);
+            if (plantIndex >= 0) {
+                const plantName = garden[plantIndex].commonName;
+                garden.splice(plantIndex, 1);
+                
+                // Save to localStorage
+                localStorage.setItem('garden', JSON.stringify(garden));
+                
+                // Update UI
+                renderGarden();
+                renderCare();
+                
+                showNotification(`${plantName} removed from your garden.`);
+                
+                // Close modal
+                closePlantDetailModal();
             }
         }
-        
-        // Determine water needs based on plant family (simplified)
-        function determineWaterNeeds(family) {
-            // This is a simplified mapping - in a real app, you would have more accurate data
-            const waterNeedsMap = {
-                'Cactaceae': 'Very Low',
-                'Aizoaceae': 'Low',
-                'Crassulaceae': 'Low',
-                'Poaceae': 'Medium',
-                'Asteraceae': 'Medium',
-                'Araceae': 'Medium to High',
-                'Orchidaceae': 'Medium',
-                'Arecaceae': 'Medium',
-                'Rosaceae': 'Medium',
-                'Fabaceae': 'Medium',
-                'Cyperaceae': 'High',
-                'Zingiberaceae': 'High'
-            };
-            
-            return waterNeedsMap[family] || 'Medium';
-        }
-        
-        // Determine sunlight needs based on plant family (simplified)
-        function determineSunNeeds(family) {
-            // This is a simplified mapping - in a real app, you would have more accurate data
-            const sunNeedsMap = {
-                'Cactaceae': 'Full Sun',
-                'Aizoaceae': 'Full Sun',
-                'Crassulaceae': 'Bright Indirect',
-                'Poaceae': 'Full to Partial Sun',
-                'Asteraceae': 'Full Sun',
-                'Araceae': 'Indirect Light',
-                'Orchidaceae': 'Indirect Light',
-                'Arecaceae': 'Bright Indirect',
-                'Rosaceae': 'Full Sun',
-                'Fabaceae': 'Full to Partial Sun',
-                'Cyperaceae': 'Partial Shade',
-                'Zingiberaceae': 'Indirect Light'
-            };
-            
-            return sunNeedsMap[family] || 'Bright Indirect';
-        }
 
-        // Sample plant data for demo
-        function getSamplePlants() {
-            return [
-                {
-                    id: 'plant1',
-                    name: 'Peace Lily',
-                    type: 'Spathiphyllum',
-                    image: 'https://cdn.jsdelivr.net/gh/LucioPg/plant-images/peace-lily.jpg',
-                    description: 'The Peace Lily is a popular indoor plant known for its elegant white flowers and glossy dark green leaves. It is relatively easy to care for and can thrive in low light conditions.',
-                    waterNeeds: 'Medium',
-                    sunNeeds: 'Indirect Light',
-                    waterSchedule: 5,
-                    sunSchedule: 3,
-                    lastWatered: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-                    lastSunCheck: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString() // 1 day ago
-                },
-                {
-                    id: 'plant2',
-                    name: 'Snake Plant',
-                    type: 'Sansevieria',
-                    image: 'https://cdn.jsdelivr.net/gh/LucioPg/plant-images/snake-plant.jpg',
-                    description: 'The Snake Plant is virtually indestructible and perfect for beginners. It can survive low light levels and irregular watering. NASA research has shown it helps purify indoor air.',
-                    waterNeeds: 'Low',
-                    sunNeeds: 'Low Light',
-                    waterSchedule: 10,
-                    sunSchedule: 5,
-                    lastWatered: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(), // 9 days ago
-                    lastSunCheck: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString() // 5 days ago
+        function waterPlant(plantId) {
+            const plantIndex = garden.findIndex(p => p.id === plantId);
+            if (plantIndex >= 0) {
+                const plant = garden[plantIndex];
+                const now = new Date();
+                
+                plant.lastWatered = now.toISOString();
+                plant.nextWater = new Date(now.getTime() + (plant.waterInterval * 24 * 60 * 60 * 1000)).toISOString();
+                
+                // Save to localStorage
+                localStorage.setItem('garden', JSON.stringify(garden));
+                
+                // Update UI
+                renderGarden();
+                renderCare();
+                
+                // If modal is open, update it
+                if (selectedPlantId === plantId) {
+                    updatePlantDetailModal(plant);
                 }
-            ];
+                
+                showNotification(`${plant.commonName} has been watered!`);
+            }
         }
 
-        // Sample plant identification result
-        function getSamplePlantIdentification() {
-            return {
-                id: 'plant3',
-                name: 'Monstera Deliciosa',
-                type: 'Swiss Cheese Plant',
-                image: 'https://cdn.jsdelivr.net/gh/LucioPg/plant-images/monstera.jpg',
-                description: 'Monstera Deliciosa, also known as the Swiss Cheese Plant, is famous for its large, glossy, perforated leaves. It\'s a tropical plant native to the rainforests of Central America.\n\n' +
-                            '- Origin: Southern Mexico and Panama\n' +
-                            '- Growth: Can reach heights of 10-15 feet indoors\n' +
-                            '- Features: Distinctive split and holed leaves that develop as the plant matures',
-                waterNeeds: 'Medium',
-                sunNeeds: 'Indirect Light',
-                waterSchedule: 4,
-                sunSchedule: 2
-            };
+        function renderGarden() {
+            const gardenContent = document.getElementById('gardenContent');
+            const emptyGarden = document.getElementById('emptyGarden');
+            
+            if (garden.length === 0) {
+                gardenContent.classList.add('hidden');
+                emptyGarden.classList.remove('hidden');
+                return;
+            }
+            
+            gardenContent.classList.remove('hidden');
+            emptyGarden.classList.add('hidden');
+            
+            gardenContent.innerHTML = '';
+            
+            garden.forEach(plant => {
+                const now = new Date();
+                const lastWatered = new Date(plant.lastWatered);
+                const nextWater = new Date(plant.nextWater);
+                
+                // Calculate water progress
+                const waterTotal = plant.waterInterval * 24 * 60 * 60 * 1000; // in ms
+                const waterElapsed = now - lastWatered; // in ms
+                const waterProgress = Math.min(100, Math.max(0, (waterElapsed / waterTotal) * 100));
+                
+                const plantCard = document.createElement('div');
+                plantCard.className = 'plant-card';
+                plantCard.innerHTML = `
+                    <img src="${plant.image}" alt="${plant.commonName}" class="w-full h-32 object-cover">
+                    <div class="p-3">
+                        <h3 class="font-semibold truncate">${plant.commonName}</h3>
+                        <div class="mt-2">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span>Water</span>
+                                <span>${nextWater < now ? 'Needs water!' : timeDifference(nextWater)}</span>
+                            </div>
+                            <div class="water-progress-bar">
+                                <div class="water-progress" style="width: ${waterProgress}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                plantCard.addEventListener('click', () => {
+                    openPlantDetailModal(plant.id);
+                });
+                
+                gardenContent.appendChild(plantCard);
+            });
         }
 
-        // Sample plants for search results
-        function getAllSamplePlants() {
-            return [
-                {
-                    id: 'plant1',
-                    name: 'Peace Lily',
-                    type: 'Spathiphyllum',
-                    image: 'https://cdn.jsdelivr.net/gh/LucioPg/plant-images/peace-lily.jpg',
-                    description: 'The Peace Lily is a popular indoor plant known for its elegant white flowers and glossy dark green leaves. It is relatively easy to care for and can thrive in low light conditions.',
-                    waterNeeds: 'Medium',
-                    sunNeeds: 'Indirect Light'
-                },
-                {
-                    id: 'plant2',
-                    name: 'Snake Plant',
-                    type: 'Sansevieria',
-                    image: 'https://cdn.jsdelivr.net/gh/LucioPg/plant-images/snake-plant.jpg',
-                    description: 'The Snake Plant is virtually indestructible and perfect for beginners. It can survive low light levels and irregular watering. NASA research has shown it helps purify indoor air.',
-                    waterNeeds: 'Low',
-                    sunNeeds: 'Low Light'
-                },
-                {
-                    id: 'plant3',
-                    name: 'Monstera Deliciosa',
-                    type: 'Swiss Cheese Plant',
-                    image: 'https://cdn.jsdelivr.net/gh/LucioPg/plant-images/monstera.jpg',
-                    description: 'Monstera Deliciosa, also known as the Swiss Cheese Plant, is famous for its large, glossy, perforated leaves. It\'s a tropical plant native to the rainforests of Central America.',
-                    waterNeeds: 'Medium',
-                    sunNeeds: 'Indirect Light'
-                },
-                {
-                    id: 'plant4',
-                    name: 'Fiddle Leaf Fig',
-                    type: 'Ficus Lyrata',
-                    image: 'https://cdn.jsdelivr.net/gh/LucioPg/plant-images/fiddle-leaf-fig.jpg',
-                    description: 'The Fiddle Leaf Fig is a popular indoor tree with large, violin-shaped leaves. It can be a bit challenging to care for but rewards with stunning foliage.',
-                    waterNeeds: 'Medium',
-                    sunNeeds: 'Bright Indirect Light'
-                },
-                {
-                    id: 'plant5',
-                    name: 'Pothos',
-                    type: 'Epipremnum Aureum',
-                    image: 'https://cdn.jsdelivr.net/gh/LucioPg/plant-images/pothos.jpg',
-                    description: 'Pothos is one of the easiest houseplants to grow. It features heart-shaped leaves and trailing vines that can grow quite long. Perfect for hanging baskets and shelves.',
-                    waterNeeds: 'Low to Medium',
-                    sunNeeds: 'Low to Bright Indirect'
-                },
-                {
-                    id: 'plant6',
-                    name: 'Aloe Vera',
-                    type: 'Aloe Barbadensis Miller',
-                    image: 'https://cdn.jsdelivr.net/gh/LucioPg/plant-images/aloe-vera.jpg',
-                    description: 'Aloe Vera is a succulent plant known for its medicinal properties. The gel inside its leaves can help soothe burns and skin irritations.',
-                    waterNeeds: 'Low',
-                    sunNeeds: 'Bright Indirect to Direct'
-                },
-                {
-                    id: 'plant7',
-                    name: 'Rubber Plant',
-                    type: 'Ficus Elastica',
-                    image: 'https://cdn.jsdelivr.net/gh/LucioPg/plant-images/rubber-plant.jpg',
-                    description: 'The Rubber Plant features large, glossy leaves and is fairly easy to care for. It can grow into a tall indoor tree with proper care.',
-                    waterNeeds: 'Medium',
-                    sunNeeds: 'Medium to Bright Indirect'
-                },
-                {
-                    id: 'plant8',
-                    name: 'ZZ Plant',
-                    type: 'Zamioculcas Zamiifolia',
-                    image: 'https://cdn.jsdelivr.net/gh/LucioPg/plant-images/zz-plant.jpg',
-                    description: 'The ZZ Plant is extremely hardy and can tolerate neglect, low light, and infrequent watering. Its glossy leaves add a touch of elegance to any space.',
-                    waterNeeds: 'Low',
-                    sunNeeds: 'Low to Bright Indirect'
+        function renderCare() {
+            const careContent = document.getElementById('careContent');
+            const emptyCare = document.getElementById('emptyCare');
+            
+            if (garden.length === 0) {
+                careContent.classList.add('hidden');
+                emptyCare.classList.remove('hidden');
+                return;
+            }
+            
+            const now = new Date();
+            
+            // Filter plants that need care soon
+            const careTasks = garden
+                .map(plant => {
+                    const nextWater = new Date(plant.nextWater);
+                    
+                    // Calculate days until watering
+                    const daysUntilWater = Math.ceil((nextWater - now) / (24 * 60 * 60 * 1000));
+                    
+                    return {
+                        plant,
+                        daysUntilWater
+                    };
+                })
+                .filter(task => task.daysUntilWater <= 3) // Show tasks coming up in the next 3 days
+                .sort((a, b) => a.daysUntilWater - b.daysUntilWater);
+            
+            if (careTasks.length === 0) {
+                careContent.classList.add('hidden');
+                emptyCare.classList.remove('hidden');
+                emptyCare.innerHTML = `
+                    <i class="fas fa-check-circle text-4xl text-green-500 mb-3"></i>
+                    <p class="text-gray-600 dark:text-gray-300">All your plants are taken care of! Check back later for care reminders.</p>
+                `;
+                return;
+            }
+            
+            careContent.classList.remove('hidden');
+            emptyCare.classList.add('hidden');
+            
+            careContent.innerHTML = '';
+            
+            careTasks.forEach(task => {
+                const { plant, daysUntilWater } = task;
+                
+                const taskCard = document.createElement('div');
+                taskCard.className = 'card p-4';
+                
+                let statusText, statusClass;
+                
+                if (daysUntilWater < 0) {
+                    statusText = `Overdue by ${Math.abs(daysUntilWater)} day${Math.abs(daysUntilWater) !== 1 ? 's' : ''}`;
+                    statusClass = 'text-red-500';
+                } else if (daysUntilWater === 0) {
+                    statusText = 'Due today';
+                    statusClass = 'text-yellow-500';
+                } else {
+                    statusText = `In ${daysUntilWater} day${daysUntilWater !== 1 ? 's' : ''}`;
+                    statusClass = 'text-blue-500';
                 }
-            ];
+                
+                taskCard.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <img src="${plant.image}" alt="${plant.commonName}" class="w-16 h-16 rounded-full object-cover">
+                        <div class="flex-1">
+                            <h3 class="font-semibold">${plant.commonName}</h3>
+                            <div class="flex items-center mt-1">
+                                <i class="fas fa-tint text-blue-500 mr-2"></i>
+                                <span>Water <span class="${statusClass}">${statusText}</span></span>
+                            </div>
+                        </div>
+                        <button class="water-plant-btn p-2 bg-blue-100 dark:bg-blue-900 rounded-full" data-id="${plant.id}">
+                            <i class="fas fa-tint text-blue-500"></i>
+                        </button>
+                    </div>
+                `;
+                
+                const waterButton = taskCard.querySelector('.water-plant-btn');
+                waterButton.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent opening the modal
+                    waterPlant(plant.id);
+                });
+                
+                taskCard.addEventListener('click', () => {
+                    openPlantDetailModal(plant.id);
+                });
+                
+                careContent.appendChild(taskCard);
+            });
         }
 
-        // Initialize app when loaded
-        document.addEventListener('DOMContentLoaded', initApp);
+        // Modal functions
+        function openPlantDetailModal(plantId) {
+            const plant = garden.find(p => p.id === plantId);
+            if (!plant) return;
+            
+            selectedPlantId = plantId;
+            updatePlantDetailModal(plant);
+            plantDetailModal.classList.remove('hidden');
+        }
+
+        function updatePlantDetailModal(plant) {
+            const now = new Date();
+            const lastWatered = new Date(plant.lastWatered);
+            const nextWater = new Date(plant.nextWater);
+            
+            // Calculate water progress
+            const waterTotal = plant.waterInterval * 24 * 60 * 60 * 1000; // in ms
+            const waterElapsed = now - lastWatered; // in ms
+            const waterProgress = Math.min(100, Math.max(0, (waterElapsed / waterTotal) * 100));
+            
+            // Calculate sun progress (simplified)
+            const sunProgress = 50; // This would be calculated based on actual sunlight data
+            
+            document.getElementById('modalPlantName').textContent = plant.commonName;
+            document.getElementById('modalPlantScientific').textContent = plant.scientificName;
+            document.getElementById('modalPlantInfo').textContent = plant.info;
+            document.getElementById('modalPlantImage').src = plant.image;
+            
+            document.getElementById('modalWaterStatus').textContent = 
+                nextWater < now ? 'Needs water now!' : `Water in ${timeDifference(nextWater)}`;
+            document.getElementById('modalWaterProgress').style.width = `${waterProgress}%`;
+            
+            document.getElementById('modalSunlightStatus').textContent = 
+                `Needs ${plant.sunlightHours} hours of sunlight per day`;
+            document.getElementById('modalSunProgress').style.width = `${sunProgress}%`;
+        }
+
+        function closePlantDetailModal() {
+            selectedPlantId = null;
+            plantDetailModal.classList.add('hidden');
+        }
+
+        // Helper functions
+        function timeDifference(date) {
+            const now = new Date();
+            const diff = date - now;
+            
+            // Calculate days, hours, minutes
+            const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+            const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+            
+            if (days < 0) {
+                return "Overdue";
+            } else if (days === 0 && hours === 0) {
+                return "Today";
+            } else if (days === 0) {
+                return `${hours} hour${hours !== 1 ? 's' : ''}`;
+            } else {
+                return `${days} day${days !== 1 ? 's' : ''}`;
+            }
+        }
+
+        // Even listeners
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.id.replace('tab-', '');
+                switchTab(tabId);
+            });
+        });
+
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+        });
+
+        startCameraButton.addEventListener('click', startCamera);
+        captureButton.addEventListener('click', captureImage);
+        imageUpload.addEventListener('change', handleImageUpload);
+        
+        sampleImages.forEach(img => {
+            img.addEventListener('click', handleSampleImage);
+        });
+
+        searchInput.addEventListener('input', async (e) => {
+            const query = e.target.value.trim();
+            if (query.length < 3) {
+                searchResults.classList.add('hidden');
+                return;
+            }
+            
+            const results = await searchPlantsByName(query);
+            displaySearchResults(results);
+        });
+
+        searchButton.addEventListener('click', async () => {
+            const query = searchInput.value.trim();
+            if (query.length < 3) {
+                showNotification("Please enter at least 3 characters to search");
+                return;
+            }
+            
+            const results = await searchPlantsByName(query);
+            displaySearchResults(results);
+        });
+
+        document.addEventListener('click', (e) => {
+            // Close search results when clicking outside
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('hidden');
+            }
+        });
+
+        addToGardenButton.addEventListener('click', () => {
+            if (currentPlant) {
+                addToGarden(currentPlant);
+            }
+        });
+
+        searchAddToGardenButton.addEventListener('click', () => {
+            if (currentPlant) {
+                addToGarden(currentPlant);
+            }
+        });
+
+        closeModalButton.addEventListener('click', closePlantDetailModal);
+
+        modalWaterButton.addEventListener('click', () => {
+            if (selectedPlantId) {
+                waterPlant(selectedPlantId);
+            }
+        });
+
+        modalRemoveButton.addEventListener('click', () => {
+            if (selectedPlantId) {
+                removeFromGarden(selectedPlantId);
+            }
+        });
+
+        // Simulate notifications
+        function setupNotifications() {
+            if (garden.length > 0) {
+                const checkNotifications = () => {
+                    const now = new Date();
+                    const plantsNeedingWater = garden.filter(plant => {
+                        const nextWater = new Date(plant.nextWater);
+                        return nextWater <= now;
+                    });
+                    
+                    if (plantsNeedingWater.length > 0) {
+                        const plant = plantsNeedingWater[0];
+                        showNotification(`${plant.commonName} needs water!`, 5000);
+                    }
+                };
+                
+                // Check once when the app loads
+                setTimeout(checkNotifications, 5000);
+                
+                // Then check periodically
+                setInterval(checkNotifications, 60000); // Every minute
+            }
+        }
+
+        // Initialize the app
+        function initApp() {
+            // Render initial garden and care data
+            renderGarden();
+            renderCare();
+            
+            // Setup notifications
+            setupNotifications();
+            
+            // Show welcome notification
+            setTimeout(() => {
+                showNotification("Welcome to PlantPal! Identify and manage your plants with ease.");
+            }, 1000);
+        }
+
+        // Start the app
+        initApp();
     </script>
 </body>
 </html>
