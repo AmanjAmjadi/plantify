@@ -1,13 +1,18 @@
 :root {
-    --primary-color: #5D5CDE;
-    --accent-color: #4CAF50;
-    --danger-color: #f44336;
-    --light-bg: #FFFFFF;
-    --dark-bg: #181818;
-    --light-text: #333333;
-    --dark-text: #F5F5F5;
-    --light-card: #F9F9F9;
-    --dark-card: #2A2A2A;
+    --primary-color: #7AC74F; /* Pastel green */
+    --primary-dark: #68A849;
+    --primary-light: #8ED765;
+    --accent-color: #98D8AA; /* Lighter pastel green */
+    --accent-dark: #82BE93;
+    --danger-color: #FF7F7F; /* Soft red */
+    --light-bg: #F8FFF5; /* Very light green tint */
+    --dark-bg: #1E2A23; /* Dark green-gray */
+    --light-text: #2E4D39; /* Dark green */
+    --dark-text: #E8F0E8; /* Light green-gray */
+    --light-card: #EFFFEF; /* Light green tint */
+    --dark-card: #2A392F; /* Dark green-gray */
+    --box-shadow: 0 4px 6px rgba(105, 162, 112, 0.15);
+    --box-shadow-hover: 0 10px 15px rgba(105, 162, 112, 0.2);
 }
 
 .dark {
@@ -26,18 +31,20 @@ body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
     transition: background-color 0.3s, color 0.3s;
+    font-family: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .card {
     background-color: var(--card-bg);
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 1rem;
+    box-shadow: var(--box-shadow);
     transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid rgba(122, 199, 79, 0.1);
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--box-shadow-hover);
 }
 
 .tab-content {
@@ -51,47 +58,56 @@ body {
 .btn-primary {
     background-color: var(--primary-color);
     color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    font-weight: 500;
-    transition: background-color 0.3s;
+    padding: 0.7rem 1.2rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-primary:hover {
-    background-color: #4b4ab8;
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .btn-accent {
     background-color: var(--accent-color);
     color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    font-weight: 500;
-    transition: background-color 0.3s;
+    padding: 0.7rem 1.2rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-accent:hover {
-    background-color: #3d8b40;
+    background-color: var(--accent-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .plant-card {
-    border: 1px solid #ddd;
-    border-radius: 10px;
+    border: 1px solid rgba(122, 199, 79, 0.2);
+    border-radius: 1rem;
     overflow: hidden;
     transition: all 0.3s;
+    background-color: var(--card-bg);
 }
 
 .dark .plant-card {
-    border-color: #444;
+    border-color: rgba(122, 199, 79, 0.1);
 }
 
 .plant-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    box-shadow: var(--box-shadow-hover);
 }
 
 .loader {
-    border: 4px solid rgba(0, 0, 0, 0.1);
+    border: 4px solid rgba(122, 199, 79, 0.1);
     border-radius: 50%;
     border-top: 4px solid var(--primary-color);
     width: 30px;
@@ -101,7 +117,7 @@ body {
 }
 
 .dark .loader {
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(122, 199, 79, 0.05);
     border-top-color: var(--primary-color);
 }
 
@@ -113,41 +129,51 @@ body {
 .garden-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1rem;
+    gap: 1.25rem;
 }
 
 .camera-container {
     position: relative;
     width: 100%;
-    max-width: 400px;
+    max-width: 450px;
     margin: 0 auto;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: var(--box-shadow);
 }
 
 #videoElement {
     width: 100%;
-    border-radius: 10px;
+    border-radius: 1.5rem;
 }
 
 #captureButton {
     position: absolute;
-    bottom: 15px;
+    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
     background-color: white;
     border-radius: 50%;
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    border: 3px solid var(--primary-color);
 }
 
 #captureInnerButton {
-    width: 48px;
-    height: 48px;
+    width: 58px;
+    height: 58px;
     border-radius: 50%;
     background-color: var(--primary-color);
+    transition: all 0.2s;
+}
+
+#captureButton:hover #captureInnerButton {
+    background-color: var(--primary-dark);
+    transform: scale(0.95);
 }
 
 .search-container {
@@ -160,33 +186,40 @@ body {
     left: 0;
     right: 0;
     background-color: var(--card-bg);
-    border-radius: 0 0 0.5rem 0.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 1rem 1rem;
+    box-shadow: var(--box-shadow);
     z-index: 10;
     max-height: 300px;
     overflow-y: auto;
 }
 
 .search-result-item {
-    padding: 0.75rem 1rem;
+    padding: 1rem;
     cursor: pointer;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid rgba(122, 199, 79, 0.1);
+    transition: background-color 0.2s;
 }
 
 .dark .search-result-item {
-    border-bottom-color: #444;
+    border-bottom-color: rgba(122, 199, 79, 0.05);
 }
 
 .search-result-item:hover {
-    background-color: rgba(93, 92, 222, 0.1);
+    background-color: rgba(122, 199, 79, 0.1);
 }
 
 .custom-file-upload {
     display: inline-block;
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 0.5rem;
     overflow: hidden;
     position: relative;
+    transition: all 0.3s;
+}
+
+.custom-file-upload:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .custom-file-upload input[type="file"] {
@@ -211,8 +244,8 @@ body {
     background-color: var(--primary-color);
     color: white;
     padding: 15px 20px;
-    border-radius: 4px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     z-index: 1000;
     transform: translateX(120%);
     transition: transform 0.3s ease-out;
@@ -224,7 +257,7 @@ body {
 
 .water-progress-bar {
     height: 8px;
-    background-color: #e0e0e0;
+    background-color: rgba(122, 199, 79, 0.1);
     border-radius: 4px;
     overflow: hidden;
 }
@@ -237,7 +270,7 @@ body {
 
 .sun-progress-bar {
     height: 8px;
-    background-color: #e0e0e0;
+    background-color: rgba(122, 199, 79, 0.1);
     border-radius: 4px;
     overflow: hidden;
 }
@@ -252,4 +285,45 @@ body {
     .garden-grid {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     }
+}
+
+/* Custom animated elements */
+.plant-icon {
+    animation: gentle-sway 3s ease-in-out infinite alternate;
+    transform-origin: bottom center;
+}
+
+@keyframes gentle-sway {
+    0% { transform: rotate(-2deg); }
+    100% { transform: rotate(2deg); }
+}
+
+/* Improved inputs */
+input[type="text"], 
+input[type="search"] {
+    border: 1px solid rgba(122, 199, 79, 0.3);
+    transition: all 0.3s;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+input[type="text"]:focus, 
+input[type="search"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(122, 199, 79, 0.2);
+}
+
+/* Add custom styling for some elements */
+.text-primary-color {
+    color: var(--primary-color) !important;
+}
+
+/* Style for the Gemini badge */
+.gemini-badge {
+    background: linear-gradient(135deg, #98D8AA, #7AC74F);
+    color: white;
+    font-weight: 600;
+    padding: 0.3rem 0.8rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
