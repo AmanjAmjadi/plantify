@@ -295,7 +295,10 @@
 
     <header class="bg-white shadow-md dark:bg-gray-800 mb-5 p-4">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-primary-color">PlantPal</h1>
+            <div class="flex items-center">
+                <h1 class="text-2xl font-bold text-primary-color">PlantPal</h1>
+                <span class="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full dark:bg-green-900 dark:text-green-100">Powered by Gemini AI</span>
+            </div>
             <div class="flex items-center">
                 <button id="theme-toggle" class="p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-color">
                     <i class="fas fa-moon dark:hidden"></i>
@@ -499,6 +502,9 @@
             </div>
         </div>
     </div>
+    
+    <!-- Gemini API Script -->
+    <script src="https://cdn.jsdelivr.net/npm/@google/generative-ai@0.1.3/dist/index.min.js"></script>
 
     <script>
         // Check for dark mode preference
@@ -687,52 +693,93 @@
             processImage(canvas);
         }
 
-        // This is a placeholder function until the Teachable Machine model is ready
-        function processImage(canvas) {
+        // Initialize the Gemini API client
+        const API_KEY = "AIzaSyCbGxHgvv7vFS4lBmvFDJG6z30ks3lTdik";
+        const genAI = new window.GoogleGenerativeAI(API_KEY);
+        
+        // Function to process the image using Gemini API
+        async function processImage(canvas) {
             document.getElementById('identificationResults').classList.remove('hidden');
             document.getElementById('loadingIdentification').classList.remove('hidden');
             document.getElementById('identificationContent').classList.add('hidden');
             
-            // Simulate identification delay (this will be replaced with actual model)
-            setTimeout(() => {
-                // Get image data from canvas for future integration with Teachable Machine
-                const imageData = canvas.toDataURL('image/jpeg');
+            try {
+                // Get image data from canvas
+                const imageData = canvas.toDataURL('image/jpeg').split(',')[1];
                 
-                // For now, we'll use a sample result
-                // This will be replaced with actual model predictions
-                const samplePlants = [
-                    {
-                        id: 'rose',
-                        commonName: 'Rose',
-                        scientificName: 'Rosa',
-                        info: 'Roses are woody perennial flowering plants. They form a group of plants that can be erect shrubs, climbing, or trailing, with stems that are often armed with sharp prickles.',
-                        image: 'https://images.unsplash.com/photo-1566902249079-7406419ca6cd?auto=format&fit=crop&w=400&h=300',
-                        waterDays: 3,
-                        sunlightHours: 6
-                    },
-                    {
-                        id: 'sunflower',
-                        commonName: 'Sunflower',
-                        scientificName: 'Helianthus annuus',
-                        info: 'Sunflowers are annual plants with big, daisy-like flower faces of bright yellow petals and brown centers that develop seeds. They are native to North America.',
-                        image: 'https://images.unsplash.com/photo-1589143365143-b8124d09e511?auto=format&fit=crop&w=400&h=300',
-                        waterDays: 7,
-                        sunlightHours: 8
-                    },
-                    {
-                        id: 'lavender',
-                        commonName: 'Lavender',
-                        scientificName: 'Lavandula',
-                        info: 'Lavender is a perennial shrub with purple flowers that bloom in late spring to early summer. It is native to the Mediterranean and is highly valued for its fragrance.',
-                        image: 'https://images.unsplash.com/photo-1566759996867-8d76ce950967?auto=format&fit=crop&w=400&h=300',
-                        waterDays: 14,
-                        sunlightHours: 7
+                // Create a Gemini model (using gemini-pro-vision)
+                const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+                
+                // Convert base64 to a file-like object for Gemini
+                const imageFile = {
+                    inlineData: {
+                        data: imageData,
+                        mimeType: "image/jpeg"
                     }
-                ];
+                };
                 
-                // Randomly select a sample plant for demo
-                const randomIndex = Math.floor(Math.random() * samplePlants.length);
-                currentPlant = samplePlants[randomIndex];
+                // Prompt for plant identification with structured results
+                const prompt = `
+                    Identify this plant from the image and provide the following details:
+                    1. Common name
+                    2. Scientific name (genus and species)
+                    3. Description (include appearance, characteristics, and origin)
+                    4. Care instructions: how often to water (in days) and how many hours of sunlight per day
+                    
+                    Return the information in JSON format with these exact keys:
+                    {
+                        "commonName": "...",
+                        "scientificName": "...",
+                        "description": "...",
+                        "waterDays": number,
+                        "sunlightHours": number
+                    }
+                    
+                    Be concise but comprehensive. If you cannot identify the plant with certainty, make your best guess and indicate this in the description.
+                `;
+                
+                const result = await model.generateContent([prompt, imageFile]);
+                const response = await result.response;
+                const text = response.text();
+                
+                // Extract JSON from the response
+                let plantData;
+                try {
+                    // Find JSON in the response (handling potential text before/after the JSON)
+                    const jsonMatch = text.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        plantData = JSON.parse(jsonMatch[0]);
+                    } else {
+                        throw new Error("No valid JSON found in response");
+                    }
+                } catch (jsonError) {
+                    console.error("Error parsing JSON:", jsonError);
+                    // Fallback to manual parsing if JSON parsing fails
+                    const commonNameMatch = text.match(/commonName["']:\s*["']([^"']*)["']/);
+                    const scientificNameMatch = text.match(/scientificName["']:\s*["']([^"']*)["']/);
+                    const descriptionMatch = text.match(/description["']:\s*["']([^"']*)["']/);
+                    const waterDaysMatch = text.match(/waterDays["']:\s*(\d+)/);
+                    const sunlightHoursMatch = text.match(/sunlightHours["']:\s*(\d+)/);
+                    
+                    plantData = {
+                        commonName: commonNameMatch ? commonNameMatch[1] : "Unknown Plant",
+                        scientificName: scientificNameMatch ? scientificNameMatch[1] : "Species unknown",
+                        description: descriptionMatch ? descriptionMatch[1] : "No description available",
+                        waterDays: waterDaysMatch ? parseInt(waterDaysMatch[1]) : 7,
+                        sunlightHours: sunlightHoursMatch ? parseInt(sunlightHoursMatch[1]) : 6
+                    };
+                }
+                
+                // Create plant object
+                currentPlant = {
+                    id: generateId(),
+                    commonName: plantData.commonName,
+                    scientificName: plantData.scientificName,
+                    info: plantData.description,
+                    image: canvas.toDataURL('image/jpeg'),
+                    waterDays: plantData.waterDays,
+                    sunlightHours: plantData.sunlightHours
+                };
                 
                 // Update identification results
                 document.getElementById('identifiedPlantName').textContent = currentPlant.commonName;
@@ -743,7 +790,26 @@
                 // Hide loading and show results
                 document.getElementById('loadingIdentification').classList.add('hidden');
                 document.getElementById('identificationContent').classList.remove('hidden');
-            }, 2000);
+                
+            } catch (error) {
+                console.error("Error identifying plant:", error);
+                showNotification("Error identifying plant. Please try again.");
+                
+                // Hide loading
+                document.getElementById('loadingIdentification').classList.add('hidden');
+                
+                // Show fallback results with error message
+                document.getElementById('identifiedPlantName').textContent = "Identification Failed";
+                document.getElementById('identifiedPlantScientific').textContent = "";
+                document.getElementById('identifiedPlantInfo').innerHTML = 
+                    "We couldn't identify this plant. Please try again with a clearer image or better lighting.";
+                document.getElementById('identifiedPlantImage').src = canvas.toDataURL('image/jpeg');
+                document.getElementById('identificationContent').classList.remove('hidden');
+                
+                // Disable add to garden button
+                document.getElementById('addToGardenButton').disabled = true;
+                document.getElementById('addToGardenButton').classList.add('opacity-50');
+            }
         }
 
         // GBIF API functions
