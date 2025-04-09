@@ -16,7 +16,7 @@ const captureButton = document.getElementById('captureButton');
 const videoElement = document.getElementById('videoElement');
 const capturedPhoto = document.getElementById('capturedPhoto');
 const imageUpload = document.getElementById('imageUpload');
-const sampleImages = document.querySelectorAll('.sample-image');
+
 const searchInput = document.getElementById('searchInput');
 const searchButton = document.getElementById('searchButton');
 const searchResults = document.getElementById('searchResults');
@@ -602,9 +602,7 @@ startCameraButton.addEventListener('click', startCamera);
 captureButton.addEventListener('click', captureImage);
 imageUpload.addEventListener('change', handleImageUpload);
 
-sampleImages.forEach(img => {
-    img.addEventListener('click', handleSampleImage);
-});
+
 
 searchInput.addEventListener('input', async (e) => {
     const query = e.target.value.trim();
