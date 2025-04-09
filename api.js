@@ -6,8 +6,8 @@ async function identifyPlantWithGemini(imageBase64) {
     try {
         const imageData = imageBase64.split(',')[1]; // Remove data URL prefix
         
-        // Using proper Gemini API endpoint for vision
-        const apiUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro-vision-latest:generateContent";
+        // Using the most current Gemini model available for multimodal (image) inputs
+        const apiUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent";
         
         // The prompt for identification
         const prompt = `
@@ -44,11 +44,11 @@ async function identifyPlantWithGemini(imageBase64) {
                     ]
                 }
             ],
-            generationConfig: {
+            generation_config: {
                 temperature: 0.4,
-                topK: 32,
-                topP: 1,
-                maxOutputTokens: 4096,
+                top_k: 32,
+                top_p: 1,
+                max_output_tokens: 4096,
             }
         };
         
@@ -62,7 +62,16 @@ async function identifyPlantWithGemini(imageBase64) {
         });
         
         if (!response.ok) {
-            throw new Error(`API request failed with status ${response.status}: ${await response.text()}`);
+            const errorText = await response.text();
+            console.error("Full API error response:", errorText);
+            
+            // If gemini-1.5-pro fails, try gemini-1.5-flash as fallback
+            if (response.status === 404) {
+                console.log("Trying fallback model gemini-1.5-flash...");
+                return await identifyPlantWithFallbackModel(imageBase64);
+            }
+            
+            throw new Error(`API request failed with status ${response.status}: ${errorText}`);
         }
         
         const data = await response.json();
@@ -82,6 +91,84 @@ async function identifyPlantWithGemini(imageBase64) {
         
     } catch (error) {
         console.error("Error in Gemini API:", error);
+        throw error;
+    }
+}
+
+// Fallback to gemini-1.5-flash if pro model fails
+async function identifyPlantWithFallbackModel(imageBase64) {
+    try {
+        const imageData = imageBase64.split(',')[1];
+        const fallbackApiUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
+        
+        const prompt = `
+            Identify this plant from the image and provide the following details:
+            1. Common name
+            2. Scientific name (genus and species)
+            3. Description (include appearance, characteristics, and origin)
+            4. Care instructions: how often to water (in days) and how many hours of sunlight per day
+            
+            Return the information in JSON format with these exact keys:
+            {
+                "commonName": "...",
+                "scientificName": "...",
+                "description": "...",
+                "waterDays": number,
+                "sunlightHours": number
+            }
+            
+            Be concise but comprehensive. If you cannot identify the plant with certainty, make your best guess and indicate this in the description.
+        `;
+        
+        const requestData = {
+            contents: [
+                {
+                    parts: [
+                        { text: prompt },
+                        {
+                            inline_data: {
+                                mime_type: "image/jpeg",
+                                data: imageData
+                            }
+                        }
+                    ]
+                }
+            ],
+            generation_config: {
+                temperature: 0.4,
+                top_k: 32,
+                top_p: 1,
+                max_output_tokens: 4096,
+            }
+        };
+        
+        const response = await fetch(`${fallbackApiUrl}?key=${API_KEY}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Fallback API request failed with status ${response.status}: ${errorText}`);
+        }
+        
+        const data = await response.json();
+        console.log("Fallback Gemini API Response:", data);
+        
+        const text = data.candidates[0].content.parts[0].text;
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        
+        if (!jsonMatch) {
+            throw new Error("No valid JSON found in fallback response");
+        }
+        
+        return JSON.parse(jsonMatch[0]);
+        
+    } catch (error) {
+        console.error("Error in fallback Gemini API:", error);
         throw error;
     }
 }
