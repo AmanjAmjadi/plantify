@@ -38,8 +38,8 @@ async function identifyPlantWithGemini(imageBase64) {
     try {
         const imageData = imageBase64.split(',')[1]; // Remove data URL prefix
         
-        // Using the most current Gemini model available for multimodal (image) inputs
-        const apiUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent";
+        // Using the latest Gemini model available for multimodal (image) inputs
+        const apiUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
         
         // The prompt for identification
         const prompt = `
@@ -97,9 +97,9 @@ async function identifyPlantWithGemini(imageBase64) {
             const errorText = await response.text();
             console.error("Full API error response:", errorText);
             
-            // If gemini-1.5-pro fails, try gemini-1.5-flash as fallback
+            // If gemini-2.0-flash fails, try gemini-1.5-pro as fallback
             if (response.status === 404) {
-                console.log("Trying fallback model gemini-1.5-flash...");
+                console.log("Trying fallback model gemini-1.5-pro...");
                 return await identifyPlantWithFallbackModel(imageBase64);
             }
             
@@ -127,11 +127,11 @@ async function identifyPlantWithGemini(imageBase64) {
     }
 }
 
-// Fallback to gemini-1.5-flash if pro model fails
+// Fallback to gemini-1.5-pro if flash model fails
 async function identifyPlantWithFallbackModel(imageBase64) {
     try {
         const imageData = imageBase64.split(',')[1];
-        const fallbackApiUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
+        const fallbackApiUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent";
         
         const prompt = `
             Identify this plant from the image and provide the following details:
