@@ -1,5 +1,37 @@
-// API Key for Gemini
-const API_KEY = "AIzaSyCbGxHgvv7vFS4lBmvFDJG6z30ks3lTdik";
+// Default API key - will be used as fallback
+const DEFAULT_API_KEY = "AIzaSyCbGxHgvv7vFS4lBmvFDJG6z30ks3lTdik";
+let currentApiKey = DEFAULT_API_KEY;
+
+// Function to set an active API key
+async function setApiKey(key) {
+    if (key && typeof key === 'string' && key.trim() !== "") {
+        currentApiKey = key.trim();
+        // Save the key to storage
+        await saveSetting('geminiApiKey', currentApiKey);
+        return true;
+    }
+    return false;
+}
+
+// Function to reset to default API key
+async function resetApiKey() {
+    currentApiKey = DEFAULT_API_KEY;
+    await saveSetting('geminiApiKey', null);
+    return true;
+}
+
+// Function to get current API key
+function getApiKey() {
+    return currentApiKey;
+}
+
+// Initialize API key from storage
+async function initApiKey() {
+    const savedKey = await loadSetting('geminiApiKey', null);
+    if (savedKey) {
+        currentApiKey = savedKey;
+    }
+}
 
 // Gemini API functions
 async function identifyPlantWithGemini(imageBase64) {
@@ -53,7 +85,7 @@ async function identifyPlantWithGemini(imageBase64) {
         };
         
         // Make request to Gemini API with API key as URL parameter
-        const response = await fetch(`${apiUrl}?key=${API_KEY}`, {
+        const response = await fetch(`${apiUrl}?key=${currentApiKey}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -142,7 +174,7 @@ async function identifyPlantWithFallbackModel(imageBase64) {
             }
         };
         
-        const response = await fetch(`${fallbackApiUrl}?key=${API_KEY}`, {
+        const response = await fetch(`${fallbackApiUrl}?key=${currentApiKey}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
