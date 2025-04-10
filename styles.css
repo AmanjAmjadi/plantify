@@ -300,16 +300,21 @@ body {
 
 /* Improved inputs */
 input[type="text"], 
-input[type="search"] {
+input[type="search"],
+input[type="email"],
+input[type="password"] {
     border: 1px solid rgba(122, 199, 79, 0.3);
     transition: all 0.3s;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 input[type="text"]:focus, 
-input[type="search"]:focus {
+input[type="search"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(122, 199, 79, 0.2);
+    outline: none;
 }
 
 /* Add custom styling for some elements */
@@ -326,4 +331,16 @@ input[type="search"]:focus {
     border-radius: 1rem;
     font-size: 0.75rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn {
+    padding: 0.7rem 1.2rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
