@@ -1,5 +1,5 @@
 // Global variables
-let garden = JSON.parse(localStorage.getItem('garden')) || [];
+let garden = [];
 let currentPlant = null;
 let selectedPlantId = null;
 let stream = null;
@@ -16,7 +16,6 @@ const captureButton = document.getElementById('captureButton');
 const videoElement = document.getElementById('videoElement');
 const capturedPhoto = document.getElementById('capturedPhoto');
 const imageUpload = document.getElementById('imageUpload');
-
 const searchInput = document.getElementById('searchInput');
 const searchButton = document.getElementById('searchButton');
 const searchResults = document.getElementById('searchResults');
@@ -164,26 +163,6 @@ function handleImageUpload(event) {
     reader.readAsDataURL(file);
 }
 
-function handleSampleImage(event) {
-    const img = event.target;
-    
-    // Setup canvas for sample image
-    const canvas = capturedPhoto;
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    const ctx = canvas.getContext('2d');
-    
-    // Draw sample image to canvas
-    ctx.drawImage(img, 0, 0);
-    
-    // Display canvas and hide camera
-    canvas.classList.remove('hidden');
-    cameraContainer.classList.add('hidden');
-    
-    // Process the sample image
-    processImage(canvas);
-}
-
 // Process image using Gemini API
 async function processImage(canvas) {
     document.getElementById('identificationResults').classList.remove('hidden');
@@ -300,7 +279,7 @@ async function getAndDisplayPlantDetails(speciesKey) {
 }
 
 // Garden management functions
-function addToGarden(plant) {
+async function addToGarden(plant) {
     // Check if plant already exists in garden
     const existingIndex = garden.findIndex(p => p.id === plant.id);
     
@@ -323,8 +302,13 @@ function addToGarden(plant) {
     
     garden.push(newPlant);
     
-    // Save to localStorage
-    localStorage.setItem('garden', JSON.stringify(garden));
+    // Save to IndexedDB
+    await saveGarden(garden);
+    
+    // Try to sync with cloud if logged in
+    if (auth?.currentUser) {
+        saveToCloud();
+    }
     
     // Update UI
     renderGarden();
@@ -336,14 +320,19 @@ function addToGarden(plant) {
     switchTab('garden');
 }
 
-function removeFromGarden(plantId) {
+async function removeFromGarden(plantId) {
     const plantIndex = garden.findIndex(p => p.id === plantId);
     if (plantIndex >= 0) {
         const plantName = garden[plantIndex].commonName;
         garden.splice(plantIndex, 1);
         
-        // Save to localStorage
-        localStorage.setItem('garden', JSON.stringify(garden));
+        // Save to IndexedDB
+        await saveGarden(garden);
+        
+        // Try to sync with cloud if logged in
+        if (auth?.currentUser) {
+            saveToCloud();
+        }
         
         // Update UI
         renderGarden();
@@ -356,7 +345,7 @@ function removeFromGarden(plantId) {
     }
 }
 
-function waterPlant(plantId) {
+async function waterPlant(plantId) {
     const plantIndex = garden.findIndex(p => p.id === plantId);
     if (plantIndex >= 0) {
         const plant = garden[plantIndex];
@@ -365,8 +354,13 @@ function waterPlant(plantId) {
         plant.lastWatered = now.toISOString();
         plant.nextWater = new Date(now.getTime() + (plant.waterInterval * 24 * 60 * 60 * 1000)).toISOString();
         
-        // Save to localStorage
-        localStorage.setItem('garden', JSON.stringify(garden));
+        // Save to IndexedDB
+        await saveGarden(garden);
+        
+        // Try to sync with cloud if logged in
+        if (auth?.currentUser) {
+            saveToCloud();
+        }
         
         // Update UI
         renderGarden();
@@ -586,6 +580,164 @@ function timeDifference(date) {
     }
 }
 
+// Account tab event listeners
+document.getElementById('sign-in-button')?.addEventListener('click', async () => {
+    const email = document.getElementById('email-input').value;
+    const password = document.getElementById('password-input').value;
+    
+    if (!email || !password) {
+        showNotification("Please enter both email and password");
+        return;
+    }
+    
+    const result = await signInWithEmailPassword(email, password);
+    if (result.error) {
+        showNotification(result.error);
+    } else {
+        showNotification("Signed in successfully!");
+        // Switch to garden tab
+        switchTab('garden');
+    }
+});
+
+document.getElementById('register-button')?.addEventListener('click', async () => {
+    const email = document.getElementById('email-input').value;
+    const password = document.getElementById('password-input').value;
+    
+    if (!email || !password) {
+        showNotification("Please enter both email and password");
+        return;
+    }
+    
+    if (password.length < 6) {
+        showNotification("Password must be at least 6 characters");
+        return;
+    }
+    
+    const result = await registerUser(email, password);
+    if (result.error) {
+        showNotification(result.error);
+    } else {
+        showNotification("Account created successfully!");
+        // Switch to garden tab
+        switchTab('garden');
+    }
+});
+
+document.getElementById('google-sign-in')?.addEventListener('click', async () => {
+    const result = await signInWithGoogle();
+    if (result.error) {
+        showNotification(result.error);
+    } else {
+        showNotification("Signed in with Google successfully!");
+        // Switch to garden tab
+        switchTab('garden');
+    }
+});
+
+document.getElementById('sign-out-button')?.addEventListener('click', async () => {
+    const result = await signOut();
+    if (result) {
+        showNotification("Signed out successfully!");
+        // Update UI
+        document.getElementById('not-logged-in').classList.remove('hidden');
+        document.getElementById('logged-in').classList.add('hidden');
+    } else {
+        showNotification("Error signing out");
+    }
+});
+
+document.getElementById('sync-now-btn')?.addEventListener('click', async () => {
+    const syncResult = await syncWithCloud();
+    if (syncResult.error) {
+        showNotification("Sync failed: " + syncResult.error);
+    } else {
+        showNotification("Sync complete");
+    }
+});
+
+document.getElementById('export-garden-btn')?.addEventListener('click', () => {
+    // Create a JSON file for download
+    const dataStr = JSON.stringify(garden, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = 'plantify-garden.json';
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+});
+
+document.getElementById('clear-data-btn')?.addEventListener('click', async () => {
+    if (confirm('Are you sure you want to clear all local data? This cannot be undone.')) {
+        garden = [];
+        await saveGarden(garden);
+        renderGarden();
+        renderCare();
+        showNotification("Local data cleared");
+    }
+});
+
+// API key management
+document.getElementById('toggle-api-key')?.addEventListener('click', () => {
+    const input = document.getElementById('api-key-input');
+    if (input.type === 'password') {
+        input.type = 'text';
+        document.getElementById('toggle-api-key').innerHTML = '<i class="fas fa-eye-slash"></i>';
+    } else {
+        input.type = 'password';
+        document.getElementById('toggle-api-key').innerHTML = '<i class="fas fa-eye"></i>';
+    }
+});
+
+document.getElementById('save-api-key')?.addEventListener('click', async () => {
+    const input = document.getElementById('api-key-input');
+    const key = input.value.trim();
+    
+    if (!key) {
+        showNotification("Please enter an API key");
+        return;
+    }
+    
+    const success = await setApiKey(key);
+    if (success) {
+        showNotification("API key saved successfully");
+        input.value = '';
+        
+        // If user is logged in, also save to their account
+        if (auth?.currentUser) {
+            try {
+                await db.collection('users').doc(auth.currentUser.uid).update({
+                    geminiApiKey: key
+                });
+            } catch (error) {
+                console.error("Error saving API key to cloud:", error);
+            }
+        }
+    } else {
+        showNotification("Failed to save API key");
+    }
+});
+
+document.getElementById('reset-api-key')?.addEventListener('click', async () => {
+    const success = await resetApiKey();
+    if (success) {
+        showNotification("Reset to default API key");
+        
+        // If user is logged in, also update their account
+        if (auth?.currentUser) {
+            try {
+                await db.collection('users').doc(auth.currentUser.uid).update({
+                    geminiApiKey: null
+                });
+            } catch (error) {
+                console.error("Error resetting API key in cloud:", error);
+            }
+        }
+    }
+});
+
 // Event listeners
 tabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -601,8 +753,6 @@ themeToggle.addEventListener('click', () => {
 startCameraButton.addEventListener('click', startCamera);
 captureButton.addEventListener('click', captureImage);
 imageUpload.addEventListener('change', handleImageUpload);
-
-
 
 searchInput.addEventListener('input', async (e) => {
     const query = e.target.value.trim();
@@ -636,8 +786,8 @@ searchButton.addEventListener('click', async () => {
 
 document.addEventListener('click', (e) => {
     // Close search results when clicking outside
-    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-        searchResults.classList.add('hidden');
+    if (!searchInput?.contains(e.target) && !searchResults?.contains(e.target)) {
+        searchResults?.classList.add('hidden');
     }
 });
 
@@ -692,7 +842,20 @@ function setupNotifications() {
 }
 
 // Initialize the app
-function initApp() {
+async function initApp() {
+    // Load API key from storage
+    await initApiKey();
+    
+    // Load garden data from IndexedDB
+    garden = await loadGarden();
+    
+    // Try to initialize Firebase (silent if fails)
+    try {
+        await initializeFirebase();
+    } catch (error) {
+        console.log("Firebase not initialized, continuing with local storage only");
+    }
+    
     // Render initial garden and care data
     renderGarden();
     renderCare();
