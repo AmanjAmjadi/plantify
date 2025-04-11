@@ -3,6 +3,7 @@ let garden = [];
 let currentPlant = null;
 let selectedPlantId = null;
 let stream = null;
+let hasSeenWelcome = false;
 
 // DOM elements
 const tabs = document.querySelectorAll('.tab-btn');
@@ -169,6 +170,11 @@ async function processImage(canvas) {
     document.getElementById('loadingIdentification').classList.remove('hidden');
     document.getElementById('identificationContent').classList.add('hidden');
     
+    // Hide any previous error state
+    if (document.getElementById('identificationError')) {
+        document.getElementById('identificationError').classList.add('hidden');
+    }
+    
     try {
         // Get image data from canvas
         const imageData = canvas.toDataURL('image/jpeg');
@@ -203,33 +209,82 @@ async function processImage(canvas) {
         
     } catch (error) {
         console.error("Error identifying plant:", error);
-        showNotification("Error identifying plant. Please try again.");
         
-        // Create a fallback plant identification
-        currentPlant = {
-            id: generateId(),
-            commonName: "Unknown Plant",
-            scientificName: "Species unknown",
-            info: "This appears to be a plant with green foliage. For proper care, keep soil moderately moist and place in indirect light. Water when the top inch of soil feels dry.",
-            image: canvas.toDataURL('image/jpeg'),
-            waterDays: 7,
-            sunlightHours: 6
-        };
-        
-        // Update identification results
-        document.getElementById('identifiedPlantName').textContent = currentPlant.commonName;
-        document.getElementById('identifiedPlantScientific').textContent = currentPlant.scientificName;
-        document.getElementById('identifiedPlantInfo').innerHTML = currentPlant.info;
-        document.getElementById('identifiedPlantImage').src = currentPlant.image;
-        
-        // Enable add to garden button
-        document.getElementById('addToGardenButton').disabled = false;
-        document.getElementById('addToGardenButton').classList.remove('opacity-50');
-        
-        // Hide loading and show results
+        // Show error interface
         document.getElementById('loadingIdentification').classList.add('hidden');
-        document.getElementById('identificationContent').classList.remove('hidden');
+        
+        // Create error section if it doesn't exist
+        if (!document.getElementById('identificationError')) {
+            const errorDiv = document.createElement('div');
+            errorDiv.id = 'identificationError';
+            errorDiv.className = 'text-center py-10';
+            errorDiv.innerHTML = `
+                <div class="text-red-500 text-5xl mb-3">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Identification Failed</h3>
+                <p id="errorMessage" class="text-gray-600 dark:text-gray-300 mb-4">
+                    We couldn't identify this plant due to a connection issue.
+                </p>
+                <div class="flex justify-center gap-4">
+                    <button id="retryIdentification" class="btn-primary">
+                        <i class="fas fa-redo mr-2"></i>Retry
+                    </button>
+                    <button id="offlineIdentification" class="btn bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border">
+                        <i class="fas fa-leaf mr-2"></i>Continue Offline
+                    </button>
+                </div>
+                <p class="text-sm text-gray-500 mt-4">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    If you're having trouble, try checking your internet connection or using a VPN.
+                </p>
+            `;
+            document.getElementById('identificationResults').appendChild(errorDiv);
+            
+            // Add event listeners to new buttons
+            document.getElementById('retryIdentification').addEventListener('click', () => {
+                // Retry identification with current image
+                processImage(capturedPhoto);
+            });
+            
+            document.getElementById('offlineIdentification').addEventListener('click', () => {
+                // Create offline fallback plant
+                createFallbackPlant(capturedPhoto);
+            });
+        } else {
+            // Show existing error interface
+            document.getElementById('identificationError').classList.remove('hidden');
+            document.getElementById('errorMessage').textContent = "We couldn't identify this plant due to a connection issue.";
+        }
     }
+}
+
+// Create a fallback plant when offline
+function createFallbackPlant(canvas) {
+    // Create a generic plant object
+    currentPlant = {
+        id: generateId(),
+        commonName: "Unknown Plant",
+        scientificName: "Species unknown",
+        info: "This appears to be a plant with green foliage. For proper care, keep soil moderately moist and place in indirect light. Water when the top inch of soil feels dry.",
+        image: canvas.toDataURL('image/jpeg'),
+        waterDays: 7,
+        sunlightHours: 6
+    };
+    
+    // Update identification results
+    document.getElementById('identifiedPlantName').textContent = currentPlant.commonName;
+    document.getElementById('identifiedPlantScientific').textContent = currentPlant.scientificName;
+    document.getElementById('identifiedPlantInfo').innerHTML = currentPlant.info;
+    document.getElementById('identifiedPlantImage').src = currentPlant.image;
+    
+    // Enable add to garden button
+    document.getElementById('addToGardenButton').disabled = false;
+    document.getElementById('addToGardenButton').classList.remove('opacity-50');
+    
+    // Hide error and show results
+    document.getElementById('identificationError').classList.add('hidden');
+    document.getElementById('identificationContent').classList.remove('hidden');
 }
 
 function displaySearchResults(results) {
@@ -302,12 +357,12 @@ async function addToGarden(plant) {
     
     garden.push(newPlant);
     
-    // Save to IndexedDB
-    await saveGarden(garden);
-    
-    // Try to sync with cloud if logged in
+    // If user is logged in, save directly to cloud
+    // Otherwise save to IndexedDB
     if (auth?.currentUser) {
-        saveToCloud();
+        await saveToCloud();
+    } else {
+        await saveGarden(garden);
     }
     
     // Update UI
@@ -326,12 +381,12 @@ async function removeFromGarden(plantId) {
         const plantName = garden[plantIndex].commonName;
         garden.splice(plantIndex, 1);
         
-        // Save to IndexedDB
-        await saveGarden(garden);
-        
-        // Try to sync with cloud if logged in
+        // If user is logged in, save directly to cloud
+        // Otherwise save to IndexedDB
         if (auth?.currentUser) {
-            saveToCloud();
+            await saveToCloud();
+        } else {
+            await saveGarden(garden);
         }
         
         // Update UI
@@ -354,12 +409,12 @@ async function waterPlant(plantId) {
         plant.lastWatered = now.toISOString();
         plant.nextWater = new Date(now.getTime() + (plant.waterInterval * 24 * 60 * 60 * 1000)).toISOString();
         
-        // Save to IndexedDB
-        await saveGarden(garden);
-        
-        // Try to sync with cloud if logged in
+        // If user is logged in, save directly to cloud
+        // Otherwise save to IndexedDB
         if (auth?.currentUser) {
-            saveToCloud();
+            await saveToCloud();
+        } else {
+            await saveGarden(garden);
         }
         
         // Update UI
@@ -580,6 +635,55 @@ function timeDifference(date) {
     }
 }
 
+// Show welcome message for new users
+function showWelcomeMessage() {
+    if (hasSeenWelcome) return;
+    
+    // Create welcome dialog
+    const welcomeDialog = document.createElement('div');
+    welcomeDialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    welcomeDialog.id = 'welcomeDialog';
+    welcomeDialog.innerHTML = `
+        <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md mx-4 p-6">
+            <div class="text-center mb-4">
+                <i class="fas fa-seedling text-5xl text-primary-color mb-3 plant-icon"></i>
+                <h2 class="text-xl font-semibold">Welcome to Plantify!</h2>
+                <p class="text-gray-600 dark:text-gray-300 mt-2">Your personal plant identification and care assistant</p>
+            </div>
+            
+            <div class="mb-4">
+                <p class="mb-3">Create an account to:</p>
+                <ul class="list-disc ml-6 space-y-1 text-gray-700 dark:text-gray-300">
+                    <li>Sync your plant collection across devices</li>
+                    <li>Never lose your plant data</li>
+                    <li>Get personalized care reminders</li>
+                </ul>
+            </div>
+            
+            <div class="flex gap-2">
+                <button id="welcomeSignUp" class="btn-primary flex-1">Create Account</button>
+                <button id="welcomeLater" class="btn bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 flex-1">Later</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(welcomeDialog);
+    
+    // Add event listeners
+    document.getElementById('welcomeSignUp').addEventListener('click', () => {
+        document.body.removeChild(welcomeDialog);
+        hasSeenWelcome = true;
+        saveSetting('hasSeenWelcome', true);
+        switchTab('account');
+    });
+    
+    document.getElementById('welcomeLater').addEventListener('click', () => {
+        document.body.removeChild(welcomeDialog);
+        hasSeenWelcome = true;
+        saveSetting('hasSeenWelcome', true);
+    });
+}
+
 // Account tab event listeners
 document.getElementById('sign-in-button')?.addEventListener('click', async () => {
     const email = document.getElementById('email-input').value;
@@ -636,6 +740,19 @@ document.getElementById('google-sign-in')?.addEventListener('click', async () =>
 });
 
 document.getElementById('sign-out-button')?.addEventListener('click', async () => {
+    // Ask if the user wants to keep local data
+    if (garden.length > 0) {
+        const keepData = confirm("Would you like to keep your plant data on this device?");
+        
+        if (!keepData) {
+            // Clear local data
+            garden = [];
+            await saveGarden([]);
+            renderGarden();
+            renderCare();
+        }
+    }
+    
     const result = await signOut();
     if (result) {
         showNotification("Signed out successfully!");
@@ -705,6 +822,10 @@ document.getElementById('save-api-key')?.addEventListener('click', async () => {
         showNotification("API key saved successfully");
         input.value = '';
         
+        // Hide input field and save button
+        document.getElementById('api-key-section').classList.add('hidden');
+        document.getElementById('api-key-saved-message').classList.remove('hidden');
+        
         // If user is logged in, also save to their account
         if (auth?.currentUser) {
             try {
@@ -724,6 +845,10 @@ document.getElementById('reset-api-key')?.addEventListener('click', async () => 
     const success = await resetApiKey();
     if (success) {
         showNotification("Reset to default API key");
+        
+        // Show input field and save button again
+        document.getElementById('api-key-section').classList.remove('hidden');
+        document.getElementById('api-key-saved-message').classList.add('hidden');
         
         // If user is logged in, also update their account
         if (auth?.currentUser) {
@@ -746,8 +871,13 @@ tabs.forEach(tab => {
     });
 });
 
+// Fix for day/night mode toggle
 themeToggle.addEventListener('click', () => {
-    document.documentElement.classList.toggle('dark');
+    if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+    } else {
+        document.documentElement.classList.add('dark');
+    }
 });
 
 startCameraButton.addEventListener('click', startCamera);
@@ -846,14 +976,57 @@ async function initApp() {
     // Load API key from storage
     await initApiKey();
     
-    // Load garden data from IndexedDB
-    garden = await loadGarden();
+    // Check if user has seen welcome message
+    hasSeenWelcome = await loadSetting('hasSeenWelcome', false);
     
     // Try to initialize Firebase (silent if fails)
     try {
         await initializeFirebase();
+        
+        // If user is logged in, load data from cloud
+        if (auth?.currentUser) {
+            try {
+                // Get cloud data
+                const docRef = db.collection('users').doc(auth.currentUser.uid);
+                const doc = await docRef.get();
+                
+                if (doc.exists && doc.data().garden) {
+                    garden = doc.data().garden;
+                } else {
+                    // If no cloud data, but user has local data, push to cloud
+                    garden = await loadGarden();
+                    if (garden.length > 0) {
+                        await saveToCloud();
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading cloud data:", error);
+                garden = await loadGarden();
+            }
+        } else {
+            // Not logged in, load from IndexedDB
+            garden = await loadGarden();
+        }
     } catch (error) {
         console.log("Firebase not initialized, continuing with local storage only");
+        garden = await loadGarden();
+    }
+    
+    // Update API key UI based on whether custom key is set
+    if (currentApiKey !== DEFAULT_API_KEY) {
+        if (document.getElementById('api-key-section')) {
+            document.getElementById('api-key-section').classList.add('hidden');
+        }
+        if (document.getElementById('api-key-saved-message')) {
+            document.getElementById('api-key-saved-message').classList.remove('hidden');
+        }
+    } else {
+        if (document.getElementById('api-key-section')) {
+            document.getElementById('api-key-section').classList.remove('hidden');
+        }
+        if (document.getElementById('api-key-saved-message')) {
+            document.getElementById('api-key-saved-message').classList.add('hidden');
+        }
     }
     
     // Render initial garden and care data
@@ -863,10 +1036,15 @@ async function initApp() {
     // Setup notifications
     setupNotifications();
     
-    // Show welcome notification
-    setTimeout(() => {
-        showNotification("Welcome to Plantify! Identify and manage your plants with ease.");
-    }, 1000);
+    // Show welcome message for first-time users
+    if (!hasSeenWelcome && !auth?.currentUser) {
+        setTimeout(showWelcomeMessage, 1000);
+    } else {
+        // Show welcome notification instead
+        setTimeout(() => {
+            showNotification("Welcome to Plantify! Identify and manage your plants with ease.");
+        }, 1000);
+    }
 }
 
 // Start the app
