@@ -246,15 +246,25 @@
                         <h4 class="font-semibold mb-2">Gemini API Key</h4>
                         <p class="text-sm text-gray-600 mb-3">You can use your own Gemini API key for plant identification.</p>
                         
-                        <div class="flex mb-2">
-                            <input type="password" id="api-key-input" class="flex-1 px-4 py-2 rounded-l border" placeholder="Enter your Gemini API key">
-                            <button id="toggle-api-key" class="bg-gray-200 px-3 rounded-r border-t border-r border-b">
-                                <i class="fas fa-eye"></i>
-                            </button>
+                        <div id="api-key-section">
+                            <div class="flex mb-2">
+                                <input type="password" id="api-key-input" class="flex-1 px-4 py-2 rounded-l border" placeholder="Enter your Gemini API key">
+                                <button id="toggle-api-key" class="bg-gray-200 px-3 rounded-r border-t border-r border-b">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="flex gap-2">
+                                <button id="save-api-key" class="btn-primary text-sm">Save Key</button>
+                                <button id="reset-api-key" class="btn text-sm border">Use Default Key</button>
+                            </div>
                         </div>
                         
-                        <div class="flex gap-2">
-                            <button id="save-api-key" class="btn-primary text-sm">Save Key</button>
+                        <div id="api-key-saved-message" class="hidden">
+                            <div class="flex items-center mb-2 text-green-600">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                <span>Custom API key is active</span>
+                            </div>
                             <button id="reset-api-key" class="btn text-sm border">Use Default Key</button>
                         </div>
                         
