@@ -370,6 +370,26 @@ async function addToGarden(plant) {
         await saveGarden(garden);
     }
     
+    // Try to get plant care tips asynchronously
+    generatePlantCareTips(newPlant).then(tips => {
+        if (tips) {
+            // Store tips with the plant
+            const plantIndex = garden.findIndex(p => p.id === newPlant.id);
+            if (plantIndex >= 0) {
+                garden[plantIndex].careTips = tips;
+                
+                // Save updated garden data
+                if (auth?.currentUser) {
+                    saveToCloud();
+                } else {
+                    saveGarden(garden);
+                }
+            }
+        }
+    }).catch(error => {
+        console.error("Failed to get plant care tips:", error);
+    });
+    
     // Update UI
     renderGarden();
     renderCare();
@@ -585,6 +605,10 @@ function openPlantDetailModal(plantId) {
     
     selectedPlantId = plantId;
     updatePlantDetailModal(plant);
+    
+    // Reset to the info tab when opening
+    switchModalTab('info');
+    
     plantDetailModal.classList.remove('hidden');
 }
 
@@ -613,6 +637,17 @@ function updatePlantDetailModal(plant) {
     document.getElementById('modalSunlightStatus').textContent = 
         `Needs ${plant.sunlightHours} hours of sunlight per day`;
     document.getElementById('modalSunProgress').style.width = `${sunProgress}%`;
+    
+    // Update seasonal care section if available
+    const seasonalTips = getSeasonalCareTips(plant);
+    if (seasonalTips && document.getElementById('modalSeasonalCare')) {
+        document.getElementById('modalSeasonalCare').innerHTML = `
+            <p class="mb-2"><strong>Water:</strong> ${seasonalTips.water || 'No specific recommendations'}</p>
+            <p class="mb-2"><strong>Light:</strong> ${seasonalTips.light || 'No specific recommendations'}</p>
+            <p class="mb-2"><strong>Fertilizer:</strong> ${seasonalTips.fertilizer || 'No specific recommendations'}</p>
+            <p><strong>Maintenance:</strong> ${seasonalTips.maintenance || 'No specific recommendations'}</p>
+        `;
+    }
 }
 
 function closePlantDetailModal() {
@@ -768,9 +803,6 @@ document.getElementById('google-sign-in')?.addEventListener('click', async () =>
         } else {
             showNotification("Google sign-in failed: " + (error.message || "Unknown error"));
         }
-        
-        // Show the Google setup instructions
-        document.getElementById('google-signin-setup').classList.remove('hidden');
     }
 });
 
@@ -903,8 +935,6 @@ document.getElementById('reset-api-key')?.addEventListener('click', async () => 
     }
 });
 
-
-
 // Event listeners
 tabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -934,13 +964,17 @@ imageUpload.addEventListener('change', handleImageUpload);
 document.getElementById('searchForPlantButton')?.addEventListener('click', () => {
     if (currentPlant) {
         // Fill search field with plant name and switch to search tab
-        searchInput.value = currentPlant.commonName;
-        switchTab('search');
-        
-        // Trigger search
-        setTimeout(() => {
-            searchButton.click();
-        }, 100);
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.value = currentPlant.commonName;
+            switchTab('search');
+            
+            // Trigger search
+            setTimeout(() => {
+                const searchButton = document.getElementById('searchButton');
+                if (searchButton) searchButton.click();
+            }, 100);
+        }
     }
 });
 
@@ -1007,29 +1041,23 @@ modalRemoveButton.addEventListener('click', () => {
     }
 });
 
-// Simulate notifications
-function setupNotifications() {
-    if (garden.length > 0) {
-        const checkNotifications = () => {
-            const now = new Date();
-            const plantsNeedingWater = garden.filter(plant => {
-                const nextWater = new Date(plant.nextWater);
-                return nextWater <= now;
-            });
-            
-            if (plantsNeedingWater.length > 0) {
-                const plant = plantsNeedingWater[0];
-                showNotification(`${plant.commonName} needs water!`, 5000);
-            }
-        };
-        
-        // Check once when the app loads
-        setTimeout(checkNotifications, 5000);
-        
-        // Then check periodically
-        setInterval(checkNotifications, 60000); // Every minute
+// Toggle switches in Settings
+document.getElementById('social-sharing-toggle')?.addEventListener('change', function() {
+    saveSetting('socialSharingEnabled', this.checked);
+});
+
+document.getElementById('location-toggle')?.addEventListener('change', function() {
+    saveSetting('locationAllowed', this.checked);
+    
+    // If location is now allowed, try to get location
+    if (this.checked) {
+        getUserLocation();
     }
-}
+});
+
+document.getElementById('community-toggle')?.addEventListener('change', function() {
+    saveSetting('communityEnabled', this.checked);
+});
 
 // Initialize the app
 async function initApp() {
@@ -1089,14 +1117,35 @@ async function initApp() {
         }
     }
     
+    // Initialize toggle switches
+    const socialSharingEnabled = await loadSetting('socialSharingEnabled', true);
+    const locationAllowed = await loadSetting('locationAllowed', false);
+    const communityEnabled = await loadSetting('communityEnabled', true);
+    
+    if (document.getElementById('social-sharing-toggle')) {
+        document.getElementById('social-sharing-toggle').checked = socialSharingEnabled;
+    }
+    
+    if (document.getElementById('location-toggle')) {
+        document.getElementById('location-toggle').checked = locationAllowed;
+    }
+    
+    if (document.getElementById('community-toggle')) {
+        document.getElementById('community-toggle').checked = communityEnabled;
+    }
+    
+    // Initialize care features
+    await initCare();
+    
+    // Initialize new features
+    await initFeatures();
+    
     // Render initial garden and care data
     renderGarden();
     renderCare();
     
     // Setup notifications
     setupNotifications();
-    
-   
     
     // Show welcome message for first-time users
     if (!hasSeenWelcome && !auth?.currentUser) {
@@ -1106,6 +1155,30 @@ async function initApp() {
         setTimeout(() => {
             showNotification("Welcome to Plantify! Identify and manage your plants with ease.");
         }, 1000);
+    }
+}
+
+// Simulate notifications
+function setupNotifications() {
+    if (garden.length > 0) {
+        const checkNotifications = () => {
+            const now = new Date();
+            const plantsNeedingWater = garden.filter(plant => {
+                const nextWater = new Date(plant.nextWater);
+                return nextWater <= now;
+            });
+            
+            if (plantsNeedingWater.length > 0) {
+                const plant = plantsNeedingWater[0];
+                showNotification(`${plant.commonName} needs water!`, 5000);
+            }
+        };
+        
+        // Check once when the app loads
+        setTimeout(checkNotifications, 5000);
+        
+        // Then check periodically
+        setInterval(checkNotifications, 60000); // Every minute
     }
 }
 
