@@ -27,17 +27,22 @@ const plantDetailModal = document.getElementById('plantDetailModal');
 const modalWaterButton = document.getElementById('modalWaterButton');
 const modalRemoveButton = document.getElementById('modalRemoveButton');
 
-// Check for dark mode preference
-if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+// Check for saved theme preference
+if (localStorage.getItem('theme') === 'dark' || 
+    (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
     document.documentElement.classList.add('dark');
+} else {
+    document.documentElement.classList.remove('dark');
 }
 
 // Listen for changes in color scheme preference
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-    if (event.matches) {
-        document.documentElement.classList.add('dark');
-    } else {
-        document.documentElement.classList.remove('dark');
+    if (!localStorage.getItem('theme')) {
+        if (event.matches) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
     }
 });
 
@@ -694,13 +699,16 @@ document.getElementById('sign-in-button')?.addEventListener('click', async () =>
         return;
     }
     
-    const result = await signInWithEmailPassword(email, password);
-    if (result.error) {
-        showNotification(result.error);
-    } else {
+    try {
+        initializeFirebase();
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        
         showNotification("Signed in successfully!");
+        
         // Switch to garden tab
         switchTab('garden');
+    } catch (error) {
+        showNotification(error.message || "Error signing in");
     }
 });
 
@@ -718,33 +726,58 @@ document.getElementById('register-button')?.addEventListener('click', async () =
         return;
     }
     
-    const result = await registerUser(email, password);
-    if (result.error) {
-        showNotification(result.error);
-    } else {
-        showNotification("Account created successfully!");
+    try {
+        initializeFirebase();
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        
+        // Send email verification
+        if (userCredential.user) {
+            await userCredential.user.sendEmailVerification();
+            showNotification("Account created! Please check your email for verification.");
+        } else {
+            showNotification("Account created successfully!");
+        }
+        
         // Switch to garden tab
         switchTab('garden');
+    } catch (error) {
+        showNotification(error.message || "Registration failed");
     }
 });
 
 document.getElementById('google-sign-in')?.addEventListener('click', async () => {
-    const result = await signInWithGoogle();
-    if (result.error) {
-        showNotification(result.error);
-    } else {
-        showNotification("Signed in with Google successfully!");
-        // Switch to garden tab
-        switchTab('garden');
+    try {
+        await initializeFirebase();
+        const provider = new firebase.auth.GoogleAuthProvider();
+        const result = await auth.signInWithPopup(provider);
+        
+        if (result.user) {
+            showNotification("Signed in with Google successfully!");
+            switchTab('garden');
+        }
+    } catch (error) {
+        console.error("Google sign-in error:", error);
+        
+        // Show a special message for popup blocked errors
+        if (error.code === 'auth/popup-blocked') {
+            showNotification("Popup was blocked. Please allow popups for this site.");
+        } else if (error.code === 'auth/cancelled-popup-request') {
+            showNotification("Sign-in was cancelled.");
+        } else if (error.code === 'auth/popup-closed-by-user') {
+            showNotification("Sign-in popup was closed before completing the process.");
+        } else {
+            showNotification("Google sign-in failed: " + (error.message || "Unknown error"));
+        }
+        
+        // Show the Google setup instructions
+        document.getElementById('google-signin-setup').classList.remove('hidden');
     }
 });
 
 document.getElementById('sign-out-button')?.addEventListener('click', async () => {
     // Ask if the user wants to keep local data
     if (garden.length > 0) {
-        const keepData = confirm("Would you like to keep your plant data on this device?");
-        
-        if (!keepData) {
+        if (confirm("Would you like to clear your plant data from this device?\n\nYes - Clear data\nNo - Keep data")) {
             // Clear local data
             garden = [];
             await saveGarden([]);
@@ -753,14 +786,21 @@ document.getElementById('sign-out-button')?.addEventListener('click', async () =
         }
     }
     
-    const result = await signOut();
-    if (result) {
+    try {
+        initializeFirebase();
+        await auth.signOut();
         showNotification("Signed out successfully!");
+        
         // Update UI
         document.getElementById('not-logged-in').classList.remove('hidden');
         document.getElementById('logged-in').classList.add('hidden');
-    } else {
-        showNotification("Error signing out");
+        
+        // Refresh the page after a short delay
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
+    } catch (error) {
+        showNotification("Error signing out: " + (error.message || "Unknown error"));
     }
 });
 
@@ -863,6 +903,18 @@ document.getElementById('reset-api-key')?.addEventListener('click', async () => 
     }
 });
 
+// Google sign-in setup toggle
+document.getElementById('show-google-setup')?.addEventListener('click', function() {
+    const setupSection = document.getElementById('google-signin-setup');
+    if (setupSection.classList.contains('hidden')) {
+        setupSection.classList.remove('hidden');
+        this.textContent = 'Hide Instructions';
+    } else {
+        setupSection.classList.add('hidden');
+        this.textContent = 'Show Setup Instructions';
+    }
+});
+
 // Event listeners
 tabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -871,18 +923,36 @@ tabs.forEach(tab => {
     });
 });
 
-// Fix for day/night mode toggle
-themeToggle.addEventListener('click', () => {
+// Fixed theme toggle
+document.getElementById('theme-toggle').addEventListener('click', function() {
+    // Toggle dark class
+    document.documentElement.classList.toggle('dark');
+    
+    // Save preference to localStorage
     if (document.documentElement.classList.contains('dark')) {
-        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'dark');
     } else {
-        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'light');
     }
 });
 
 startCameraButton.addEventListener('click', startCamera);
 captureButton.addEventListener('click', captureImage);
 imageUpload.addEventListener('change', handleImageUpload);
+
+// Search for plant after identification
+document.getElementById('searchForPlantButton')?.addEventListener('click', () => {
+    if (currentPlant) {
+        // Fill search field with plant name and switch to search tab
+        searchInput.value = currentPlant.commonName;
+        switchTab('search');
+        
+        // Trigger search
+        setTimeout(() => {
+            searchButton.click();
+        }, 100);
+    }
+});
 
 searchInput.addEventListener('input', async (e) => {
     const query = e.target.value.trim();
@@ -1035,6 +1105,12 @@ async function initApp() {
     
     // Setup notifications
     setupNotifications();
+    
+    // Hide Google setup instructions by default
+    if (document.getElementById('google-signin-setup')) {
+        document.getElementById('google-signin-setup').classList.add('hidden');
+        document.getElementById('show-google-setup').textContent = 'Show Setup Instructions';
+    }
     
     // Show welcome message for first-time users
     if (!hasSeenWelcome && !auth?.currentUser) {
