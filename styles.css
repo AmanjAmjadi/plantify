@@ -4,6 +4,7 @@
     --primary-light: #8ED765;
     --accent-color: #98D8AA; /* Lighter pastel green */
     --accent-dark: #82BE93;
+    --secondary-color: #6495ED; /* Cornflower blue */
     --danger-color: #FF7F7F; /* Soft red */
     --light-bg: #F8FFF5; /* Very light green tint */
     --dark-bg: #1E2A23; /* Dark green-gray */
@@ -85,6 +86,23 @@ body {
 
 .btn-accent:hover {
     background-color: var(--accent-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 0.7rem 1.2rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary:hover {
+    background-color: #5A85DB;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
