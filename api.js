@@ -33,6 +33,54 @@ async function initApiKey() {
     }
 }
 
+// Default plant image - more photo-realistic
+const defaultPlantImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB4PSIwIiB5PSIwIiB2aWV3Qm94PSIwIDAgNjQgNjQiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDUxMiA1MTIiIHhtbDpzcGFjZT0icHJlc2VydmUiIGNsYXNzPSIiPjxnPjxwYXRoIGQ9Ik0yOS4zODYgMTIuMzA0Yy0uMTk5LS4yOTYtLjU5MS0uNDIxLS45MzQtLjMwMS0zLjMzOCAxLjE1OS04LjQ5MiAzLjg0LTEyLjkyOCA4LjQ0LTQuNjk1IDQuODcyLTcuNzI2IDEwLjk1Mi04Ljk5NSAxOC4wNTUtLjA3OS40MzcuMTMyLjg3Ny41MjIgMS4wODcuMTQ5LjA4LjMxMS4xMTkuNDczLjExOS4yNjIgMCAuNTIxLS4xMDMuNzE1LS4zMDEgNi4zNDYtNi40ODQgMTMuNzI1LTguMjA2IDE4LjUxOC04LjIwNi41MiAwIDEuMDE0LjAyMSAxLjQ3OC4wNTUuNDQzLjAzLjg1NC0uMjQ2Ljk4NC0uNjcyLjEzLS40MjYtLjA1MS0uODg2LS40MzUtMS4xMDktLjAyLS4wMTItMi4wNjQtMS4yMDctMi44Ni01LjUwMS0uNDM3LTIuMzY4LjExMi01Ljc1MiAzLjQ2Mi0xMC42NjZ6IiBmaWxsPSIjNmZiZTUxIiBvcGFjaXR5PSIxIiBkYXRhLW9yaWdpbmFsPSIjMDAwMDAwIj48L3BhdGg+PHBhdGggZD0iTTUzLjQzOSA0Mi4zYy42NjktLjI4MSAxLjMxNS0uNjEzIDEuOTEtMS4wNzUuMzc3LS4yOTIuNTA5LS44MDIuMzIxLTEuMjQzLS4xODgtLjQ0MS0uNjI5LS43MTktMS4xMDItLjY4NS0xLjA5NS4wNjUtMi4yMTYuMDk4LTMuMzMzLjA5OC04LjgzMSAwLTE1LjU4Ny0yLjI1LTE5LjQ1Ny03LjQ0OS0uMjgxLS4zNzgtLjc2NC0uNTIzLTEuMTkxLS4zNTctLjQyOC4xNjctLjcwOS41OTUtLjY5MSAxLjA1N2wuMTMzIDMuMjE4YzAgLjAxNi4wMDMuMDMxLjAwNC4wNDggMCAxMC4zMzggNi4yMTYgMTUuOTk4IDExLjMzOSAxOS4xNy42NjUuNDEyLjk2NS0uNzIxLjc4MS0xLjUwNmwtLjY1MS0yLjc2OS0uMDA3LS4wMzFjLS4wOTQtLjM5Ni0uMzYzLS43MTYtLjc0MS0uODczLS4zNzctLjE1Ny0uODA0LS4xMDctMS4xMzQuMTM5LTEuNTIzIDEuMTI5LTUuMTA0IDMuMTYzLTkuODI3IDMuNTIyQzM3LjA1MyA1OC42NiA0NC4zODkgNjQgNTIuNjE3IDY0aDQuOTE3QzU4LjYyNyA1OC41NzIgNTUuMjcgNTEuMTQgNTMuNDM5IDQyLjN6IiBmaWxsPSIjNGE5OTJzIiBvcGFjaXR5PSIxIiBkYXRhLW9yaWdpbmFsPSIjMDAwMDAwIj48L3BhdGg+PHBhdGggZD0iTTM0LjYxNCAyNC44MzNjLjM0My0xLjYwNCAxLjQ0LTUuOTg3IDQuOTA3LTEwLjQ0OS4yODEtLjM2My4yODMtLjg2NC4wMDUtMS4yMjktLjI3Ny0uMzY0LS43NTMtLjUxNS0xLjE4Ni0uMzc0LTQuNzU0IDEuNTQxLTguODQ5IDQuMjIxLTEyLjE2MiA3Ljk3NC0uMjk3LjMzNS0uMzEyLjgyOS0uMDM5IDEuMTc5LjI3My4zNS43NTIuNDY1IDEuMTUuMjc5IDEuNDYxLS42NzkgNC4xMTQtMS42NyA3LjMyNS0xLjM4eiIgZmlsbD0iIzc1ZTQ2ZSIgb3BhY2l0eT0iMSIgZGF0YS1vcmlnaW5hbD0iIzAwMDAwMCI+PC9wYXRoPjxwYXRoIGQ9Ik00Ni45NzkgMTUuOTYzYy4yODItLjA0Ni41MjYtLjIyMi42NzUtLjQ4NS4xNDktLjI2My4xNzItLjU4LjA2NS0uODYzLS4xNzctLjQ2Ni0uMzQ2LS45MDYtLjU0My0xLjM0MS0yLjc2LTYuMDg2LTYuNDY1LTkuNDE5LTExLjAyOS05LjkyM2wtLjE2NS4wMDFjLTEuMTI0LS4xMDQtMi4xNTMuNjI2LTIuNDI0IDEuNzItLjI1MyAxLjAyNy4yMzIgMi4yMzUgMS4yMTIgMi45NDRsMS4wNDYuNzU4YzUuNjE0IDQuMDY4IDkuNzM3IDYuOTk2IDExLjE2MyA3Ljg5Ni4xNzYuMTExLjM3Ni4xNjcuNTc2LjE2Ny4xNjIgMCAuMzIzLS4wMzUuNDc0LS4xMDZ6IiBmaWxsPSIjNzVlNDZlIiBvcGFjaXR5PSIxIiBkYXRhLW9yaWdpbmFsPSIjMDAwMDAwIj48L3BhdGg+PHBhdGggZD0iTTUxLjc5NSAyNC45OTJjLS4yODctLjMyOS0uNzQ0LS40NjMtMS4xNTMtLjMzNi0uNDA5LjEyNy0uNzE3LjQ3LS43NzkuODg5LS4wNzcuNTIxLS40MzMgMS4xMzgtLjk0NyAxLjYzN2wtLjAwMy0uMDAzYy0uODI1LjgxOC0xLjkxMi44MTgtMi43MjIuMDAyLTQuOTA0LTQuOTI3LTkuMzE3LTcuMzIzLTEzLjgxNS03LjUxNC0uNDc3LS4wMjItLjkyMi4yNDQtMS4xMS42ODctLjE4OC40NDItLjEwOC45NTQuMiAxLjMxNyA2LjgwOSA4LjA1NiA5LjY2NyAxOC40MjYgOS42OTEgMTguNTAyLjA5Ny4zMDQuMzM5LjU0LjY0Ni42My4zMDcuMDkuNjM3LjAxMi44NzQtLjIwN2w0LjMzMy00LjAzMnYuMDA1YzEuNzI3LTEuNzEzIDQuMzktNi4zMzggNi4xNDItMTAuNDE5LjM2Ni0uODQ1LS4wNjQtLjk1My0uMzU3LTEuMTU4eiIgZmlsbD0iIzZmYmU1MSIgb3BhY2l0eT0iMSIgZGF0YS1vcmlnaW5hbD0iIzAwMDAwMCI+PC9wYXRoPjxwYXRoIGQ9Ik0yNC45NTYgNDYuMDI0Yy0uMTM0LS40MzMtLjUzLS43NDEtLjk4My0uNzY0LS40NTItLjAyMi0uODcyLjI0Ni0xLjA0My42NjctLjA0LjA5OS0xLjAyNyAyLjQ2MS0zLjMwNyA0LjY3Ni0yLjI2NyAyLjIwNC00Ljk2OCAzLjMwOC03LjE4OCAzLjMwOGgtNC40NjhDNi43ODggNTYuNjUyIDYgNTguMjQxIDYgNjBoMTMuMzc1YzQuMTMxIDAgOC4wMDUtMS44ODMgMTAuNjEtNS4zNzJsLjAwNS4wMDRjLjk2Ni0xLjI4OCAxLjA0OC0zLjAzNy4yMDctNC40MTlsLS4wMDUtLjAwNWMtMS4wMDYtMS42NDgtMi4yNzMtMi41MzYtMy43NzQtMi42NDUtLjU4Ny0uMDQyLTEuNDYyLS41NzYtMS40NjItMS41Mzl6IiBmaWxsPSIjNGE5OTJzIiBvcGFjaXR5PSIxIiBkYXRhLW9yaWdpbmFsPSIjMDAwMDAwIj48L3BhdGg+PC9nPjwvc3ZnPg==';
+
+// Get a custom plant image
+async function getCustomPlantImage(plantName) {
+    try {
+        // Try to get a relevant image from Gemini (if available)
+        const prompt = `Generate a simple, beautiful SVG icon for the plant "${plantName}" with mostly green colors. Return ONLY the SVG code with no markdown, explanation or other text.`;
+        
+        // Use the currentApiKey from the parent scope
+        const apiUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
+        
+        const requestData = {
+            contents: [{ parts: [{ text: prompt }] }],
+            generation_config: {
+                temperature: 0.2,
+                top_k: 32,
+                top_p: 1,
+                max_output_tokens: 2048,
+            }
+        };
+        
+        const response = await fetch(`${apiUrl}?key=${currentApiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestData)
+        });
+        
+        if (!response.ok) {
+            return null;
+        }
+        
+        const data = await response.json();
+        const svgText = data.candidates[0].content.parts[0].text;
+        
+        // Extract just the SVG content (removing any code blocks or explanations)
+        const svgMatch = svgText.match(/<svg[\s\S]*<\/svg>/i);
+        if (svgMatch) {
+            return 'data:image/svg+xml;base64,' + btoa(svgMatch[0]);
+        }
+        
+        return null;
+    } catch (error) {
+        console.error("Error getting custom plant image:", error);
+        return null;
+    }
+}
+
 // Gemini API functions
 async function identifyPlantWithGemini(imageBase64) {
     try {
@@ -240,17 +288,6 @@ async function searchPlantsByName(query) {
     }
 }
 
-// Default plant images based on plant types
-const defaultPlantImages = {
-    tree: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjNEE5MTA1Ij48cGF0aCBkPSJNMjU2IDY0QzIzMi4zIDY0IDIxMy4xIDg2IDIwOCAxMTMuNkMxOTguOCAxMDUuMyAxODcuOCAxMDAgMTc2IDEwMEMxNDkuNSAxMDAgMTI4IDEyMS41IDEyOCAxNDhDMTI4IDE1Mi4xIDEyOC40IDE1Ni4xIDEyOS40IDE2MEMxMTYuNiAxNjggMTA4IDE4MS44IDEwOCAxOTguMUMxMDggMjIzLjEgMTI4IDI0NCAxNTIuOSAyNDQuOEMyNTMuOSAyNDcuMSAyNzQuNSAyOTcuNCAxODEuNiAyOTYuOUMxMzIuNCAyOTYuNSA5NiAyNTkuOSA5NiAyMTAuNkM5NiAxNjEuOCA1My45IDExNCAyIDExNFY4QzMwLjAgOCA1NiAxOC4zIDc2LjEgMzYuNEM4OC43IDE3LjYgMTA2LjEgNCAxMjguMSA0QzE0Mi42IDQgMTU2IDkuNyAxNjcgMTkuNUMxODQgOCAxOTguOSAwIDIxNS4xIDBDMjY4LjEgMCAzMTIgNTUuNyAzMTIgMTEwLjNDMzEyIDEyNS4yIDMwOC43IDEzOSAzMDIuOCAxNTEuNkMzMjkuNSAxNTYuMiAzNTIgMTc5LjEgMzUyIDIwNy42QzM1MiAyMzkuMSAzMjUuNyAyNjQuMiAyOTIuNCAgMjY0LjJDMjQwLjQgMjY0LjIgMjE1LjQgMzIwLjQgMzA3LjYgMzI0LjhDMzQ2LjUgMzI2LjggMzgzLjggMzEwLjUgNDA2LjIgMjgxLjdDNDE0LjcgMjcwLjYgNDIwLjEgMjU3LjIdMjI0IDI0MlYzMjguNEgyNDRWNDE2SDI2OFY1MTJIMTI0VjQxNkgxNDhWMzI4LjRIMTY4VjI0MkMxNjYuMSAyNDYuNCAxNDMuMiAyNDQgMTQxLjMgMjQ0LjhDMTE2LjQgMjQ0IDk2IDIyMy4xIDk2IDE5OC4xQzk2IDE4MS44IDEwNC42IDE2OCAxMTcuNSAxNjBDMTE2LjQgMTU2LjEgMTE2IDE1Mi4xIDExNiAxNDhDMTE2IDEyMS41IDEzNy41IDEwMCAxNjQgMTAwQzE3NS44IDEwMCAxODYuOCAxMDUuMyAxOTYgMTEzLjZDMjAxLjEgODYgMjIwLjMgNjQgMjQ0IDY0SDI1NloiLz48L3N2Zz4=',
-    flower: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjRUQ2Q2EwIj48cGF0aCBkPSJNMjU2IDUxMkMyNTYgNTEyIDM1MiA0NjQgMzUyIDM2OEM0ODAgMzY4IDM5MS41IDI4OCAzOTEuNSAyODhDMzkxLjUgMjg4IDQxNiAyMjQgMzUyIDE3NkM0MDAgMTI4IDM1MiA5NiAzNTIgOTZDNDAwIDY0IDM2OC0zLjggMzA0IDMuMTE3QzMwNCAtODEgMjI0IDgwIDIyNCA4MEMyNzYgLTMyIDE3NS44IDUuMTE3IDE2MCAxMTJDMTI4IDQ4IDAgMTYwIDAgMTkyQzAgMTc2IDMyIDI4OCAxMTIgMjcyQzExMiAzNTIgMTkyIDM1MiAxOTIgMzUyQzEyOCAzNzAgMTYwIDQ2NCAxNjAgNDY0QzE2MCA0NjQgMjY0IDUxMiAyNTYgNTEyek0yNTYgMTI4QzMxNC40IDEyOCAzNjIuNSAxNzYgMzYyLjUgMjI0QzM2Mi41IDI3MiAzMTQuNCAgMzIwIDI1NiAzMjBDMTk3LjYgMzIwIDE0OS41IDI3MiAxNDkuNSAyMjRDMTQ5LjUgMTc2IDE5Ny42IDEyOCAyNTYgMTI4eiIvPjwvc3ZnPg==',
-    succulent: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjMjlBQTVFIj48cGF0aCBkPSJNNTEyIDI1NkM1MTIgMzk3LjQgMzk3LjQgNTEyIDI1NiA1MTJDMTE0LjYgNTEyIDAgMzk3LjQgMCAyNTZDMCAxMTQuNiAxMTQuNiAwIDI1NiAwQzM5Ny40IDAgNTEyIDExNC42IDUxMiAyNTZaTTI1NiAxMjhDMjI2LjgKMTI4IDIwMy4xIDE1MiAxOTcuNiAxODAuMkMxODUuMSAxNzUuNSAxNzQuMSAxNzIgMTYyLjUgMTcyQzEyMCAxNzIgODUuNDkgMjA2LjUgODUuNDkgMjQ5QzEyNC44IDIyNiAxNTggMjg4IDIxNiAyODhDMjI1IDI4OCAyMzQuNCAyODYuMyAyNDQgMjgzLjRWMzMyLjdDMjQ0IDM3Mi4yIDI3NS44IDQwNCAzMTUuMyA0MDRDMTM4LjMgNDA0IDEzMCAyMjAgMjc2IDIyMEMzMjEuMSAyMjAgMzYwIDI1OSAzNjAKMzA0QzM2MCAzNDEgMzMwIDM3MC4xIDI5Ny40IDM3NS41QzI5MS45IDM1Mi4yIDI3NSAzNDQgMjU2IDM0NEMyNDIuNyAzNDQgMjMyIDM1NC43IDIzMiAzNjhDMjMyIDM4MS4zIDI0Mi43IDM5MiAyNTYgMzkyQzI2Ny4xIDM5MiAyNzYuMyAzODQuNSAyNzguOCAzNzQuNEMzNDcuMiAzNjEuOSA0MDggMzA5LjkgNDA4IDI0OEM0MDggMTgxLjMgMzU0LjcgMTI4IDI4OC0xMjggMjc4LjUgMTI4IDI2Ny41IDEyOCAyNTYgMTI4eiIvPjwvc3ZnPg==',
-    herb: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjM0ZCRjU2Ij48cGF0aCBkPSJNMjQwIDBDMTY2LjEgMCA5My4wNyA0OC43MSA1MC4zMyA5MS42NEMzNC41MiAxMDcuNiAzNC41MiAxMzMuNCAxMC4zMyAxNDkuM0MtMC44MDQgMTYwLjQtMC44MDQgMTc4LjYgMTAuMzMgMTg5LjdDMjEuNDcgMjAwLjggMzkuMiAyMDAuOCA1MC4zMyAxODkuN0MxMTIuMiAxMjggMTg2LjggMTI4IDI0OCAxMjhDMjQ4IDk0LjggMjQ4IDYxLjYgMjQ4IDI4LjRDMjQ4IDEyLjggMjU1LjYgMCAyNzIgMEMyODggMCAyOTYgMTIuOCAyOTYgMjguNEMyOTYgNjEuNiAyOTYgOTQuOCAyOTYgMTI4QzM1Ny4yIDEyOCA0MzEuOCAxMjggNDkzLjcgMTg5LjdDNTA0LjggMjAwLjggNTIyLjUgMjAwLjggNTMzLjcgMTg5LjdDNTQ0LjggMTc4LjYgNTQ0LjggMTYwLjQgNTMzLjcgMTQ5LjNDNTA5LjUgMTMzLjQgNTA5LjUgMTA3LjYgNDkzLjcgOTEuNjRDNDUwLjkgNDguNzEgMzc3ICA1MTIgMzA0IDUxMkMyMzAgNTEyIDE1NyA1MTIgODMgNDYwLjVDNzYuNjcgNDU3LjUgNzEuMjkgNDUzIDY1LjMzIDQ0Ny41QzY1LjMzIDQ1Mi40IDY2LjY3IDQ1OC43IDcwLjY3IDQ2Ni40QzczLjExIDQ3MS4yIDc2LjcxIDQ3Ni4yIDgxLjYyIDQ4MS4xQzg1LjIgNDg0LjcgODkuMzkgNDg3LjggOTMuNzUgNDkwLjRDMTA0LjQgNDk2LjUgMTE2LjcgNDk2LjcgMTI3IDQ5MC4yQzEzNy4zIDQ4My44IDE0My4xIDQ3MS4zIDE0My4xIDQ1OEMxNDMuMSA0MzMuOCAxNDQgNDA5LjkgMTQ0LjkgMzg2LjFDMTQ1LjUgMzczLjQgMTQ2LjIgMzYwLjYgMTQ2LjkgMzQ3LjlDMTQ4LjMgMzI0LjEgMTQ5LjcgMzAwLjQgMTUxLjggMjc2LjhWMjc2LjdDMTUyLjkgMjY0LjMgMTU0LjEgMjUyLjEgMTU1LjQgMjM5LjlDMTU3LjIgMjIxLjUgMTQ0LjMgMjA0LjggMTI1LjkgMjAzQzEwNy41IDIwMS4yIDkwLjc5IDIxNC4xIDg4Ljk4IDIzMi41QzQ4LjQ0IDIzMy41IDExLjg2IDIzNC42LTI0LjQzIDIzNS4xQy0zLjM1IDI1My43IDI0LjQ1IDI2MC44IDUwLjMyIDI2Ni4yQzYwLjUgMjY4LjQgNzAuMSAyNzAuNSA3Ny4zMyAyNzIuN0M3Ny40OSAyNzIuOCA3Ny42MyAyNzIuOCA3Ny43OCAyNzIuOUM5Mi44OCAyNzguMiAxNzYgMjk1LjcgMTc2IDM4NEMyMDEuMSAzODQgMjE5LjUgMzgzLjggMjQwIDM4My42QzI2MC4xIDM4My40IDI4My42IDM4My4yIDMxOS41IDM4NEMzMzUuOSAzNDAuMiAzNTguNyAzMDguOSAzNzYuMyAyODMuOEMzOTAuMSAyNjMuOCA0MDAuOSAyNDggNDA4IDIzMkMzODEuMiAyMTcuMyAzNzMuMyAyMDcuOCAzNjUuNSAxOTguM0MzNTkuNSAxOTEgMzUzLjUgMTgzLjcgMzM1LjcgMTczLjNDMzIzLjcgMTY2IDMwNy45IDE3Mi44IDMwMC43IDE4NC44QzI5My41IDE5Ni44IDMwMC4zIDIxMi42IDMxMi4zIDIxOS44QzMxOC4xIDIyMy42IDMxOS44IDIyNS41IDMyMi4yIDIyOC42QzMyNC40IDIzMS41IDMyNy4zIDIzNS41IDMzNS4yIDI0MEMzMTkuMiAyNjAuNiAzMTEuOSAyODcuNSAzMDQgMzEzLjJDMjk2LjYgMzM3LjIgMjg4LjcgMzYyLjcgMjcyIDM4NEMyMjIuMSAzNzkuOCAxOTEuNCAzNzQuOCAxNzYgMzY4QzE3Ni4xIDM3OS45IDE3NS4xIDM5MS4zIDE3My4xIDQwMS44QzE3MC4yIDQxNy41IDE2NS4yIDQzMCAxNTcuNCA0MzkuNEMxNDYuOSA0NTIuMyAxMzAuOSA0NTUuOSAxMTIgNDU1LjlDMTYzLjMgNDgyLjIgMjAxLjggNDk2LjEgMjIzLjggNTA0QzIzNC4zIDUwNy45IDI0MS4zIDUxMCAyNDAgNTEwLjFDMjQwLjcgNTEwLjEgMjQ2LjMgNTA4LjQgMjU2IDUwNS4zQzI3Mi4yIDUwMC41IDI5Ni43IDQ4OS45IDMyMC4xIDQ3My43QzM0My4zIDQ1Ny43IDM2Ni4zIDQzNS42IDM4Mi40IDQwNy41QzM5OC41IDM3OS41IDQwOCAzNDQuOSA0MDggMzA0QzM4NCAzMDQgMzYwIDMwNCAzMzYgMzA0QzMzNiAyNTYuMyAzMjAgMjA4IDI3MiAxNzZDMjcyIDE3NiAyMjQgMTkzLjIgMjI0IDI0MEMxNTUgMjY0IDEyMSAyMDggMTIxIDIwOEMxMjAgMjA4IDEyMC43IDIzOS45IDEyMCAyNDBDMTIwIDI0NSAyMDggMzA0IDIwOCAzMDRDMTY2LjEgMzA0IDIwOCA0MDggMjQwIDQ4MEMxNjggNDA4IDE1MiAzNTIgMTUyIDMwNEMxMzEuMiAzMDQgMTEyIDI3Mi44IDExMiAyNDBILTExMkMtNDggMzUyIDY0IDQ4MCAxOTIgNDgwQzMyMCA0ODAgNDMyIDM1MiA0OTYgMjQwSDI3MkMyNzIgMjcyLjggMjUyLjggMzA0IDIzMiAzMDRDMjMyIDM1MiAyMTYgNDA4IDE0NCA0ODBDMTc1LjEgNDA4IDIxNiAzMDQgMTc0LjEgMzA0QzE3NC4xIDMwNCAyNjQgMjQ4IDI2NCAyNDBDMjY0IDIzOS45IDI2MyAyMDggMjYzIDIwOEMyNjMgMjA4IDIyOSAyNjQgMTYwLjkgMjQwQzE2MC45IDE5My4yIDE0NiAxNzYgMTQ2IDE3NkM5NiAyMDggODAuMDQgMjU2LjMgODAuMDQgMzA0QzU2LjA0IDMwNCAzMi4wMiAzMDQgOC4wMiAzMDRDOC4wMjMgMzQ0LjkgMTcuNTIgMzc5LjUgMzMuNTUgNDA3LjVDNDkuNTkgNDM1LjYgNzEuOTkgNDU3LjcgOTEuOTYgNDczLjdDMTE5LjYgNDg5LjkgMTQzLjggNTAwLjUgMTYwIDUwNS4zQzE2OS43IDUwOC40IDE3NS4zIDUxMC4xIDE3NiA1MTAuMUMxNzQuOCA1MTAgMTgxLjcgNTA3LjkgMTkyLjIgNTA0QzIxNC4yIDQ5Ni4xIDI2Mi43IDQ4Mi4yIDMwNCA0NTUuOUMyODUuMSA0NTUuOSAyNjkuMSA0NTIuMyAyNTguNiA0MzkuNEMyNTAuOCA0MzAgMjQ1LjggNDE3LjUgMjQyLjkgNDAxLjhDMjQxIDM5MS4zIDI0MCAzNzkuOSAyNDAgMzY4QzIyNC42IDM3NC44IDE5My45IDM3OS44IDE0NCAzODRDMTI3LjMgMzYyLjcgMTE5LjQgMzM3LjIgMTEyIDMxMy4yQzEwNC4xIDI4Ny41IDk2LjgxIDI2MC42IDgwLjgxIDI0MEMxNzYgMTI4IDIzNyAxNzYgMjQwIDBMMjQwIDB6Ii8+PC9zdmc+',
-    fern: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjMDA4MDAwIj48cGF0aCBkPSJNMjg4IDMyQzI4OCAzMiAyODIgNDMuMTMgMjU2IDQzLjEzQzIzMCA0My4xMyAyMjQgMzIgMjI0IDMyQzIyNCAzMiAxNTAgNTEuMjUgMTUwIDExMkMxNTAgMTQ0IDE4Mi45IDE3NC40IDIxMC43IDE5MEMxODYuMSAxOTcuMSAxNjguMzIgMjI0IDE2OC4zMiAyNTZDMTY4LjMyIDI4OCAxODYuMSAzMTQuOSAyMTAuNyAzMjJDMTg2LjEgMzI5LjEgMTY4LjMyIDM1NiAxNjguMzIgMzg4QzE2OC4zMiA0MjUuNyAxOTguNjggNDU2IDIzNi4zMiA0NTZDMjU5LjggNDU2IDI4MC4zIDQ0My43IDI5MS4zIDQyNS4xQzMwMi4zIDQzMC45IDMxNC43IDQzNCAzMjggNDM0QzM3NS41IDQzNCA0MTQgMzk1LjUgNDE0IDM0OEMxMjYgMjI0IDE0NCAxOTIgMjE0LjcgMTg0QzE0NiAxNTQgMjA4IDgwIDIyNCAxMTJDMjI0IDExMiAyMjQgMTI4IDI1NiAxMjhDMjg4IDEyOCAyODggMTEyIDI4OCAxMTJDMzA0IDgwIDM2NiAxNTQgMjk4IDE4NEMzNjggMTkyIDM4NiAyMjQgMzg2IDM0OEM1NDQgMTI4IDM1MiAzMiAyODggMzJaTTMwNC4zIDMzNkMzMTYuNiAzMzYgMzI4IDMyNC43IDMyOCAzMTIuMyZDMzI4IDMwMC4xIDMxNi42IDI4OCAzMDQuMyAyODhDMjkyLjEgMjg4IDI4MCAyOTkuNCgyODAgMzExLjdDMjgwIDMyNCAyOTIuMSAzMzYgMzA0LjMgMzM2Wk0yNTYgMzEyQzI2OC4yIDMxMiAyNzkuNSAzMDAuNyAyNzkuNSAyODguNSZDMjc5LjUgMjc2LjMgMjY4LjIgMjY0IDI1NiAyNjRDMjQzLjggMjY0IDIzMiAyNzUuMyAyMzIgMjg3LjVDMjMyIDI5OS43IDI0My44IDMxMiAyNTYgMzEyWk0yODggMzk5LjVDMjg4IDM4Ny4zIDI3Ni43IDM3NiAyNjQuNSAzNzZDMjUyLjMgMzc2IDI0MSAzODcuMyAyNDEgMzk5LjVDMjQxIDQxMS43IDI1Mi4zIDQyNCAyNjQuNSA0MjRDMjc2LjcgNDI0IDI4OCA0MTEuNyAyODggMzk5LjVaIi8+PC9zdmc+',
-    cactus: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjMDA5QjRGIj48cGF0aCBkPSJNNjEuMzcgNTEySDE5OS41QzIyMiA1MTIgMjQwIDQ5NCAyNDAgNDcxLjVWMTkyLjNDMjQwIDE2OS44IDI1OCAxNTEuOCAyODAuNSAxNTEuOEgzMDRDMzIxLjcgMTUxLjggMzM2IDE2Ni4xIDMzNiAxODMuOFY0NzEuNUMzMzYgNDk0IDM1NCA1MTIgMzc2LjUgNTEySDQ1MC42QzQ3My4xIDUxMiA0OTEuMSA0OTQgNDkxLjEgNDcxLjVWMTI0LjdDNDkxLjEgOTYuMzIgNDkxLjkgNjcuODUgNDcyLjQgNDIuMzJDNDU5LjkgMjYuMjIgNDQxLjUgMTYgNDIyLjEgMTZIMzcwLjFDMzQ0IDYyIDMyMC4xIDgwIDMwNC4xIDgwQzI4My41IDgwIDI2Ny40IDY3LjY1IDI1NC45IDUwLjM1QzI0Mi40IDMzLjA1IDIzMy4xIDE2IDIxOC4xIDE2QzIwMy4yIDE2IDE5My44IDMzLjA1IDE4MS4zIDUwLjM1QzE2OC44IDY3LjY1IDE1Mi43IDgwIDEzMiA4MEMxMTUuOSA4MCA5Mi4wMyA2MiA2Ni4wNCAxNkg4OS45NEMxMDguNSAxNiAxMjQgMzEuNDcgMTI0IDUwLjA2QzEyNCAxMzAuOCAxMjQgMjM4IDEyNCAzMThDMTI0IDMzMy44IDExOCAzNDIuMyAxMDQgMzQ5LjRDODkuOTUgMzU2LjUgNzUuNDQgMzc1LjcgNzUuNDQgMzkxLjVDNzUuNDQgNDA3LjMgNjkuOTUgNDI0LjUgNTYgNDI0LjJDNDIuMTkgNDI0LjIgMjguNDQgNDI2LjUgMjAgNDM5LjhDMTEuNjkgNDUzIDIwLjg4IDQ3MS42IDM4Ljg3IDQ3OS40QzU2Ljg3IDQ4Ny4xIDYxLjM3IDQ5MyA2MS4zNyA1MTJaIi8+PC9zdmc+',
-    generic: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiBmaWxsPSIjMmU3ZDMyIj48cGF0aCBkPSJNMjk0LjQgMjIxLjNMNzkuMSA1MC43Yy0zLjctMy00LjItOC40LTEuMS0xMi4yIDMtMy44IDguNS00LjMgMTIuMi0xLjFsMjE1LjMgMTcwLjZjMy43IDMgNC4yIDguNCAxLjEgMTIuMi0zIDMuOC04LjUgNC4zLTEyLjIgMS4xem0tNzYuOCAyNjBsLTIxNS4zLTE3MC42Yy0zLjctMy00LjItOC40LTEuMS0xMi4yIDMtMy44IDguNS00LjMgMTIuMi0xLjFsMjE1LjMgMTcwLjZjMy43IDMgNC4yIDguNCAxLjEgMTIuMi0zIDMuOC04LjUgNC4zLTEyLjIgMS4xeiIvPjxwYXRoIGQ9Ik0yOTQuNCAxOEw3OS4xIDE4OC42Yy0zLjcgMy00LjIgOC40LTEuMSAxMi4yIDMgMy44IDguNSA0LjMgMTIuMiAxLjFsMjE1LjMtMTcwLjZjMy43LTMgNC4yLTguNCAxLjEtMTIuMi0zLTMuOC04LjUtNC4zLTEyLjIgMS4xem0wIDQxNS40TDc5LjEgNjA0Yy0zLjcgMy00LjIgOC40LTEuMSAxMi4yIDMgMy44IDguNSA0LjMgMTIuMiAxLjFsMjE1LjMtMTcwLjZjMy43LTMgNC4yLTguNCAxLjEtMTIuMi0zLTMuOC04LjUtNC4zLTEyLjIgMS4xeiIvPjxwYXRoIGQ9Ik0zOTYuMyA2NEwxODEgMjM0LjZjLTMuNyAzLTQuMiA4LjQtMS4xIDEyLjIgMyAzLjggOC41IDQuMyAxMi4yIDEuMWwyMTUuMy0xNzAuNmMzLjctMyA0LjItOC40IDEuMS0xMi4yLTMtMy44LTguNS00LjMtMTIuMiAxLjF6bTAgMTk1LjhMMTgxIDQzMC40Yy0zLjcgMy00LjIgOC40LTEuMSAxMi4yIDMgMy44IDguNSA0LjMgMTIuMiAxLjFsMjE1LjMtMTcwLjZjMy43LTMgNC4yLTguNCAxLjEtMTIuMi0zLTMuOC04LjUtNC4zLTEyLjIgMS4xeiIvPjxwYXRoIGQ9Ik0yNTYgNDBjLTEzLjMgMC0yNCA5LjgtMjQgMjIgMCAxMi4yIDEwLjcgMjIgMjQgMjJzMjQtOS44IDI0LTIyYzAtMTIuMi0xMC43LTIyLTI0LTIyem0wIDE5NWMtMTMuMyAwLTI0IDkuOC0yNCAyMiAwIDEyLjIgMTAuNyAyMiAyNCAyMnMyNC05LjggMjQtMjJjMC0xMi4yLTEwLjctMjItMjQtMjJ6bTAtMzljLTEzLjMgMC0yNCA5LjgtMjQgMjIgMCAxMi4yIDEwLjcgMjIgMjQgMjJzMjQtOS44IDI0LTIyYzAtMTIuMi0xMC43LTIyLTI0LTIyem0wIDE5NWMtMTMuMyAwLTI0IDkuOC0yNCAyMiAwIDEyLjIgMTAuNyAyMiAyNCAyMnMyNC05LjggMjQtMjJjMC0xMi4yLTEwLjctMjItMjQtMjJ6Ii8+PC9zdmc+'
-};
-
 async function getPlantDetails(speciesKey) {
     try {
         // Get species details from GBIF API
@@ -261,35 +298,10 @@ async function getPlantDetails(speciesKey) {
         const occurrenceResponse = await fetch(`https://api.gbif.org/v1/occurrence/search?taxonKey=${speciesKey}&limit=5&mediaType=StillImage`);
         const occurrenceData = await occurrenceResponse.json();
         
-        // Get a suitable default image based on plant type
-        let defaultImage = defaultPlantImages.generic;
-        if (data.family) {
-            // Try to match family to a plant type
-            const family = data.family.toLowerCase();
-            if (family.includes('cactac')) {
-                defaultImage = defaultPlantImages.cactus;
-            } else if (family.includes('orchi')) {
-                defaultImage = defaultPlantImages.flower;
-            } else if (family.includes('rosa')) {
-                defaultImage = defaultPlantImages.flower;
-            } else if (family.includes('asterac')) {
-                defaultImage = defaultPlantImages.flower;
-            } else if (family.includes('fab')) {
-                defaultImage = defaultPlantImages.herb;
-            } else if (family.includes('poac')) {
-                defaultImage = defaultPlantImages.herb;
-            } else if (family.includes('arec')) {
-                defaultImage = defaultPlantImages.tree;
-            } else if (family.includes('fern')) {
-                defaultImage = defaultPlantImages.fern;
-            } else if (family.includes('succu')) {
-                defaultImage = defaultPlantImages.succulent;
-            }
-        }
+        // Try to get a custom plant image
+        let imageUrl = null;
         
-        let imageUrl = defaultImage;
-        
-        // Try to find an image in the occurrences
+        // First try to find an image in the occurrences
         if (occurrenceData.results && occurrenceData.results.length > 0) {
             for (const result of occurrenceData.results) {
                 if (result.media && result.media.length > 0) {
@@ -303,16 +315,29 @@ async function getPlantDetails(speciesKey) {
                                 break;
                             }
                         } catch (error) {
-                            console.log("Image URL not accessible, using default image");
+                            console.log("Image URL not accessible, trying next option");
                         }
                     }
                 }
             }
         }
         
+        // If no image was found, try to get a custom one from Gemini
+        if (!imageUrl) {
+            const plantName = data.vernacularNames && data.vernacularNames.length > 0 
+                ? data.vernacularNames[0].vernacularName 
+                : data.scientificName;
+                
+            const customImage = await getCustomPlantImage(plantName);
+            if (customImage) {
+                imageUrl = customImage;
+            } else {
+                // If all else fails, use the default plant image
+                imageUrl = defaultPlantImage;
+            }
+        }
+        
         // Generate plant info
-        // In a real app, you would want to get this information from a database
-        // For now, we'll use some placeholder text
         const waterDays = Math.floor(Math.random() * 10) + 2; // Random between 2-12 days
         const sunlightHours = Math.floor(Math.random() * 6) + 3; // Random between 3-8 hours
         
@@ -322,7 +347,7 @@ async function getPlantDetails(speciesKey) {
             commonName: data.vernacularNames && data.vernacularNames.length > 0 
                 ? data.vernacularNames[0].vernacularName 
                 : data.scientificName,
-            info: `${data.scientificName} belongs to the ${data.family} family. ` +
+            info: `${data.scientificName} belongs to the ${data.family || 'plant'} family. ` +
                   `Native to various regions, it's known for its adaptability and beauty. ` +
                   `This plant prefers ${sunlightHours} hours of sunlight and should be watered every ${waterDays} days.`,
             image: imageUrl,
