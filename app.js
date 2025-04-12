@@ -903,17 +903,7 @@ document.getElementById('reset-api-key')?.addEventListener('click', async () => 
     }
 });
 
-// Google sign-in setup toggle
-document.getElementById('show-google-setup')?.addEventListener('click', function() {
-    const setupSection = document.getElementById('google-signin-setup');
-    if (setupSection.classList.contains('hidden')) {
-        setupSection.classList.remove('hidden');
-        this.textContent = 'Hide Instructions';
-    } else {
-        setupSection.classList.add('hidden');
-        this.textContent = 'Show Setup Instructions';
-    }
-});
+
 
 // Event listeners
 tabs.forEach(tab => {
@@ -1106,11 +1096,7 @@ async function initApp() {
     // Setup notifications
     setupNotifications();
     
-    // Hide Google setup instructions by default
-    if (document.getElementById('google-signin-setup')) {
-        document.getElementById('google-signin-setup').classList.add('hidden');
-        document.getElementById('show-google-setup').textContent = 'Show Setup Instructions';
-    }
+   
     
     // Show welcome message for first-time users
     if (!hasSeenWelcome && !auth?.currentUser) {
