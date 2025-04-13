@@ -439,6 +439,7 @@ function getCommonIssuesForPlant(plant) {
 }
 
 // Get plant tips from Gemini API
+// Update the getPlantTipsFromGemini function in care.js
 async function getPlantTipsFromGemini(commonName, scientificName) {
     try {
         const plantName = scientificName || commonName;
@@ -483,8 +484,30 @@ async function getPlantTipsFromGemini(commonName, scientificName) {
         const data = await response.json();
         const text = data.candidates[0].content.parts[0].text;
         
-        // Parse JSON from the response
-        return JSON.parse(text);
+        // Extract JSON from the response - handle code blocks if present
+        let jsonText = text;
+        
+        // Remove code block markers if present
+        if (text.includes('```json')) {
+            jsonText = text.replace(/```json\s*|\s*```/g, '');
+        } else if (text.includes('```')) {
+            jsonText = text.replace(/```\s*|\s*```/g, '');
+        }
+        
+        // Try to parse JSON
+        try {
+            return JSON.parse(jsonText);
+        } catch (parseError) {
+            console.warn("JSON parsing error:", parseError);
+            console.log("Attempted to parse:", jsonText);
+            
+            // Fallback to regexp extraction
+            const jsonMatch = jsonText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                return JSON.parse(jsonMatch[0]);
+            }
+            throw parseError;
+        }
         
     } catch (error) {
         console.error("Error getting plant tips from Gemini:", error);
