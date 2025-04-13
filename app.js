@@ -5,58 +5,37 @@ let selectedPlantId = null;
 let stream = null;
 let hasSeenWelcome = false;
 
-// DOM elements
-const tabs = document.querySelectorAll('.tab-btn');
-const tabContents = document.querySelectorAll('.tab-content');
-const themeToggle = document.getElementById('theme-toggle');
-const notification = document.getElementById('notification');
-const notificationMessage = document.getElementById('notification-message');
-const startCameraButton = document.getElementById('startCameraButton');
-const cameraContainer = document.getElementById('camera-container');
-const captureButton = document.getElementById('captureButton');
-const videoElement = document.getElementById('videoElement');
-const capturedPhoto = document.getElementById('capturedPhoto');
-const imageUpload = document.getElementById('imageUpload');
-const searchInput = document.getElementById('searchInput');
-const searchButton = document.getElementById('searchButton');
-const searchResults = document.getElementById('searchResults');
-const addToGardenButton = document.getElementById('addToGardenButton');
-const searchAddToGardenButton = document.getElementById('searchAddToGardenButton');
-const closeModalButton = document.getElementById('closeModal');
-const plantDetailModal = document.getElementById('plantDetailModal');
-const modalWaterButton = document.getElementById('modalWaterButton');
-const modalRemoveButton = document.getElementById('modalRemoveButton');
-
-// Check for saved theme preference
-if (localStorage.getItem('theme') === 'dark' || 
-    (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    document.documentElement.classList.add('dark');
-} else {
-    document.documentElement.classList.remove('dark');
-}
-
-// Listen for changes in color scheme preference
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-    if (!localStorage.getItem('theme')) {
-        if (event.matches) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
+// Function to safely get DOM elements with fallbacks
+function getElement(id) {
+    const element = document.getElementById(id);
+    if (!element) {
+        console.warn(`Element with ID "${id}" not found in the DOM`);
     }
-});
+    return element;
+}
 
 // Utility functions
 function showNotification(message, duration = 3000) {
-    notificationMessage.textContent = message;
-    notification.classList.add('show');
+    const notification = getElement('notification');
+    const notificationMessage = getElement('notification-message');
     
-    setTimeout(() => {
-        notification.classList.remove('show');
-    }, duration);
+    if (notification && notificationMessage) {
+        notificationMessage.textContent = message;
+        notification.classList.add('show');
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, duration);
+    } else {
+        console.warn("Notification elements not found:", message);
+    }
 }
 
 function switchTab(tabId) {
+    console.log(`Switching to tab: ${tabId}`);
+    const tabs = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
     // Update active tab button
     tabs.forEach(tab => {
         if (tab.id === `tab-${tabId}`) {
@@ -84,6 +63,16 @@ function generateId() {
 // Camera and image functions
 async function startCamera() {
     try {
+        console.log("Starting camera...");
+        const cameraContainer = getElement('camera-container');
+        const startCameraButton = getElement('startCameraButton');
+        const videoElement = getElement('videoElement');
+        const capturedPhoto = getElement('capturedPhoto');
+        
+        if (!cameraContainer || !startCameraButton || !videoElement || !capturedPhoto) {
+            throw new Error("Required camera elements not found");
+        }
+        
         // Request camera access
         stream = await navigator.mediaDevices.getUserMedia({ 
             video: { 
@@ -107,21 +96,81 @@ async function startCamera() {
     }
 }
 
+// Same pattern for other camera functions
+async function startHealthCamera() {
+    try {
+        console.log("Starting health camera...");
+        const cameraContainer = getElement('health-camera-container');
+        const startCameraButton = getElement('startHealthCameraButton');
+        const videoElement = getElement('healthVideoElement');
+        const capturedPhoto = getElement('healthCapturedPhoto');
+        
+        if (!cameraContainer || !startCameraButton || !videoElement || !capturedPhoto) {
+            throw new Error("Required health camera elements not found");
+        }
+        
+        // Request camera access
+        stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: 'environment',
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            } 
+        });
+        
+        // Show camera container and video
+        videoElement.srcObject = stream;
+        cameraContainer.classList.remove('hidden');
+        startCameraButton.classList.add('hidden');
+        capturedPhoto.classList.add('hidden');
+        
+        return true;
+    } catch (err) {
+        console.error("Error accessing health camera:", err);
+        showNotification("Error accessing camera. Please check permissions.");
+        return false;
+    }
+}
+
 function stopCamera() {
     if (stream) {
         stream.getTracks().forEach(track => track.stop());
         stream = null;
-        videoElement.srcObject = null;
+        
+        const videoElement = getElement('videoElement');
+        if (videoElement) {
+            videoElement.srcObject = null;
+        }
     }
-    cameraContainer.classList.add('hidden');
-    startCameraButton.classList.remove('hidden');
+    
+    const cameraContainer = getElement('camera-container');
+    const startCameraButton = getElement('startCameraButton');
+    
+    if (cameraContainer) {
+        cameraContainer.classList.add('hidden');
+    }
+    
+    if (startCameraButton) {
+        startCameraButton.classList.remove('hidden');
+    }
 }
 
 function captureImage() {
-    if (!stream) return;
+    console.log("Capturing image...");
+    if (!stream) {
+        console.warn("No active stream for capture");
+        return;
+    }
+    
+    const canvas = getElement('capturedPhoto');
+    const videoElement = getElement('videoElement');
+    
+    if (!canvas || !videoElement) {
+        console.warn("Required capture elements not found");
+        return;
+    }
     
     // Setup canvas for capturing
-    const canvas = capturedPhoto;
     canvas.width = videoElement.videoWidth;
     canvas.height = videoElement.videoHeight;
     const ctx = canvas.getContext('2d');
@@ -138,9 +187,18 @@ function captureImage() {
 }
 
 function handleImageUpload(event) {
+    console.log("Handling image upload...");
     const file = event.target.files[0];
     if (!file || !file.type.match('image.*')) {
         showNotification("Please select a valid image file");
+        return;
+    }
+    
+    const canvas = getElement('capturedPhoto');
+    const cameraContainer = getElement('camera-container');
+    
+    if (!canvas || !cameraContainer) {
+        console.warn("Required upload elements not found");
         return;
     }
     
@@ -149,7 +207,6 @@ function handleImageUpload(event) {
         const img = new Image();
         img.onload = function() {
             // Setup canvas for uploaded image
-            const canvas = capturedPhoto;
             canvas.width = img.width;
             canvas.height = img.height;
             const ctx = canvas.getContext('2d');
@@ -169,15 +226,66 @@ function handleImageUpload(event) {
     reader.readAsDataURL(file);
 }
 
+function handleHealthImageUpload(event) {
+    console.log("Handling health image upload...");
+    const file = event.target.files[0];
+    if (!file || !file.type.match('image.*')) {
+        showNotification("Please select a valid image file");
+        return;
+    }
+    
+    const canvas = getElement('healthCapturedPhoto');
+    const cameraContainer = getElement('health-camera-container');
+    
+    if (!canvas || !cameraContainer) {
+        console.warn("Required health upload elements not found");
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            // Setup canvas for uploaded image
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw image to canvas
+            ctx.drawImage(img, 0, 0);
+            
+            // Display canvas and hide camera button
+            canvas.classList.remove('hidden');
+            cameraContainer.classList.add('hidden');
+            
+            // Process the health check
+            processHealthCheck(canvas);
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
 // Process image using Gemini API
 async function processImage(canvas) {
-    document.getElementById('identificationResults').classList.remove('hidden');
-    document.getElementById('loadingIdentification').classList.remove('hidden');
-    document.getElementById('identificationContent').classList.add('hidden');
+    console.log("Processing image for identification...");
+    const identificationResults = getElement('identificationResults');
+    const loadingIdentification = getElement('loadingIdentification');
+    const identificationContent = getElement('identificationContent');
+    const identificationError = getElement('identificationError');
+    
+    if (!identificationResults || !loadingIdentification || !identificationContent) {
+        console.warn("Required identification elements not found");
+        return;
+    }
+    
+    identificationResults.classList.remove('hidden');
+    loadingIdentification.classList.remove('hidden');
+    identificationContent.classList.add('hidden');
     
     // Hide any previous error state
-    if (document.getElementById('identificationError')) {
-        document.getElementById('identificationError').classList.add('hidden');
+    if (identificationError) {
+        identificationError.classList.add('hidden');
     }
     
     try {
@@ -199,27 +307,39 @@ async function processImage(canvas) {
         };
         
         // Update identification results
-        document.getElementById('identifiedPlantName').textContent = currentPlant.commonName;
-        document.getElementById('identifiedPlantScientific').textContent = currentPlant.scientificName;
-        document.getElementById('identifiedPlantInfo').innerHTML = currentPlant.info;
-        document.getElementById('identifiedPlantImage').src = currentPlant.image;
+        const identifiedPlantName = getElement('identifiedPlantName');
+        const identifiedPlantScientific = getElement('identifiedPlantScientific');
+        const identifiedPlantInfo = getElement('identifiedPlantInfo');
+        const identifiedPlantImage = getElement('identifiedPlantImage');
+        const addToGardenButton = getElement('addToGardenButton');
+        
+        if (!identifiedPlantName || !identifiedPlantScientific || !identifiedPlantInfo || !identifiedPlantImage || !addToGardenButton) {
+            throw new Error("Required result elements not found");
+        }
+        
+        identifiedPlantName.textContent = currentPlant.commonName;
+        identifiedPlantScientific.textContent = currentPlant.scientificName;
+        identifiedPlantInfo.innerHTML = currentPlant.info;
+        identifiedPlantImage.src = currentPlant.image;
         
         // Enable add to garden button
-        document.getElementById('addToGardenButton').disabled = false;
-        document.getElementById('addToGardenButton').classList.remove('opacity-50');
+        addToGardenButton.disabled = false;
+        addToGardenButton.classList.remove('opacity-50');
         
         // Hide loading and show results
-        document.getElementById('loadingIdentification').classList.add('hidden');
-        document.getElementById('identificationContent').classList.remove('hidden');
+        loadingIdentification.classList.add('hidden');
+        identificationContent.classList.remove('hidden');
         
     } catch (error) {
         console.error("Error identifying plant:", error);
         
         // Show error interface
-        document.getElementById('loadingIdentification').classList.add('hidden');
+        if (loadingIdentification) {
+            loadingIdentification.classList.add('hidden');
+        }
         
         // Create error section if it doesn't exist
-        if (!document.getElementById('identificationError')) {
+        if (!identificationError) {
             const errorDiv = document.createElement('div');
             errorDiv.id = 'identificationError';
             errorDiv.className = 'text-center py-10';
@@ -244,102 +364,37 @@ async function processImage(canvas) {
                     If you're having trouble, try checking your internet connection or using a VPN.
                 </p>
             `;
-            document.getElementById('identificationResults').appendChild(errorDiv);
+            identificationResults.appendChild(errorDiv);
             
             // Add event listeners to new buttons
-            document.getElementById('retryIdentification').addEventListener('click', () => {
+            getElement('retryIdentification')?.addEventListener('click', () => {
                 // Retry identification with current image
-                processImage(capturedPhoto);
+                processImage(getElement('capturedPhoto'));
             });
             
-            document.getElementById('offlineIdentification').addEventListener('click', () => {
+            getElement('offlineIdentification')?.addEventListener('click', () => {
                 // Create offline fallback plant
-                createFallbackPlant(capturedPhoto);
+                createFallbackPlant(getElement('capturedPhoto'));
             });
         } else {
             // Show existing error interface
-            document.getElementById('identificationError').classList.remove('hidden');
-            document.getElementById('errorMessage').textContent = "We couldn't identify this plant due to a connection issue.";
+            identificationError.classList.remove('hidden');
+            const errorMessage = getElement('errorMessage');
+            if (errorMessage) {
+                errorMessage.textContent = "We couldn't identify this plant due to a connection issue.";
+            }
         }
-    }
-}
-
-// Create a fallback plant when offline
-function createFallbackPlant(canvas) {
-    // Create a generic plant object
-    currentPlant = {
-        id: generateId(),
-        commonName: "Unknown Plant",
-        scientificName: "Species unknown",
-        info: "This appears to be a plant with green foliage. For proper care, keep soil moderately moist and place in indirect light. Water when the top inch of soil feels dry.",
-        image: canvas.toDataURL('image/jpeg'),
-        waterDays: 7,
-        sunlightHours: 6
-    };
-    
-    // Update identification results
-    document.getElementById('identifiedPlantName').textContent = currentPlant.commonName;
-    document.getElementById('identifiedPlantScientific').textContent = currentPlant.scientificName;
-    document.getElementById('identifiedPlantInfo').innerHTML = currentPlant.info;
-    document.getElementById('identifiedPlantImage').src = currentPlant.image;
-    
-    // Enable add to garden button
-    document.getElementById('addToGardenButton').disabled = false;
-    document.getElementById('addToGardenButton').classList.remove('opacity-50');
-    
-    // Hide error and show results
-    document.getElementById('identificationError').classList.add('hidden');
-    document.getElementById('identificationContent').classList.remove('hidden');
-}
-
-function displaySearchResults(results) {
-    searchResults.innerHTML = '';
-    
-    if (results.length === 0) {
-        const noResults = document.createElement('div');
-        noResults.className = 'search-result-item';
-        noResults.textContent = 'No plants found';
-        searchResults.appendChild(noResults);
-    } else {
-        results.forEach(plant => {
-            const resultItem = document.createElement('div');
-            resultItem.className = 'search-result-item';
-            resultItem.textContent = plant.commonName;
-            resultItem.addEventListener('click', () => {
-                searchResults.classList.add('hidden');
-                getAndDisplayPlantDetails(plant.key);
-            });
-            searchResults.appendChild(resultItem);
-        });
-    }
-    
-    searchResults.classList.remove('hidden');
-}
-
-async function getAndDisplayPlantDetails(speciesKey) {
-    document.getElementById('searchLoading').classList.remove('hidden');
-    document.getElementById('searchContent').classList.add('hidden');
-    
-    try {
-        // Get plant details from GBIF API
-        currentPlant = await getPlantDetails(speciesKey);
-        
-        // Update search results
-        document.getElementById('searchPlantName').textContent = currentPlant.commonName;
-        document.getElementById('searchPlantScientific').textContent = currentPlant.scientificName;
-        document.getElementById('searchPlantInfo').textContent = currentPlant.info;
-        document.getElementById('searchPlantImage').src = currentPlant.image;
-        
-        document.getElementById('searchContent').classList.remove('hidden');
-    } catch (error) {
-        showNotification("Error loading plant details. Please try again.");
-    } finally {
-        document.getElementById('searchLoading').classList.add('hidden');
     }
 }
 
 // Garden management functions
 async function addToGarden(plant) {
+    console.log("Adding plant to garden:", plant?.commonName);
+    if (!plant) {
+        console.warn("No plant data provided to addToGarden");
+        return;
+    }
+    
     // Check if plant already exists in garden
     const existingIndex = garden.findIndex(p => p.id === plant.id);
     
@@ -364,823 +419,330 @@ async function addToGarden(plant) {
     
     // If user is logged in, save directly to cloud
     // Otherwise save to IndexedDB
-    if (auth?.currentUser) {
-        await saveToCloud();
-    } else {
-        await saveGarden(garden);
+    try {
+        if (typeof auth !== 'undefined' && auth?.currentUser) {
+            await saveToCloud();
+        } else {
+            await saveGarden(garden);
+        }
+        
+        // Try to get plant care tips asynchronously
+        if (typeof generatePlantCareTips === 'function') {
+            generatePlantCareTips(newPlant).then(tips => {
+                if (tips) {
+                    // Store tips with the plant
+                    const plantIndex = garden.findIndex(p => p.id === newPlant.id);
+                    if (plantIndex >= 0) {
+                        garden[plantIndex].careTips = tips;
+                        
+                        // Save updated garden data
+                        if (typeof auth !== 'undefined' && auth?.currentUser) {
+                            saveToCloud();
+                        } else {
+                            saveGarden(garden);
+                        }
+                    }
+                }
+            }).catch(error => {
+                console.error("Failed to get plant care tips:", error);
+            });
+        }
+        
+        // Update UI
+        renderGarden();
+        if (typeof renderCare === 'function') {
+            renderCare();
+        }
+        
+        showNotification(`${plant.commonName} added to your garden!`);
+        
+        // Switch to garden tab
+        switchTab('garden');
+    } catch (error) {
+        console.error("Error adding plant to garden:", error);
+        showNotification("Error adding plant to garden. Please try again.");
+    }
+}
+
+// Initial setup and events
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("DOM content loaded");
+    
+    // Setup theme toggle
+    const themeToggle = getElement('theme-toggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function() {
+            console.log("Toggle theme clicked");
+            // Toggle dark class
+            document.documentElement.classList.toggle('dark');
+            
+            // Save preference to localStorage
+            if (document.documentElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        });
     }
     
-    // Try to get plant care tips asynchronously
-    generatePlantCareTips(newPlant).then(tips => {
-        if (tips) {
-            // Store tips with the plant
-            const plantIndex = garden.findIndex(p => p.id === newPlant.id);
-            if (plantIndex >= 0) {
-                garden[plantIndex].careTips = tips;
-                
-                // Save updated garden data
-                if (auth?.currentUser) {
-                    saveToCloud();
-                } else {
-                    saveGarden(garden);
-                }
-            }
-        }
-    }).catch(error => {
-        console.error("Failed to get plant care tips:", error);
+    // Tab navigation
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.id.replace('tab-', '');
+            console.log(`Tab clicked: ${tabId}`);
+            switchTab(tabId);
+        });
     });
     
+    // Camera controls
+    const startCameraButton = getElement('startCameraButton');
+    if (startCameraButton) {
+        startCameraButton.addEventListener('click', () => {
+            console.log("Start camera button clicked");
+            startCamera();
+        });
+    }
+    
+    const captureButton = getElement('captureButton');
+    if (captureButton) {
+        captureButton.addEventListener('click', () => {
+            console.log("Capture button clicked");
+            captureImage();
+        });
+    }
+    
+    const imageUpload = getElement('imageUpload');
+    if (imageUpload) {
+        imageUpload.addEventListener('change', (event) => {
+            console.log("Image upload changed");
+            handleImageUpload(event);
+        });
+    }
+    
+    // Health camera controls
+    const startHealthCameraButton = getElement('startHealthCameraButton');
+    if (startHealthCameraButton) {
+        startHealthCameraButton.addEventListener('click', () => {
+            console.log("Start health camera button clicked");
+            startHealthCamera();
+        });
+    }
+    
+    const healthCaptureButton = getElement('healthCaptureButton');
+    if (healthCaptureButton) {
+        healthCaptureButton.addEventListener('click', () => {
+            console.log("Health capture button clicked");
+            captureHealthImage();
+        });
+    }
+    
+    const healthImageUpload = getElement('healthImageUpload');
+    if (healthImageUpload) {
+        healthImageUpload.addEventListener('change', (event) => {
+            console.log("Health image upload changed");
+            handleHealthImageUpload(event);
+        });
+    }
+    
+    // Garden buttons
+    const addToGardenButton = getElement('addToGardenButton');
+    if (addToGardenButton) {
+        addToGardenButton.addEventListener('click', () => {
+            console.log("Add to garden button clicked");
+            if (currentPlant) {
+                addToGarden(currentPlant);
+            } else {
+                console.warn("No current plant to add to garden");
+            }
+        });
+    }
+    
+    const searchAddToGardenButton = getElement('searchAddToGardenButton');
+    if (searchAddToGardenButton) {
+        searchAddToGardenButton.addEventListener('click', () => {
+            console.log("Search add to garden button clicked");
+            if (currentPlant) {
+                addToGarden(currentPlant);
+            } else {
+                console.warn("No current plant from search to add to garden");
+            }
+        });
+    }
+    
+    // Check health button
+    const checkHealthButton = getElement('checkHealthButton');
+    if (checkHealthButton) {
+        checkHealthButton.addEventListener('click', () => {
+            console.log("Check health button clicked");
+            // If we have a current plant, switch to health tab with this image
+            if (currentPlant && currentPlant.image) {
+                const img = new Image();
+                img.onload = function() {
+                    // Switch to health tab
+                    switchTab('health');
+                    
+                    // Setup canvas for health check
+                    const canvas = getElement('healthCapturedPhoto');
+                    if (canvas) {
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        const ctx = canvas.getContext('2d');
+                        
+                        // Draw image to canvas
+                        ctx.drawImage(img, 0, 0);
+                        
+                        // Display canvas
+                        canvas.classList.remove('hidden');
+                        
+                        // Process the health check
+                        if (typeof processHealthCheck === 'function') {
+                            processHealthCheck(canvas);
+                        } else {
+                            console.warn("processHealthCheck function not available");
+                        }
+                    }
+                };
+                img.src = currentPlant.image;
+            } else {
+                // Just switch to health tab
+                switchTab('health');
+            }
+        });
+    }
+    
+    // Search instead button
+    const searchForPlantButton = getElement('searchForPlantButton');
+    if (searchForPlantButton) {
+        searchForPlantButton.addEventListener('click', () => {
+            console.log("Search for plant button clicked");
+            if (currentPlant) {
+                // Fill search field with plant name and switch to search tab
+                const searchInput = getElement('searchInput');
+                if (searchInput) {
+                    searchInput.value = currentPlant.commonName;
+                    switchTab('search');
+                    
+                    // Trigger search
+                    setTimeout(() => {
+                        const searchButton = getElement('searchButton');
+                        if (searchButton) searchButton.click();
+                    }, 100);
+                }
+            }
+        });
+    }
+    
+    // Check for saved theme preference
+    if (localStorage.getItem('theme') === 'dark' || 
+        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+    
+    // Initialize app
+    if (typeof initApp === 'function') {
+        initApp().catch(error => {
+            console.error("Error initializing app:", error);
+        });
+    } else {
+        // Basic initialization if full init not available
+        console.log("Basic initialization (initApp not available)");
+        loadGarden().then(loadedGarden => {
+            garden = loadedGarden || [];
+            if (typeof renderGarden === 'function') {
+                renderGarden();
+            }
+            if (typeof renderCare === 'function') {
+                renderCare();
+            }
+        }).catch(error => {
+            console.error("Error loading garden:", error);
+        });
+    }
+});
+
+// Capture health image
+function captureHealthImage() {
+    console.log("Capturing health image...");
+    if (!stream) {
+        console.warn("No active stream for health capture");
+        return;
+    }
+    
+    const canvas = getElement('healthCapturedPhoto');
+    const videoElement = getElement('healthVideoElement');
+    const cameraContainer = getElement('health-camera-container');
+    const startButton = getElement('startHealthCameraButton');
+    
+    if (!canvas || !videoElement || !cameraContainer || !startButton) {
+        console.warn("Required health capture elements not found");
+        return;
+    }
+    
+    // Setup canvas for capturing
+    canvas.width = videoElement.videoWidth;
+    canvas.height = videoElement.videoHeight;
+    const ctx = canvas.getContext('2d');
+    
+    // Draw video frame to canvas
+    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+    
+    // Stop the camera
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+        videoElement.srcObject = null;
+    }
+    
     // Update UI
-    renderGarden();
-    renderCare();
+    cameraContainer.classList.add('hidden');
+    startButton.classList.remove('hidden');
+    canvas.classList.remove('hidden');
     
-    showNotification(`${plant.commonName} added to your garden!`);
-    
-    // Switch to garden tab
-    switchTab('garden');
-}
-
-async function removeFromGarden(plantId) {
-    const plantIndex = garden.findIndex(p => p.id === plantId);
-    if (plantIndex >= 0) {
-        const plantName = garden[plantIndex].commonName;
-        garden.splice(plantIndex, 1);
-        
-        // If user is logged in, save directly to cloud
-        // Otherwise save to IndexedDB
-        if (auth?.currentUser) {
-            await saveToCloud();
-        } else {
-            await saveGarden(garden);
-        }
-        
-        // Update UI
-        renderGarden();
-        renderCare();
-        
-        showNotification(`${plantName} removed from your garden.`);
-        
-        // Close modal
-        closePlantDetailModal();
+    // Process the health check
+    if (typeof processHealthCheck === 'function') {
+        processHealthCheck(canvas);
+    } else {
+        console.warn("processHealthCheck function not available");
+        showNotification("Health check feature not available");
     }
 }
 
-async function waterPlant(plantId) {
-    const plantIndex = garden.findIndex(p => p.id === plantId);
-    if (plantIndex >= 0) {
-        const plant = garden[plantIndex];
-        const now = new Date();
-        
-        plant.lastWatered = now.toISOString();
-        plant.nextWater = new Date(now.getTime() + (plant.waterInterval * 24 * 60 * 60 * 1000)).toISOString();
-        
-        // If user is logged in, save directly to cloud
-        // Otherwise save to IndexedDB
-        if (auth?.currentUser) {
-            await saveToCloud();
-        } else {
-            await saveGarden(garden);
-        }
-        
-        // Update UI
-        renderGarden();
-        renderCare();
-        
-        // If modal is open, update it
-        if (selectedPlantId === plantId) {
-            updatePlantDetailModal(plant);
-        }
-        
-        showNotification(`${plant.commonName} has been watered!`);
-    }
+// Add these fallback functions to avoid errors if the other JavaScript files haven't loaded properly
+
+function processHealthCheck(canvas) {
+    console.warn("processHealthCheck function not properly loaded");
+    showNotification("Health check processing not available. Please refresh the page.");
 }
 
 function renderGarden() {
-    const gardenContent = document.getElementById('gardenContent');
-    const emptyGarden = document.getElementById('emptyGarden');
+    console.log("Fallback renderGarden called - waiting for full implementation");
+    const gardenContent = getElement('gardenContent');
+    const emptyGarden = getElement('emptyGarden');
+    
+    if (!gardenContent || !emptyGarden) return;
     
     if (garden.length === 0) {
         gardenContent.classList.add('hidden');
         emptyGarden.classList.remove('hidden');
-        return;
+    } else {
+        gardenContent.classList.remove('hidden');
+        emptyGarden.classList.add('hidden');
+        
+        gardenContent.innerHTML = '<p class="text-center p-4">Loading garden...</p>';
     }
-    
-    gardenContent.classList.remove('hidden');
-    emptyGarden.classList.add('hidden');
-    
-    gardenContent.innerHTML = '';
-    
-    garden.forEach(plant => {
-        const now = new Date();
-        const lastWatered = new Date(plant.lastWatered);
-        const nextWater = new Date(plant.nextWater);
-        
-        // Calculate water progress
-        const waterTotal = plant.waterInterval * 24 * 60 * 60 * 1000; // in ms
-        const waterElapsed = now - lastWatered; // in ms
-        const waterProgress = Math.min(100, Math.max(0, (waterElapsed / waterTotal) * 100));
-        
-        const plantCard = document.createElement('div');
-        plantCard.className = 'plant-card';
-        plantCard.innerHTML = `
-            <img src="${plant.image}" alt="${plant.commonName}" class="w-full h-32 object-cover">
-            <div class="p-3">
-                <h3 class="font-semibold truncate">${plant.commonName}</h3>
-                <div class="mt-2">
-                    <div class="flex justify-between text-xs mb-1">
-                        <span>Water</span>
-                        <span>${nextWater < now ? 'Needs water!' : timeDifference(nextWater)}</span>
-                    </div>
-                    <div class="water-progress-bar">
-                        <div class="water-progress" style="width: ${waterProgress}%;"></div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        plantCard.addEventListener('click', () => {
-            openPlantDetailModal(plant.id);
-        });
-        
-        gardenContent.appendChild(plantCard);
-    });
 }
 
 function renderCare() {
-    const careContent = document.getElementById('careContent');
-    const emptyCare = document.getElementById('emptyCare');
-    
-    if (garden.length === 0) {
-        careContent.classList.add('hidden');
-        emptyCare.classList.remove('hidden');
-        return;
-    }
-    
-    const now = new Date();
-    
-    // Filter plants that need care soon
-    const careTasks = garden
-        .map(plant => {
-            const nextWater = new Date(plant.nextWater);
-            
-            // Calculate days until watering
-            const daysUntilWater = Math.ceil((nextWater - now) / (24 * 60 * 60 * 1000));
-            
-            return {
-                plant,
-                daysUntilWater
-            };
-        })
-        .filter(task => task.daysUntilWater <= 3) // Show tasks coming up in the next 3 days
-        .sort((a, b) => a.daysUntilWater - b.daysUntilWater);
-    
-    if (careTasks.length === 0) {
-        careContent.classList.add('hidden');
-        emptyCare.classList.remove('hidden');
-        emptyCare.innerHTML = `
-            <i class="fas fa-check-circle text-4xl text-green-500 mb-3"></i>
-            <p class="text-gray-600 dark:text-gray-300">All your plants are taken care of! Check back later for care reminders.</p>
-        `;
-        return;
-    }
-    
-    careContent.classList.remove('hidden');
-    emptyCare.classList.add('hidden');
-    
-    careContent.innerHTML = '';
-    
-    careTasks.forEach(task => {
-        const { plant, daysUntilWater } = task;
-        
-        const taskCard = document.createElement('div');
-        taskCard.className = 'card p-4';
-        
-        let statusText, statusClass;
-        
-        if (daysUntilWater < 0) {
-            statusText = `Overdue by ${Math.abs(daysUntilWater)} day${Math.abs(daysUntilWater) !== 1 ? 's' : ''}`;
-            statusClass = 'text-red-500';
-        } else if (daysUntilWater === 0) {
-            statusText = 'Due today';
-            statusClass = 'text-yellow-500';
-        } else {
-            statusText = `In ${daysUntilWater} day${daysUntilWater !== 1 ? 's' : ''}`;
-            statusClass = 'text-blue-500';
-        }
-        
-        taskCard.innerHTML = `
-            <div class="flex items-center gap-4">
-                <img src="${plant.image}" alt="${plant.commonName}" class="w-16 h-16 rounded-full object-cover">
-                <div class="flex-1">
-                    <h3 class="font-semibold">${plant.commonName}</h3>
-                    <div class="flex items-center mt-1">
-                        <i class="fas fa-tint text-blue-500 mr-2"></i>
-                        <span>Water <span class="${statusClass}">${statusText}</span></span>
-                    </div>
-                </div>
-                <button class="water-plant-btn p-2 bg-blue-100 dark:bg-blue-900 rounded-full" data-id="${plant.id}">
-                    <i class="fas fa-tint text-blue-500"></i>
-                </button>
-            </div>
-        `;
-        
-        const waterButton = taskCard.querySelector('.water-plant-btn');
-        waterButton.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent opening the modal
-            waterPlant(plant.id);
-        });
-        
-        taskCard.addEventListener('click', () => {
-            openPlantDetailModal(plant.id);
-        });
-        
-        careContent.appendChild(taskCard);
-    });
+    console.log("Fallback renderCare called - waiting for full implementation");
 }
 
-// Modal functions
-function openPlantDetailModal(plantId) {
-    const plant = garden.find(p => p.id === plantId);
-    if (!plant) return;
-    
-    selectedPlantId = plantId;
-    updatePlantDetailModal(plant);
-    
-    // Reset to the info tab when opening
-    switchModalTab('info');
-    
-    plantDetailModal.classList.remove('hidden');
-}
-
-function updatePlantDetailModal(plant) {
-    const now = new Date();
-    const lastWatered = new Date(plant.lastWatered);
-    const nextWater = new Date(plant.nextWater);
-    
-    // Calculate water progress
-    const waterTotal = plant.waterInterval * 24 * 60 * 60 * 1000; // in ms
-    const waterElapsed = now - lastWatered; // in ms
-    const waterProgress = Math.min(100, Math.max(0, (waterElapsed / waterTotal) * 100));
-    
-    // Calculate sun progress (simplified)
-    const sunProgress = 50; // This would be calculated based on actual sunlight data
-    
-    document.getElementById('modalPlantName').textContent = plant.commonName;
-    document.getElementById('modalPlantScientific').textContent = plant.scientificName;
-    document.getElementById('modalPlantInfo').textContent = plant.info;
-    document.getElementById('modalPlantImage').src = plant.image;
-    
-    document.getElementById('modalWaterStatus').textContent = 
-        nextWater < now ? 'Needs water now!' : `Water in ${timeDifference(nextWater)}`;
-    document.getElementById('modalWaterProgress').style.width = `${waterProgress}%`;
-    
-    document.getElementById('modalSunlightStatus').textContent = 
-        `Needs ${plant.sunlightHours} hours of sunlight per day`;
-    document.getElementById('modalSunProgress').style.width = `${sunProgress}%`;
-    
-    // Update seasonal care section if available
-    const seasonalTips = getSeasonalCareTips(plant);
-    if (seasonalTips && document.getElementById('modalSeasonalCare')) {
-        document.getElementById('modalSeasonalCare').innerHTML = `
-            <p class="mb-2"><strong>Water:</strong> ${seasonalTips.water || 'No specific recommendations'}</p>
-            <p class="mb-2"><strong>Light:</strong> ${seasonalTips.light || 'No specific recommendations'}</p>
-            <p class="mb-2"><strong>Fertilizer:</strong> ${seasonalTips.fertilizer || 'No specific recommendations'}</p>
-            <p><strong>Maintenance:</strong> ${seasonalTips.maintenance || 'No specific recommendations'}</p>
-        `;
-    }
-}
-
-function closePlantDetailModal() {
-    selectedPlantId = null;
-    plantDetailModal.classList.add('hidden');
-}
-
-// Helper functions
-function timeDifference(date) {
-    const now = new Date();
-    const diff = date - now;
-    
-    // Calculate days, hours, minutes
-    const days = Math.floor(diff / (24 * 60 * 60 * 1000));
-    const hours = Math.floor((diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-    
-    if (days < 0) {
-        return "Overdue";
-    } else if (days === 0 && hours === 0) {
-        return "Today";
-    } else if (days === 0) {
-        return `${hours} hour${hours !== 1 ? 's' : ''}`;
-    } else {
-        return `${days} day${days !== 1 ? 's' : ''}`;
-    }
-}
-
-// Show welcome message for new users
-function showWelcomeMessage() {
-    if (hasSeenWelcome) return;
-    
-    // Create welcome dialog
-    const welcomeDialog = document.createElement('div');
-    welcomeDialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-    welcomeDialog.id = 'welcomeDialog';
-    welcomeDialog.innerHTML = `
-        <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md mx-4 p-6">
-            <div class="text-center mb-4">
-                <i class="fas fa-seedling text-5xl text-primary-color mb-3 plant-icon"></i>
-                <h2 class="text-xl font-semibold">Welcome to Plantify!</h2>
-                <p class="text-gray-600 dark:text-gray-300 mt-2">Your personal plant identification and care assistant</p>
-            </div>
-            
-            <div class="mb-4">
-                <p class="mb-3">Create an account to:</p>
-                <ul class="list-disc ml-6 space-y-1 text-gray-700 dark:text-gray-300">
-                    <li>Sync your plant collection across devices</li>
-                    <li>Never lose your plant data</li>
-                    <li>Get personalized care reminders</li>
-                </ul>
-            </div>
-            
-            <div class="flex gap-2">
-                <button id="welcomeSignUp" class="btn-primary flex-1">Create Account</button>
-                <button id="welcomeLater" class="btn bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 flex-1">Later</button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(welcomeDialog);
-    
-    // Add event listeners
-    document.getElementById('welcomeSignUp').addEventListener('click', () => {
-        document.body.removeChild(welcomeDialog);
-        hasSeenWelcome = true;
-        saveSetting('hasSeenWelcome', true);
-        switchTab('account');
-    });
-    
-    document.getElementById('welcomeLater').addEventListener('click', () => {
-        document.body.removeChild(welcomeDialog);
-        hasSeenWelcome = true;
-        saveSetting('hasSeenWelcome', true);
-    });
-}
-
-// Account tab event listeners
-document.getElementById('sign-in-button')?.addEventListener('click', async () => {
-    const email = document.getElementById('email-input').value;
-    const password = document.getElementById('password-input').value;
-    
-    if (!email || !password) {
-        showNotification("Please enter both email and password");
-        return;
-    }
-    
-    try {
-        initializeFirebase();
-        const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        
-        showNotification("Signed in successfully!");
-        
-        // Switch to garden tab
-        switchTab('garden');
-    } catch (error) {
-        showNotification(error.message || "Error signing in");
-    }
-});
-
-document.getElementById('register-button')?.addEventListener('click', async () => {
-    const email = document.getElementById('email-input').value;
-    const password = document.getElementById('password-input').value;
-    
-    if (!email || !password) {
-        showNotification("Please enter both email and password");
-        return;
-    }
-    
-    if (password.length < 6) {
-        showNotification("Password must be at least 6 characters");
-        return;
-    }
-    
-    try {
-        initializeFirebase();
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        
-        // Send email verification
-        if (userCredential.user) {
-            await userCredential.user.sendEmailVerification();
-            showNotification("Account created! Please check your email for verification.");
-        } else {
-            showNotification("Account created successfully!");
-        }
-        
-        // Switch to garden tab
-        switchTab('garden');
-    } catch (error) {
-        showNotification(error.message || "Registration failed");
-    }
-});
-
-document.getElementById('google-sign-in')?.addEventListener('click', async () => {
-    try {
-        await initializeFirebase();
-        const provider = new firebase.auth.GoogleAuthProvider();
-        const result = await auth.signInWithPopup(provider);
-        
-        if (result.user) {
-            showNotification("Signed in with Google successfully!");
-            switchTab('garden');
-        }
-    } catch (error) {
-        console.error("Google sign-in error:", error);
-        
-        // Show a special message for popup blocked errors
-        if (error.code === 'auth/popup-blocked') {
-            showNotification("Popup was blocked. Please allow popups for this site.");
-        } else if (error.code === 'auth/cancelled-popup-request') {
-            showNotification("Sign-in was cancelled.");
-        } else if (error.code === 'auth/popup-closed-by-user') {
-            showNotification("Sign-in popup was closed before completing the process.");
-        } else {
-            showNotification("Google sign-in failed: " + (error.message || "Unknown error"));
-        }
-    }
-});
-
-document.getElementById('sign-out-button')?.addEventListener('click', async () => {
-    // Ask if the user wants to keep local data
-    if (garden.length > 0) {
-        if (confirm("Would you like to clear your plant data from this device?\n\nYes - Clear data\nNo - Keep data")) {
-            // Clear local data
-            garden = [];
-            await saveGarden([]);
-            renderGarden();
-            renderCare();
-        }
-    }
-    
-    try {
-        initializeFirebase();
-        await auth.signOut();
-        showNotification("Signed out successfully!");
-        
-        // Update UI
-        document.getElementById('not-logged-in').classList.remove('hidden');
-        document.getElementById('logged-in').classList.add('hidden');
-        
-        // Refresh the page after a short delay
-        setTimeout(() => {
-            window.location.reload();
-        }, 1500);
-    } catch (error) {
-        showNotification("Error signing out: " + (error.message || "Unknown error"));
-    }
-});
-
-document.getElementById('sync-now-btn')?.addEventListener('click', async () => {
-    const syncResult = await syncWithCloud();
-    if (syncResult.error) {
-        showNotification("Sync failed: " + syncResult.error);
-    } else {
-        showNotification("Sync complete");
-    }
-});
-
-document.getElementById('export-garden-btn')?.addEventListener('click', () => {
-    // Create a JSON file for download
-    const dataStr = JSON.stringify(garden, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = 'plantify-garden.json';
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-});
-
-document.getElementById('clear-data-btn')?.addEventListener('click', async () => {
-    if (confirm('Are you sure you want to clear all local data? This cannot be undone.')) {
-        garden = [];
-        await saveGarden(garden);
-        renderGarden();
-        renderCare();
-        showNotification("Local data cleared");
-    }
-});
-
-// API key management
-document.getElementById('toggle-api-key')?.addEventListener('click', () => {
-    const input = document.getElementById('api-key-input');
-    if (input.type === 'password') {
-        input.type = 'text';
-        document.getElementById('toggle-api-key').innerHTML = '<i class="fas fa-eye-slash"></i>';
-    } else {
-        input.type = 'password';
-        document.getElementById('toggle-api-key').innerHTML = '<i class="fas fa-eye"></i>';
-    }
-});
-
-document.getElementById('save-api-key')?.addEventListener('click', async () => {
-    const input = document.getElementById('api-key-input');
-    const key = input.value.trim();
-    
-    if (!key) {
-        showNotification("Please enter an API key");
-        return;
-    }
-    
-    const success = await setApiKey(key);
-    if (success) {
-        showNotification("API key saved successfully");
-        input.value = '';
-        
-        // Hide input field and save button
-        document.getElementById('api-key-section').classList.add('hidden');
-        document.getElementById('api-key-saved-message').classList.remove('hidden');
-        
-        // If user is logged in, also save to their account
-        if (auth?.currentUser) {
-            try {
-                await db.collection('users').doc(auth.currentUser.uid).update({
-                    geminiApiKey: key
-                });
-            } catch (error) {
-                console.error("Error saving API key to cloud:", error);
-            }
-        }
-    } else {
-        showNotification("Failed to save API key");
-    }
-});
-
-document.getElementById('reset-api-key')?.addEventListener('click', async () => {
-    const success = await resetApiKey();
-    if (success) {
-        showNotification("Reset to default API key");
-        
-        // Show input field and save button again
-        document.getElementById('api-key-section').classList.remove('hidden');
-        document.getElementById('api-key-saved-message').classList.add('hidden');
-        
-        // If user is logged in, also update their account
-        if (auth?.currentUser) {
-            try {
-                await db.collection('users').doc(auth.currentUser.uid).update({
-                    geminiApiKey: null
-                });
-            } catch (error) {
-                console.error("Error resetting API key in cloud:", error);
-            }
-        }
-    }
-});
-
-// Event listeners
-tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-        const tabId = tab.id.replace('tab-', '');
-        switchTab(tabId);
-    });
-});
-
-// Fixed theme toggle
-document.getElementById('theme-toggle').addEventListener('click', function() {
-    // Toggle dark class
-    document.documentElement.classList.toggle('dark');
-    
-    // Save preference to localStorage
-    if (document.documentElement.classList.contains('dark')) {
-        localStorage.setItem('theme', 'dark');
-    } else {
-        localStorage.setItem('theme', 'light');
-    }
-});
-
-startCameraButton.addEventListener('click', startCamera);
-captureButton.addEventListener('click', captureImage);
-imageUpload.addEventListener('change', handleImageUpload);
-
-// Search for plant after identification
-document.getElementById('searchForPlantButton')?.addEventListener('click', () => {
-    if (currentPlant) {
-        // Fill search field with plant name and switch to search tab
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.value = currentPlant.commonName;
-            switchTab('search');
-            
-            // Trigger search
-            setTimeout(() => {
-                const searchButton = document.getElementById('searchButton');
-                if (searchButton) searchButton.click();
-            }, 100);
-        }
-    }
-});
-
-searchInput.addEventListener('input', async (e) => {
-    const query = e.target.value.trim();
-    if (query.length < 3) {
-        searchResults.classList.add('hidden');
-        return;
-    }
-    
-    try {
-        const results = await searchPlantsByName(query);
-        displaySearchResults(results);
-    } catch (error) {
-        showNotification("Error searching plants. Please try again.");
-    }
-});
-
-searchButton.addEventListener('click', async () => {
-    const query = searchInput.value.trim();
-    if (query.length < 3) {
-        showNotification("Please enter at least 3 characters to search");
-        return;
-    }
-    
-    try {
-        const results = await searchPlantsByName(query);
-        displaySearchResults(results);
-    } catch (error) {
-        showNotification("Error searching plants. Please try again.");
-    }
-});
-
-document.addEventListener('click', (e) => {
-    // Close search results when clicking outside
-    if (!searchInput?.contains(e.target) && !searchResults?.contains(e.target)) {
-        searchResults?.classList.add('hidden');
-    }
-});
-
-addToGardenButton.addEventListener('click', () => {
-    if (currentPlant) {
-        addToGarden(currentPlant);
-    }
-});
-
-searchAddToGardenButton.addEventListener('click', () => {
-    if (currentPlant) {
-        addToGarden(currentPlant);
-    }
-});
-
-closeModalButton.addEventListener('click', closePlantDetailModal);
-
-modalWaterButton.addEventListener('click', () => {
-    if (selectedPlantId) {
-        waterPlant(selectedPlantId);
-    }
-});
-
-modalRemoveButton.addEventListener('click', () => {
-    if (selectedPlantId) {
-        removeFromGarden(selectedPlantId);
-    }
-});
-
-// Toggle switches in Settings
-document.getElementById('social-sharing-toggle')?.addEventListener('change', function() {
-    saveSetting('socialSharingEnabled', this.checked);
-});
-
-document.getElementById('location-toggle')?.addEventListener('change', function() {
-    saveSetting('locationAllowed', this.checked);
-    
-    // If location is now allowed, try to get location
-    if (this.checked) {
-        getUserLocation();
-    }
-});
-
-document.getElementById('community-toggle')?.addEventListener('change', function() {
-    saveSetting('communityEnabled', this.checked);
-});
-
-// Initialize the app
-async function initApp() {
-    // Load API key from storage
-    await initApiKey();
-    
-    // Check if user has seen welcome message
-    hasSeenWelcome = await loadSetting('hasSeenWelcome', false);
-    
-    // Try to initialize Firebase (silent if fails)
-    try {
-        await initializeFirebase();
-        
-        // If user is logged in, load data from cloud
-        if (auth?.currentUser) {
-            try {
-                // Get cloud data
-                const docRef = db.collection('users').doc(auth.currentUser.uid);
-                const doc = await docRef.get();
-                
-                if (doc.exists && doc.data().garden) {
-                    garden = doc.data().garden;
-                } else {
-                    // If no cloud data, but user has local data, push to cloud
-                    garden = await loadGarden();
-                    if (garden.length > 0) {
-                        await saveToCloud();
-                    }
-                }
-            } catch (error) {
-                console.error("Error loading cloud data:", error);
-                garden = await loadGarden();
-            }
-        } else {
-            // Not logged in, load from IndexedDB
-            garden = await loadGarden();
-        }
-    } catch (error) {
-        console.log("Firebase not initialized, continuing with local storage only");
-        garden = await loadGarden();
-    }
-    
-    // Update API key UI based on whether custom key is set
-    if (currentApiKey !== DEFAULT_API_KEY) {
-        if (document.getElementById('api-key-section')) {
-            document.getElementById('api-key-section').classList.add('hidden');
-        }
-        if (document.getElementById('api-key-saved-message')) {
-            document.getElementById('api-key-saved-message').classList.remove('hidden');
-        }
-    } else {
-        if (document.getElementById('api-key-section')) {
-            document.getElementById('api-key-section').classList.remove('hidden');
-        }
-        if (document.getElementById('api-key-saved-message')) {
-            document.getElementById('api-key-saved-message').classList.add('hidden');
-        }
-    }
-    
-    // Initialize toggle switches
-    const socialSharingEnabled = await loadSetting('socialSharingEnabled', true);
-    const locationAllowed = await loadSetting('locationAllowed', false);
-    const communityEnabled = await loadSetting('communityEnabled', true);
-    
-    if (document.getElementById('social-sharing-toggle')) {
-        document.getElementById('social-sharing-toggle').checked = socialSharingEnabled;
-    }
-    
-    if (document.getElementById('location-toggle')) {
-        document.getElementById('location-toggle').checked = locationAllowed;
-    }
-    
-    if (document.getElementById('community-toggle')) {
-        document.getElementById('community-toggle').checked = communityEnabled;
-    }
-    
-    // Initialize care features
-    await initCare();
-    
-    // Initialize new features
-    await initFeatures();
-    
-    // Render initial garden and care data
-    renderGarden();
-    renderCare();
-    
-    // Setup notifications
-    setupNotifications();
-    
-    // Show welcome message for first-time users
-    if (!hasSeenWelcome && !auth?.currentUser) {
-        setTimeout(showWelcomeMessage, 1000);
-    } else {
-        // Show welcome notification instead
-        setTimeout(() => {
-            showNotification("Welcome to Plantify! Identify and manage your plants with ease.");
-        }, 1000);
-    }
-}
-
-// Simulate notifications
-function setupNotifications() {
-    if (garden.length > 0) {
-        const checkNotifications = () => {
-            const now = new Date();
-            const plantsNeedingWater = garden.filter(plant => {
-                const nextWater = new Date(plant.nextWater);
-                return nextWater <= now;
-            });
-            
-            if (plantsNeedingWater.length > 0) {
-                const plant = plantsNeedingWater[0];
-                showNotification(`${plant.commonName} needs water!`, 5000);
-            }
-        };
-        
-        // Check once when the app loads
-        setTimeout(checkNotifications, 5000);
-        
-        // Then check periodically
-        setInterval(checkNotifications, 60000); // Every minute
-    }
-}
-
-// Start the app
-initApp();
+// Export key functions so they're available globally
+window.addToGarden = addToGarden;
+window.processImage = processImage;
+window.processHealthCheck = processHealthCheck;
+window.switchTab = switchTab;
+window.showNotification = showNotification;
+window.getElement = getElement;
