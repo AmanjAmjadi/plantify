@@ -746,3 +746,42 @@ window.processHealthCheck = processHealthCheck;
 window.switchTab = switchTab;
 window.showNotification = showNotification;
 window.getElement = getElement;
+
+// Ensure these utility functions are available globally
+window.showNotification = function(message, duration = 3000) {
+    const notification = document.getElementById('notification');
+    const notificationMessage = document.getElementById('notification-message');
+    
+    if (notification && notificationMessage) {
+        notificationMessage.textContent = message;
+        notification.classList.add('show');
+        
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, duration);
+    } else {
+        console.log("Notification (fallback):", message);
+        alert(message);
+    }
+};
+
+// Storage utility functions
+window.saveSetting = async function(key, value) {
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+        return true;
+    } catch (error) {
+        console.error("Error saving setting:", error);
+        return false;
+    }
+};
+
+window.loadSetting = async function(key, defaultValue) {
+    try {
+        const value = localStorage.getItem(key);
+        return value !== null ? JSON.parse(value) : defaultValue;
+    } catch (error) {
+        console.error("Error loading setting:", error);
+        return defaultValue;
+    }
+};
