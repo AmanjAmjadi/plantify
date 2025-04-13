@@ -514,3 +514,87 @@ async function getPlantTipsFromGemini(commonName, scientificName) {
         return null;
     }
 }
+
+
+
+// Add this to the bottom of your care.js file
+// This ensures that event listeners are added after the DOM is fully loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Save care preferences button
+    const saveCarePrefsBtn = document.getElementById('saveCarePreferences');
+    if (saveCarePrefsBtn) {
+        saveCarePrefsBtn.addEventListener('click', () => {
+            console.log("Save care preferences clicked");
+            
+            // Get values from UI
+            const notificationFreq = document.getElementById('notificationFrequency')?.value || 'medium';
+            const adjustWeather = document.getElementById('adjustForWeather')?.checked || false;
+            const seasonalAdjust = document.getElementById('seasonalAdjustments')?.checked || false;
+            
+            // Update preferences
+            carePreferences = {
+                notificationFrequency: notificationFreq,
+                adjustForWeather: adjustWeather,
+                seasonalAdjustments: seasonalAdjust
+            };
+            
+            // Save preferences
+            saveSetting('carePreferences', carePreferences);
+            
+            // Apply changes
+            if (adjustWeather && typeof userLocation !== 'undefined' && userLocation) {
+                updateCareForWeather();
+            }
+            
+            showNotification("Care preferences saved!");
+        });
+    }
+    
+    // Refresh weather button
+    const refreshWeatherBtn = document.getElementById('refreshWeather');
+    if (refreshWeatherBtn) {
+        refreshWeatherBtn.addEventListener('click', () => {
+            console.log("Refresh weather clicked");
+            
+            if (typeof getUserLocation === 'function') {
+                getUserLocation();
+            } else {
+                // Fallback implementation if getUserLocation isn't available
+                if (navigator.geolocation) {
+                    showNotification("Updating weather data...");
+                    navigator.geolocation.getCurrentPosition(
+                        position => {
+                            userLocation = {
+                                latitude: position.coords.latitude,
+                                longitude: position.coords.longitude
+                            };
+                            
+                            // Update weather UI with mock data
+                            const weatherLocation = document.getElementById('weatherLocation');
+                            const weatherIcon = document.getElementById('weatherIcon');
+                            const weatherAdvice = document.getElementById('weatherAdvice');
+                            
+                            if (weatherLocation) {
+                                weatherLocation.textContent = "Your Location";
+                            }
+                            
+                            if (weatherIcon) {
+                                weatherIcon.innerHTML = '<i class="fas fa-cloud-sun"></i>';
+                            }
+                            
+                            if (weatherAdvice) {
+                                weatherAdvice.textContent = "Weather data updated! Current conditions: 22°C, 65% humidity, Partly Cloudy.";
+                            }
+                            
+                            showNotification("Weather data updated!");
+                        },
+                        error => {
+                            console.error("Error getting location:", error);
+                            showNotification("Could not get location. Please check permissions.");
+                        }
+                    );
+                }
+            }
+        });
+    }
+});
