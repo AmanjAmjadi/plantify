@@ -519,6 +519,167 @@ function setupFeatureEventListeners() {
         }
         
         const reader = new FileReader();
+
+
+        // Add this to features.js to make the Explore tab work
+document.addEventListener('DOMContentLoaded', function() {
+    // Location features
+    const refreshLocationBtn = document.getElementById('refreshLocationBtn');
+    if (refreshLocationBtn) {
+        refreshLocationBtn.addEventListener('click', () => {
+            console.log("Refresh location clicked");
+            
+            // Get user location
+            if (navigator.geolocation) {
+                showNotification("Updating location...");
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        // Update location UI with mock data
+                        showNotification("Location updated!");
+                        
+                        // Load mock plant recommendations
+                        const recommendationsContainer = document.getElementById('locationRecommendations');
+                        if (recommendationsContainer) {
+                            recommendationsContainer.innerHTML = '';
+                            
+                            // Add mock recommendations
+                            const plants = [
+                                {
+                                    name: "Monstera Deliciosa",
+                                    scientific: "Monstera deliciosa",
+                                    description: "Popular houseplant with distinctive split leaves. Great for indoor spaces.",
+                                    image: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSIxMjgiIHI9IjEyMCIgZmlsbD0iI2U4ZjVlOSIvPjxwYXRoIGQ9Ik0xMjAgMTgwQzgwIDEyMCA2MCAxMDAgNjAgODBDMTAwIDEwMCAxNDAgOTAgMTQwIDcwQzE2MCA5MCAxODAgMTIwIDE2MCAxNTBDMTQwIDE4MCAxMjAgMTgwIDEyMCAxODAiIGZpbGw9IiM2YWIzMWEiPjwvcGF0aD48cGF0aCBkPSJNMTIwIDE2MEMxMDAgMTMwIDgwIDExMCA5MCA5MEMxMDAgMTAwIDEyMCA5MCAxMjAgODBDMTMwIDkwIDE0MCAxMDAgMTMwIDEyMEMxMjAgMTQwIDEyMCAxNjAgMTIwIDE2MCIgZmlsbD0iIzdmY2MzMCI+PC9wYXRoPjwvc3ZnPg=="
+                                },
+                                {
+                                    name: "Snake Plant",
+                                    scientific: "Sansevieria trifasciata",
+                                    description: "Very low-maintenance plant with upright leaves. Excellent air purifier.",
+                                    image: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48Y2lyY2xlIGN4PSIxMjgiIGN5PSIxMjgiIHI9IjEyMCIgZmlsbD0iI2U4ZjVlOSIvPjxwYXRoIGQ9Ik0xMDAgMTgwQzExMCA2MCAxMTAgNjAgMTEwIDYwQzExMCA2MCAxMDUgMTgwIDEwMCAxODAiIGZpbGw9IiM1Mjk2MjkiPjwvcGF0aD48cGF0aCBkPSJNMTMwIDE4MEMxMjAgNjAgMTIwIDYwIDEyMCA2MEMxMjAgNjAgMTM1IDE4MCAxMzAgMTgwIiBmaWxsPSIjNTI5NjI5Ij48L3BhdGg+PHBhdGggZD0iTTE2MCAxODBDMTUwIDYwIDE1MCA2MCAxNTAgNjBDMTUwIDYwIDE2NSAxODAgMTYwIDE4MCIgZmlsbD0iIzUyOTYyOSI+PC9wYXRoPjwvc3ZnPg=="
+                                }
+                            ];
+                            
+                            plants.forEach(plant => {
+                                const plantCard = document.createElement('div');
+                                plantCard.className = 'card p-4';
+                                plantCard.innerHTML = `
+                                    <div class="h-32 mb-3 overflow-hidden rounded bg-green-50 flex items-center justify-center">
+                                        <img src="${plant.image}" alt="${plant.name}" class="w-full h-full object-cover">
+                                    </div>
+                                    <h4 class="font-medium text-lg mb-1">${plant.name}</h4>
+                                    <p class="text-xs text-gray-500 mb-2">${plant.scientific}</p>
+                                    <p class="text-sm mb-3">${plant.description}</p>
+                                    <button class="recommend-search-btn btn-outline text-xs px-3 py-1.5 w-full" data-name="${plant.name}">
+                                        <i class="fas fa-search mr-1"></i> Find This Plant
+                                    </button>
+                                `;
+                                recommendationsContainer.appendChild(plantCard);
+                            });
+                            
+                            // Add click handlers to search buttons
+                            const searchButtons = document.querySelectorAll('.recommend-search-btn');
+                            searchButtons.forEach(btn => {
+                                btn.addEventListener('click', () => {
+                                    const plantName = btn.getAttribute('data-name');
+                                    showNotification(`Searching for ${plantName}...`);
+                                    
+                                    // Try to switch to search tab and fill input
+                                    const searchInput = document.getElementById('searchInput');
+                                    if (searchInput && typeof switchTab === 'function') {
+                                        searchInput.value = plantName;
+                                        switchTab('search');
+                                        
+                                        // Try to trigger search
+                                        setTimeout(() => {
+                                            const searchButton = document.getElementById('searchButton');
+                                            if (searchButton) searchButton.click();
+                                        }, 100);
+                                    }
+                                });
+                            });
+                        }
+                    },
+                    error => {
+                        console.error("Error getting location:", error);
+                        showNotification("Could not get location. Please check permissions.");
+                    }
+                );
+            }
+        });
+    }
+    
+    // Nearby stores
+    const findStoresBtn = document.getElementById('findStoresBtn');
+    if (findStoresBtn) {
+        findStoresBtn.addEventListener('click', () => {
+            console.log("Find stores button clicked");
+            showNotification("Finding plant stores near you...");
+            
+            // Load mock store data
+            const storesList = document.getElementById('storesList');
+            if (storesList) {
+                storesList.innerHTML = '';
+                
+                // Mock data for nearby stores
+                const mockStores = [
+                    {
+                        name: "Green Thumb Garden Center",
+                        distance: "1.2 km",
+                        rating: 4.7,
+                        address: "123 Plant Street"
+                    },
+                    {
+                        name: "Blossom Nursery",
+                        distance: "2.5 km",
+                        rating: 4.5,
+                        address: "456 Flower Avenue"
+                    },
+                    {
+                        name: "Plantify Emporium",
+                        distance: "3.8 km",
+                        rating: 4.9,
+                        address: "789 Botanical Boulevard"
+                    }
+                ];
+                
+                // Populate the stores list
+                mockStores.forEach(store => {
+                    const storeItem = document.createElement('div');
+                    storeItem.className = 'p-3 border rounded-lg flex justify-between items-center';
+                    storeItem.innerHTML = `
+                        <div>
+                            <h5 class="font-medium">${store.name}</h5>
+                            <p class="text-xs text-gray-500">${store.address}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs">${store.distance}</p>
+                            <p class="flex items-center text-yellow-500 text-xs">
+                                ${store.rating} <i class="fas fa-star ml-1"></i>
+                            </p>
+                        </div>
+                    `;
+                    storesList.appendChild(storeItem);
+                });
+            }
+        });
+    }
+    
+    // Community features
+    const newPostBtn = document.getElementById('newPostBtn');
+    if (newPostBtn) {
+        newPostBtn.addEventListener('click', () => {
+            console.log("New post button clicked");
+            showNotification("Community posting will be available soon!");
+        });
+    }
+    
+    const loadMorePostsBtn = document.getElementById('loadMorePostsBtn');
+    if (loadMorePostsBtn) {
+        loadMorePostsBtn.addEventListener('click', () => {
+            console.log("Load more posts button clicked");
+            showNotification("More community posts will be available soon!");
+        });
+    }
+});
         reader.onload = function(e) {
             const img = new Image();
             img.onload = function() {
