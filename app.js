@@ -747,6 +747,77 @@ window.switchTab = switchTab;
 window.showNotification = showNotification;
 window.getElement = getElement;
 
+
+// Add this to app.js to make the toggles work
+document.addEventListener('DOMContentLoaded', function() {
+    // App settings toggles
+    const toggles = [
+        { id: 'social-sharing-toggle', setting: 'socialSharingEnabled', defaultValue: true },
+        { id: 'location-toggle', setting: 'locationAllowed', defaultValue: false },
+        { id: 'community-toggle', setting: 'communityEnabled', defaultValue: true }
+    ];
+    
+    // Initialize toggles
+    toggles.forEach(async toggle => {
+        const element = document.getElementById(toggle.id);
+        if (element) {
+            // Get saved setting
+            let settingValue = false;
+            try {
+                if (typeof loadSetting === 'function') {
+                    settingValue = await loadSetting(toggle.setting, toggle.defaultValue);
+                } else {
+                    // Fallback if loadSetting not available
+                    const saved = localStorage.getItem(toggle.setting);
+                    settingValue = saved ? JSON.parse(saved) : toggle.defaultValue;
+                }
+            } catch (error) {
+                console.error(`Error loading setting ${toggle.setting}:`, error);
+                settingValue = toggle.defaultValue;
+            }
+            
+            // Set initial state
+            element.checked = settingValue;
+            
+            // Add event listener
+            element.addEventListener('change', function() {
+                console.log(`Toggle ${toggle.id} changed to ${this.checked}`);
+                
+                try {
+                    // Save setting
+                    if (typeof saveSetting === 'function') {
+                        saveSetting(toggle.setting, this.checked);
+                    } else {
+                        // Fallback if saveSetting not available
+                        localStorage.setItem(toggle.setting, JSON.stringify(this.checked));
+                    }
+                    
+                    // Special handling for location toggle
+                    if (toggle.id === 'location-toggle' && this.checked) {
+                        // Try to get user location
+                        if (navigator.geolocation) {
+                            navigator.geolocation.getCurrentPosition(
+                                position => {
+                                    console.log("Got user location");
+                                    showNotification("Location access granted!");
+                                },
+                                error => {
+                                    console.error("Error getting location:", error);
+                                    showNotification("Could not get location. Please check permissions.");
+                                }
+                            );
+                        }
+                    }
+                    
+                    showNotification(`${toggle.setting} set to ${this.checked}`);
+                } catch (error) {
+                    console.error(`Error saving setting ${toggle.setting}:`, error);
+                }
+            });
+        }
+    });
+});
+
 // Ensure these utility functions are available globally
 window.showNotification = function(message, duration = 3000) {
     const notification = document.getElementById('notification');
