@@ -17,27 +17,23 @@
     <nav class="bg-white shadow-md dark:bg-gray-800 fixed bottom-0 left-0 right-0 z-10">
         <div class="container mx-auto">
             <div class="flex justify-around items-center h-16">
-                <button id="tab-identify" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/6">
+                <button id="tab-identify" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/5">
                     <i class="fas fa-camera text-xl mb-1"></i>
                     <span>Identify</span>
                 </button>
-                <button id="tab-health" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/6">
-                    <i class="fas fa-heart-pulse text-xl mb-1"></i>
-                    <span>Health</span>
+                <button id="tab-search" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/5">
+                    <i class="fas fa-search text-xl mb-1"></i>
+                    <span>Search</span>
                 </button>
-                <button id="tab-garden" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/6">
+                <button id="tab-garden" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/5">
                     <i class="fas fa-leaf text-xl mb-1 plant-icon"></i>
-                    <span>Garden</span>
+                    <span>My Garden</span>
                 </button>
-                <button id="tab-care" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/6">
+                <button id="tab-care" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/5">
                     <i class="fas fa-calendar-check text-xl mb-1"></i>
                     <span>Care</span>
                 </button>
-                <button id="tab-explore" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/6">
-                    <i class="fas fa-compass text-xl mb-1"></i>
-                    <span>Explore</span>
-                </button>
-                <button id="tab-account" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/6">
+                <button id="tab-account" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/5">
                     <i class="fas fa-user text-xl mb-1"></i>
                     <span>Account</span>
                 </button>
@@ -112,10 +108,7 @@
                                     <button id="addToGardenButton" class="btn-accent">
                                         <i class="fas fa-plus mr-2"></i>Add to My Garden
                                     </button>
-                                    <button id="checkHealthButton" class="btn-secondary">
-                                        <i class="fas fa-heart-pulse mr-2"></i>Check Health
-                                    </button>
-                                    <button id="searchForPlantButton" class="btn-outline">
+                                    <button id="searchForPlantButton" class="btn-secondary">
                                         <i class="fas fa-search mr-2"></i>Search Instead
                                     </button>
                                 </div>
@@ -125,114 +118,44 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Health Check Tab -->
-        <div id="health-tab" class="tab-content">
+
+        <!-- Search Tab -->
+        <div id="search-tab" class="tab-content">
             <div class="text-center mb-6">
-                <h2 class="text-xl font-semibold mb-2">Plant Health Check</h2>
-                <p class="text-gray-600 dark:text-gray-300">Identify plant diseases and get treatment recommendations</p>
+                <h2 class="text-xl font-semibold mb-2">Search Plants</h2>
+                <p class="text-gray-600 dark:text-gray-300">Find plants by name or characteristics</p>
             </div>
 
-            <div class="flex flex-col items-center gap-4 mb-8">
-                <div class="camera-container mb-4 hidden" id="health-camera-container">
-                    <video id="healthVideoElement" autoplay playsinline></video>
-                    <button id="healthCaptureButton" type="button">
-                        <div id="healthCaptureInnerButton"></div>
+            <div class="search-container mb-6">
+                <div class="flex">
+                    <input type="text" id="searchInput" placeholder="Search for plants..." 
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-l-md text-base focus:outline-none focus:ring-2 focus:ring-primary-color">
+                    <button id="searchButton" class="btn-primary rounded-l-none">
+                        <i class="fas fa-search"></i>
                     </button>
                 </div>
-                
-                <canvas id="healthCapturedPhoto" class="hidden rounded-lg max-w-full shadow-lg"></canvas>
-                
-                <div class="flex gap-4">
-                    <button id="startHealthCameraButton" class="btn-primary">
-                        <i class="fas fa-camera mr-2"></i>Take Photo
-                    </button>
-                    
-                    <label class="custom-file-upload btn-primary cursor-pointer">
-                        <i class="fas fa-upload mr-2"></i>Upload Image
-                        <input type="file" id="healthImageUpload" accept="image/*">
-                    </label>
-                </div>
-                
-                <div class="bg-green-50 dark:bg-green-900 p-4 rounded-lg w-full max-w-lg">
-                    <h3 class="font-semibold text-green-800 dark:text-green-200 flex items-center mb-2">
-                        <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>Health Check Tips
-                    </h3>
-                    <ul class="text-sm text-green-700 dark:text-green-300 space-y-1 ml-6 list-disc">
-                        <li>Take close-up photos of affected areas</li>
-                        <li>Include both healthy and unhealthy parts for comparison</li>
-                        <li>Make sure the image is well-lit and clear</li>
-                        <li>Try to capture both leaves and stems if possible</li>
-                    </ul>
-                </div>
+                <div id="searchResults" class="search-results hidden"></div>
             </div>
 
-            <div id="healthResults" class="hidden">
-                <div id="loadingHealth" class="text-center py-10">
-                    <div class="loader"></div>
-                    <p class="mt-3 text-gray-600 dark:text-gray-300">Analyzing plant health with Gemini AI...</p>
-                </div>
+            <div id="searchLoading" class="hidden text-center py-10">
+                <div class="loader"></div>
+                <p class="mt-3 text-gray-600 dark:text-gray-300">Searching plants...</p>
+            </div>
 
-                <div id="healthContent" class="hidden">
-                    <div class="card p-4">
-                        <div class="flex flex-col md:flex-row gap-4">
-                            <div class="md:w-1/3">
-                                <img id="healthPlantImage" src="" alt="Plant Health" class="w-full h-48 object-cover rounded-lg shadow-sm">
-                            </div>
-                            <div class="md:w-2/3">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <h3 id="healthStatus" class="text-xl font-semibold"></h3>
-                                    <span id="healthIndicator" class="px-2 py-1 text-xs font-semibold rounded-full"></span>
-                                </div>
-                                <div id="healthProblem" class="mb-3"></div>
-                                <div class="mb-4">
-                                    <h4 class="font-semibold text-primary-color mb-1">Treatment Recommendations</h4>
-                                    <div id="healthTreatment"></div>
-                                </div>
-                                <div class="flex flex-wrap gap-2">
-                                    <button id="saveHealthReportButton" class="btn-accent">
-                                        <i class="fas fa-save mr-2"></i>Save Report
-                                    </button>
-                                    <button id="shareHealthButton" class="btn-secondary">
-                                        <i class="fas fa-share-alt mr-2"></i>Share
-                                    </button>
-                                </div>
-                            </div>
+            <div id="searchContent" class="hidden">
+                <div class="card p-4">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="md:w-1/3">
+                            <img id="searchPlantImage" src="" alt="Searched Plant" class="w-full h-48 object-cover rounded-lg shadow-sm">
                         </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mt-8">
-                <h3 class="text-lg font-semibold mb-3">Common Plant Health Issues</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="card p-4">
-                        <h4 class="font-semibold flex items-center mb-2">
-                            <span class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></span>
-                            Leaf Yellowing
-                        </h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-300">Often caused by overwatering, nutrient deficiencies, or insufficient light. Check soil moisture and ensure proper drainage.</p>
-                    </div>
-                    <div class="card p-4">
-                        <h4 class="font-semibold flex items-center mb-2">
-                            <span class="w-3 h-3 bg-brown-500 rounded-full mr-2"></span>
-                            Brown Leaf Tips
-                        </h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-300">Usually indicates low humidity or over-fertilization. Increase humidity and flush the soil to remove excess salts.</p>
-                    </div>
-                    <div class="card p-4">
-                        <h4 class="font-semibold flex items-center mb-2">
-                            <span class="w-3 h-3 bg-gray-500 rounded-full mr-2"></span>
-                            Powdery Mildew
-                        </h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-300">White powdery coating on leaves caused by fungal infection. Improve air circulation and avoid overhead watering.</p>
-                    </div>
-                    <div class="card p-4">
-                        <h4 class="font-semibold flex items-center mb-2">
-                            <span class="w-3 h-3 bg-green-300 rounded-full mr-2"></span>
-                            Spider Mites
-                        </h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-300">Tiny pests causing stippled, discolored leaves. Increase humidity, spray with water, or use insecticidal soap.</p>
+                        <div class="md:w-2/3">
+                            <h3 id="searchPlantName" class="text-xl font-semibold"></h3>
+                            <p id="searchPlantScientific" class="text-gray-600 dark:text-gray-400 italic mb-2"></p>
+                            <div id="searchPlantInfo" class="mb-4"></div>
+                            <button id="searchAddToGardenButton" class="btn-accent">
+                                <i class="fas fa-plus mr-2"></i>Add to My Garden
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -259,29 +182,7 @@
         <div id="care-tab" class="tab-content">
             <div class="text-center mb-6">
                 <h2 class="text-xl font-semibold mb-2">Plant Care</h2>
-                <p class="text-gray-600 dark:text-gray-300">Smart reminders and seasonal care advice</p>
-            </div>
-            
-            <!-- Weather-based care info -->
-            <div id="weatherCare" class="mb-6 p-4 rounded-lg bg-blue-50 dark:bg-blue-900">
-                <div class="flex items-center gap-3 mb-3">
-                    <div id="weatherIcon" class="text-2xl text-blue-500">
-                        <i class="fas fa-cloud-sun"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-semibold">Local Weather Care Advice</h3>
-                        <p id="weatherLocation" class="text-sm">Loading location...</p>
-                    </div>
-                    <button id="refreshWeather" class="ml-auto p-2 text-blue-500 hover:bg-blue-100 dark:hover:bg-blue-800 rounded-full">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                </div>
-                <div id="weatherAdvice" class="text-sm mb-3">
-                    <p>Loading weather data...</p>
-                </div>
-                <div id="seasonalTips" class="text-sm border-t pt-2 dark:border-blue-700">
-                    <strong>Seasonal Tips:</strong> <span id="seasonTipsContent">Loading seasonal advice...</span>
-                </div>
+                <p class="text-gray-600 dark:text-gray-300">Upcoming care tasks for your plants</p>
             </div>
 
             <div id="emptyCare" class="text-center py-10">
@@ -292,141 +193,6 @@
             <div id="careContent" class="space-y-4 hidden">
                 <!-- Care tasks will be dynamically added here -->
             </div>
-            
-            <div class="mt-6" id="advancedCareSection">
-                <h3 class="text-lg font-semibold mb-3 flex items-center">
-                    <i class="fas fa-sliders-h mr-2 text-primary-color"></i> Care Preferences
-                </h3>
-                <div class="card p-4">
-                    <div class="mb-4">
-                        <label class="flex items-center justify-between mb-2">
-                            <span>Notification Frequency</span>
-                            <select id="notificationFrequency" class="bg-white dark:bg-gray-700 border rounded px-2 py-1 text-sm">
-                                <option value="low">Low (Only when needed)</option>
-                                <option value="medium" selected>Medium (Daily updates)</option>
-                                <option value="high">High (Multiple reminders)</option>
-                            </select>
-                        </label>
-                    </div>
-                    <div class="mb-4">
-                        <label class="flex items-center mb-1">
-                            <input type="checkbox" id="adjustForWeather" class="mr-2" checked>
-                            <span>Adjust watering schedule based on weather</span>
-                        </label>
-                        <p class="text-xs text-gray-500 ml-5">Reduces frequency during rainy periods and increases during hot, dry spells</p>
-                    </div>
-                    <div class="mb-3">
-                        <label class="flex items-center mb-1">
-                            <input type="checkbox" id="seasonalAdjustments" class="mr-2" checked>
-                            <span>Apply seasonal adjustments</span>
-                        </label>
-                        <p class="text-xs text-gray-500 ml-5">Modifies care routines based on seasonal growth patterns</p>
-                    </div>
-                    <button id="saveCarePreferences" class="btn-primary text-sm px-3 py-1">Save Preferences</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Explore Tab -->
-        <div id="explore-tab" class="tab-content">
-            <div class="text-center mb-6">
-                <h2 class="text-xl font-semibold mb-2">Explore Plants</h2>
-                <p class="text-gray-600 dark:text-gray-300">Discover new plants and connect with the community</p>
-            </div>
-            
-            <!-- Local Recommendations Section -->
-            <div class="mb-8">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold">Local Recommendations</h3>
-                    <button id="refreshLocationBtn" class="text-sm text-primary-color flex items-center">
-                        <i class="fas fa-location-dot mr-1"></i> Update Location
-                    </button>
-                </div>
-                
-                <div id="locationRecommendations" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div class="text-center p-4">
-                        <div class="loader mx-auto"></div>
-                        <p class="mt-2 text-sm">Finding plants for your region...</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Marketplace Section -->
-            <div class="mb-8">
-                <h3 class="text-lg font-semibold mb-4">Plant Marketplace</h3>
-                <div id="nearbyStores" class="mb-4">
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="font-semibold">Nearby Plant Shops</h4>
-                        <button id="findStoresBtn" class="text-sm text-primary-color">
-                            <i class="fas fa-map-marker-alt mr-1"></i> Find Stores
-                        </button>
-                    </div>
-                    <div id="storesList" class="grid grid-cols-1 gap-3">
-                        <p class="text-sm text-gray-500">Click 'Find Stores' to discover plant shops near you</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Community Section -->
-            <div>
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold">Community</h3>
-                    <button id="newPostBtn" class="btn-accent text-sm px-3 py-1">
-                        <i class="fas fa-plus mr-1"></i> New Post
-                    </button>
-                </div>
-                
-                <div id="communityFeed" class="space-y-4">
-                    <!-- Sample community posts -->
-                    <div class="card p-4">
-                        <div class="flex items-center mb-3">
-                            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
-                                <i class="fas fa-user text-green-600"></i>
-                            </div>
-                            <div>
-                                <p class="font-semibold">Garden Lover</p>
-                                <p class="text-xs text-gray-500">2 hours ago</p>
-                            </div>
-                        </div>
-                        <p class="mb-3">Just repotted my Monstera Deliciosa and it's thriving! Anyone have tips for propagating the cuttings?</p>
-                        <div class="flex justify-between text-sm">
-                            <button class="text-gray-500 flex items-center">
-                                <i class="far fa-heart mr-1"></i> 24 Likes
-                            </button>
-                            <button class="text-gray-500 flex items-center">
-                                <i class="far fa-comment mr-1"></i> 8 Comments
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="card p-4">
-                        <div class="flex items-center mb-3">
-                            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
-                                <i class="fas fa-user text-green-600"></i>
-                            </div>
-                            <div>
-                                <p class="font-semibold">Plant Wizard</p>
-                                <p class="text-xs text-gray-500">Yesterday</p>
-                            </div>
-                        </div>
-                        <p class="mb-3">Question for succulent experts: my Echeveria is stretching tall instead of staying compact. Is it not getting enough light?</p>
-                        <div class="flex justify-between text-sm">
-                            <button class="text-gray-500 flex items-center">
-                                <i class="far fa-heart mr-1"></i> 15 Likes
-                            </button>
-                            <button class="text-gray-500 flex items-center">
-                                <i class="far fa-comment mr-1"></i> 12 Comments
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="text-center mt-4">
-                    <button id="loadMorePostsBtn" class="text-primary-color">
-                        Load More Posts
-                    </button>
-                </div>
-            </div>
         </div>
 
         <!-- Account Tab -->
@@ -435,6 +201,8 @@
                 <h2 class="text-xl font-semibold mb-2">Your Account</h2>
                 <p class="text-gray-600 dark:text-gray-300">Manage your account and sync settings</p>
             </div>
+
+            
 
             <div id="login-section" class="card p-6 max-w-md mx-auto">
                 <div id="not-logged-in">
@@ -512,33 +280,6 @@
                         </p>
                     </div>
                     
-                    <div class="mb-6 border-t border-gray-200 dark:border-gray-700 pt-4">
-                        <h4 class="font-semibold mb-2">App Settings</h4>
-                        <div class="space-y-3">
-                            <label class="flex items-center justify-between">
-                                <span class="text-sm">Social Sharing</span>
-                                <div class="relative inline-block w-10 align-middle select-none">
-                                    <input type="checkbox" id="social-sharing-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
-                                    <label for="social-sharing-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
-                                </div>
-                            </label>
-                            <label class="flex items-center justify-between">
-                                <span class="text-sm">Location Services</span>
-                                <div class="relative inline-block w-10 align-middle select-none">
-                                    <input type="checkbox" id="location-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
-                                    <label for="location-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
-                                </div>
-                            </label>
-                            <label class="flex items-center justify-between">
-                                <span class="text-sm">Community Features</span>
-                                <div class="relative inline-block w-10 align-middle select-none">
-                                    <input type="checkbox" id="community-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
-                                    <label for="community-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                    
                     <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mb-4">
                         <button id="export-garden-btn" class="text-primary-color text-sm flex items-center mb-3">
                             <i class="fas fa-download mr-1"></i> Export Garden Data
@@ -568,251 +309,38 @@
                     <img id="modalPlantImage" src="" alt="Plant" class="w-full h-48 object-cover rounded-lg">
                 </div>
                 <p id="modalPlantScientific" class="text-gray-600 dark:text-gray-400 italic mb-2"></p>
+                <div id="modalPlantInfo" class="mb-4"></div>
                 
-                <!-- Tab navigation within modal -->
-                <div class="border-b border-gray-200 dark:border-gray-700 mb-4">
-                    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
-                        <li class="mr-2">
-                            <a href="#" id="modal-tab-info" class="inline-block p-3 border-b-2 border-primary-color rounded-t-lg active" aria-current="page">Info</a>
-                        </li>
-                        <li class="mr-2">
-                            <a href="#" id="modal-tab-care" class="inline-block p-3 border-b-2 border-transparent rounded-t-lg hover:border-gray-300">Care</a>
-                        </li>
-                        <li class="mr-2">
-                            <a href="#" id="modal-tab-growth" class="inline-block p-3 border-b-2 border-transparent rounded-t-lg hover:border-gray-300">Growth</a>
-                        </li>
-                        <li>
-                            <a href="#" id="modal-tab-tips" class="inline-block p-3 border-b-2 border-transparent rounded-t-lg hover:border-gray-300">Tips</a>
-                        </li>
-                    </ul>
-                </div>
-                
-                <!-- Info Tab Content -->
-                <div id="modal-content-info" class="modal-tab-content">
-                    <div id="modalPlantInfo" class="mb-4"></div>
-                    
-                    <div class="flex space-x-2 mb-3">
-                        <button id="modalWaterButton" class="flex-1 btn-primary">
-                            <i class="fas fa-tint mr-2"></i>Water Now
-                        </button>
-                        <button id="modalHealthButton" class="flex-1 btn-secondary">
-                            <i class="fas fa-heart-pulse mr-2"></i>Health Check
-                        </button>
-                    </div>
-                    
-                    <div class="flex space-x-2">
-                        <button id="modalShareButton" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded">
-                            <i class="fas fa-share-alt mr-2"></i>Share
-                        </button>
-                        <button id="modalRemoveButton" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded">
-                            <i class="fas fa-trash-alt mr-2"></i>Remove
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Care Tab Content -->
-                <div id="modal-content-care" class="modal-tab-content hidden">
-                    <div class="mb-4">
-                        <h4 class="font-semibold mb-2">Care Schedule</h4>
-                        <div class="mb-3">
-                            <div class="flex justify-between mb-1">
-                                <span>Water</span>
-                                <span id="modalWaterStatus">2 days ago</span>
-                            </div>
-                            <div class="water-progress-bar">
-                                <div id="modalWaterProgress" class="water-progress" style="width: 30%;"></div>
-                            </div>
+                <div class="mb-4">
+                    <h4 class="font-semibold mb-2">Care Schedule</h4>
+                    <div class="mb-3">
+                        <div class="flex justify-between mb-1">
+                            <span>Water</span>
+                            <span id="modalWaterStatus">2 days ago</span>
                         </div>
-                        <div class="mb-2">
-                            <div class="flex justify-between mb-1">
-                                <span>Sunlight</span>
-                                <span id="modalSunlightStatus">4 days ago</span>
-                            </div>
-                            <div class="sun-progress-bar">
-                                <div id="modalSunProgress" class="sun-progress" style="width: 60%;"></div>
-                            </div>
+                        <div class="water-progress-bar">
+                            <div id="modalWaterProgress" class="water-progress" style="width: 30%;"></div>
                         </div>
                     </div>
-                    
-                    <div class="mb-4">
-                        <h4 class="font-semibold mb-2">Seasonal Care Adjustments</h4>
-                        <div id="modalSeasonalCare" class="text-sm">
-                            <p class="mb-2"><strong>Spring:</strong> Increase watering as growth accelerates. Good time for repotting.</p>
-                            <p class="mb-2"><strong>Summer:</strong> Protect from intense afternoon sun. Water more frequently.</p>
-                            <p class="mb-2"><strong>Fall:</strong> Reduce watering as growth slows. Stop fertilizing.</p>
-                            <p><strong>Winter:</strong> Minimal watering. Keep away from cold drafts and heaters.</p>
+                    <div class="mb-2">
+                        <div class="flex justify-between mb-1">
+                            <span>Sunlight</span>
+                            <span id="modalSunlightStatus">4 days ago</span>
                         </div>
-                    </div>
-                    
-                    <button id="modalAdjustCareButton" class="btn-primary w-full">
-                        <i class="fas fa-sliders-h mr-2"></i>Adjust Care Schedule
-                    </button>
-                </div>
-                
-                <!-- Growth Tab Content -->
-                <div id="modal-content-growth" class="modal-tab-content hidden">
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="font-semibold">Growth Timeline</h4>
-                        <button id="addGrowthEntryButton" class="text-primary-color text-sm flex items-center">
-                            <i class="fas fa-plus mr-1"></i> Add Entry
-                        </button>
-                    </div>
-                    
-                    <div id="emptyGrowthTimeline" class="py-8 text-center">
-                        <i class="fas fa-seedling text-4xl text-gray-300 mb-2"></i>
-                        <p class="text-gray-500 text-sm">No growth entries yet. Add your first one!</p>
-                    </div>
-                    
-                    <div id="growthTimeline" class="hidden space-y-4 mb-4">
-                        <!-- Growth entries will be added here dynamically -->
-                    </div>
-                    
-                    <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <h5 class="font-medium mb-2">Growth Stats</h5>
-                        <div class="grid grid-cols-2 gap-3 text-sm">
-                            <div>
-                                <p class="text-gray-500">Height Increase</p>
-                                <p id="heightIncrease" class="font-medium">0 cm</p>
-                            </div>
-                            <div>
-                                <p class="text-gray-500">New Leaves</p>
-                                <p id="newLeaves" class="font-medium">0</p>
-                            </div>
-                            <div>
-                                <p class="text-gray-500">Growth Rate</p>
-                                <p id="growthRate" class="font-medium">N/A</p>
-                            </div>
-                            <div>
-                                <p class="text-gray-500">Days Tracked</p>
-                                <p id="daysTracked" class="font-medium">0</p>
-                            </div>
+                        <div class="sun-progress-bar">
+                            <div id="modalSunProgress" class="sun-progress" style="width: 60%;"></div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Tips Tab Content -->
-                <div id="modal-content-tips" class="modal-tab-content hidden">
-                    <div id="plantTipsContainer" class="space-y-3 mb-4">
-                        <div class="p-3 bg-green-50 dark:bg-green-900 rounded-lg">
-                            <h5 class="font-medium flex items-center mb-1">
-                                <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
-                                <span>Lighting Tips</span>
-                            </h5>
-                            <p id="lightingTips" class="text-sm">Loading lighting tips...</p>
-                        </div>
-                        
-                        <div class="p-3 bg-blue-50 dark:bg-blue-900 rounded-lg">
-                            <h5 class="font-medium flex items-center mb-1">
-                                <i class="fas fa-tint text-blue-500 mr-2"></i>
-                                <span>Watering Tips</span>
-                            </h5>
-                            <p id="wateringTips" class="text-sm">Loading watering tips...</p>
-                        </div>
-                        
-                        <div class="p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg">
-                            <h5 class="font-medium flex items-center mb-1">
-                                <i class="fas fa-leaf text-green-500 mr-2"></i>
-                                <span>Soil & Fertilizer</span>
-                            </h5>
-                            <p id="soilTips" class="text-sm">Loading soil tips...</p>
-                        </div>
-                        
-                        <div class="p-3 bg-purple-50 dark:bg-purple-900 rounded-lg">
-                            <h5 class="font-medium flex items-center mb-1">
-                                <i class="fas fa-bug text-purple-500 mr-2"></i>
-                                <span>Common Issues</span>
-                            </h5>
-                            <p id="commonIssues" class="text-sm">Loading common issues...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Social Share Modal -->
-    <div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-sm mx-4 p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold">Share Your Plant</h3>
-                <button id="closeShareModal" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="mb-4">
-                <div id="sharePreview" class="border rounded-lg p-3 mb-4">
-                    <img id="shareImage" src="" alt="Plant to share" class="w-full h-32 object-cover rounded-lg mb-2">
-                    <h4 id="sharePlantName" class="font-medium">Plant Name</h4>
-                    <p id="sharePlantInfo" class="text-sm text-gray-600 dark:text-gray-400">Loading plant info...</p>
-                </div>
-                <div class="grid grid-cols-4 gap-4 mb-4">
-                    <button class="share-btn bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg" data-platform="facebook">
-                        <i class="fab fa-facebook-f mx-auto"></i>
+                <div class="flex space-x-2">
+                    <button id="modalWaterButton" class="flex-1 btn-primary">
+                        <i class="fas fa-tint mr-2"></i>Water Now
                     </button>
-                    <button class="share-btn bg-pink-500 hover:bg-pink-600 text-white p-2 rounded-lg" data-platform="instagram">
-                        <i class="fab fa-instagram mx-auto"></i>
-                    </button>
-                    <button class="share-btn bg-sky-500 hover:bg-sky-600 text-white p-2 rounded-lg" data-platform="twitter">
-                        <i class="fab fa-twitter mx-auto"></i>
-                    </button>
-                    <button class="share-btn bg-green-500 hover:bg-green-600 text-white p-2 rounded-lg" data-platform="whatsapp">
-                        <i class="fab fa-whatsapp mx-auto"></i>
+                    <button id="modalRemoveButton" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded">
+                        <i class="fas fa-trash-alt mr-2"></i>Remove
                     </button>
                 </div>
-                <div class="mb-3">
-                    <label class="block mb-1 text-sm font-medium">Add a message (optional):</label>
-                    <textarea id="shareMessage" rows="2" class="w-full p-2 border rounded-lg text-sm"></textarea>
-                </div>
-                <button id="copyShareLink" class="btn-secondary w-full">
-                    <i class="fas fa-link mr-2"></i>Copy Link
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Growth Entry Modal -->
-    <div id="growthEntryModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-sm mx-4 p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold">Add Growth Entry</h3>
-                <button id="closeGrowthModal" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div>
-                <div class="mb-4">
-                    <label class="block mb-1 text-sm font-medium">Date</label>
-                    <input type="date" id="growthDate" class="w-full p-2 border rounded-lg" value="">
-                </div>
-                <div class="mb-4">
-                    <label class="block mb-1 text-sm font-medium">Height (cm)</label>
-                    <input type="number" id="plantHeight" class="w-full p-2 border rounded-lg" min="0" step="0.1">
-                </div>
-                <div class="mb-4">
-                    <label class="block mb-1 text-sm font-medium">Number of Leaves</label>
-                    <input type="number" id="leafCount" class="w-full p-2 border rounded-lg" min="0" step="1">
-                </div>
-                <div class="mb-4">
-                    <label class="block mb-1 text-sm font-medium">Photo</label>
-                    <div class="flex items-center gap-3">
-                        <label class="flex-1 custom-file-upload btn-outline cursor-pointer text-center py-2">
-                            <i class="fas fa-camera mr-2"></i>Take Photo
-                            <input type="file" id="growthImageUpload" accept="image/*" capture="environment" class="hidden">
-                        </label>
-                        <label class="flex-1 custom-file-upload btn-outline cursor-pointer text-center py-2">
-                            <i class="fas fa-upload mr-2"></i>Upload
-                            <input type="file" id="growthImageBrowse" accept="image/*" class="hidden">
-                        </label>
-                    </div>
-                    <div id="growthImagePreview" class="mt-2 hidden">
-                        <img id="growthPreviewImage" src="" class="w-full h-32 object-cover rounded-lg">
-                    </div>
-                </div>
-                <div class="mb-4">
-                    <label class="block mb-1 text-sm font-medium">Notes</label>
-                    <textarea id="growthNotes" rows="2" class="w-full p-2 border rounded-lg text-sm"></textarea>
-                </div>
-                <button id="saveGrowthEntry" class="btn-primary w-full">Save Entry</button>
             </div>
         </div>
     </div>
@@ -826,9 +354,6 @@
     <script src="storage.js"></script>
     <script src="firebase-config.js"></script>
     <script src="api.js"></script>
-    <script src="care.js"></script>
-    <script src="features.js"></script>
     <script src="app.js"></script>
-    
 </body>
 </html>
