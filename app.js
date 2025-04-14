@@ -1215,27 +1215,46 @@ document.getElementById('sync-now-btn')?.addEventListener('click', async () => {
         await saveSetting('lastSyncTime', lastSyncTime);
         
         // Update sync status in UI
-        document.getElementById('sync-status').textContent = 'Just synced';
-        document.getElementById('sync-status').className = 'text-xs px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full';
+        if (document.getElementById('sync-status')) {
+            if (syncResult.status === 'downloaded') {
+                document.getElementById('sync-status').textContent = 'Just updated';
+            } else if (syncResult.status === 'uploaded') {
+                document.getElementById('sync-status').textContent = 'Just synced';
+            } else {
+                document.getElementById('sync-status').textContent = 'Synced';
+            }
+            document.getElementById('sync-status').className = 'text-xs px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full';
+        }
         
         if (syncResult.error) {
             showNotification("Sync issue: " + syncResult.error);
         } else if (syncResult.status === 'downloaded') {
-            showNotification("Sync complete - Downloaded data from cloud");
+            showNotification("Sync complete - Downloaded updated data from cloud");
+            
+            // Important: Re-render UI to reflect changes
+            renderGarden();
+            renderCare();
         } else if (syncResult.status === 'uploaded') {
-            showNotification("Sync complete - Uploaded data to cloud");
+            showNotification("Sync complete - Uploaded your data to cloud");
         } else {
-            showNotification("Sync complete");
+            showNotification("Sync complete - Everything is up to date");
         }
     } catch (error) {
         console.error("Sync error:", error);
         showNotification("Sync failed: " + (error.message || "Unknown error"));
+        
+        // Update sync status on error
+        if (document.getElementById('sync-status')) {
+            document.getElementById('sync-status').textContent = 'Sync failed';
+            document.getElementById('sync-status').className = 'text-xs px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full';
+        }
     } finally {
         // Restore button state
         button.innerHTML = originalText;
         syncInProgress = false;
     }
 });
+
 
 document.getElementById('export-garden-btn')?.addEventListener('click', () => {
     if (garden.length === 0) {
