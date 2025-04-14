@@ -7,6 +7,8 @@ let hasSeenWelcome = false;
 let isProcessingImage = false;
 let syncInProgress = false;
 let lastSyncTime = null;
+let diseaseStream = null;
+let isProcessingDisease = false;
 
 // DOM elements
 const tabs = document.querySelectorAll('.tab-btn');
@@ -29,6 +31,12 @@ const closeModalButton = document.getElementById('closeModal');
 const plantDetailModal = document.getElementById('plantDetailModal');
 const modalWaterButton = document.getElementById('modalWaterButton');
 const modalRemoveButton = document.getElementById('modalRemoveButton');
+const diseaseStartCameraButton = document.getElementById('diseaseStartCameraButton');
+const diseaseCameraContainer = document.getElementById('disease-camera-container');
+const diseaseCaptureButton = document.getElementById('diseaseCaptureButton');
+const diseaseVideoElement = document.getElementById('diseaseVideoElement');
+const diseaseCapturedPhoto = document.getElementById('diseaseCapturedPhoto');
+const diseaseImageUpload = document.getElementById('diseaseImageUpload');
 
 // Check for saved theme preference
 if (localStorage.getItem('theme') === 'dark' || 
@@ -1456,6 +1464,277 @@ document.getElementById('reset-api-key')?.addEventListener('click', async () => 
     }
 });
 
+
+
+// Add the disease diagnosis functions
+async function startDiseaseCamera() {
+    try {
+        // First check if media devices are supported
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error('Camera access is not supported in this browser');
+        }
+        
+        // Request camera access with better error handling
+        diseaseStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: 'environment',
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            } 
+        });
+        
+        // Show camera container and video
+        diseaseVideoElement.srcObject = diseaseStream;
+        diseaseCameraContainer.classList.remove('hidden');
+        diseaseStartCameraButton.classList.add('hidden');
+        diseaseCapturedPhoto.classList.add('hidden');
+        
+        return true;
+    } catch (err) {
+        console.error("Error accessing camera:", err);
+        
+        // More descriptive error messages based on error type
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+            showNotification("Camera access denied. Please enable camera permissions in your browser settings.", 5000);
+        } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+            showNotification("No camera found on this device.", 3000);
+        } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+            showNotification("Camera is in use by another application.", 3000);
+        } else if (err.name === 'OverconstrainedError') {
+            showNotification("Camera cannot meet the requested constraints.", 3000);
+        } else {
+            showNotification("Error accessing camera: " + (err.message || "Unknown error"), 3000);
+        }
+        
+        // Show file upload option more prominently when camera fails
+        document.querySelector('#diagnose-tab .custom-file-upload').classList.add('animate-pulse');
+        setTimeout(() => {
+            document.querySelector('#diagnose-tab .custom-file-upload').classList.remove('animate-pulse');
+        }, 2000);
+        
+        return false;
+    }
+}
+
+function stopDiseaseCamera() {
+    if (diseaseStream) {
+        diseaseStream.getTracks().forEach(track => track.stop());
+        diseaseStream = null;
+        diseaseVideoElement.srcObject = null;
+    }
+    diseaseCameraContainer.classList.add('hidden');
+    diseaseStartCameraButton.classList.remove('hidden');
+}
+
+function captureDiseaseImage() {
+    if (!diseaseStream) return;
+    
+    // Setup canvas for capturing
+    const canvas = diseaseCapturedPhoto;
+    const videoWidth = diseaseVideoElement.videoWidth;
+    const videoHeight = diseaseVideoElement.videoHeight;
+    
+    // Check for valid video dimensions
+    if (!videoWidth || !videoHeight) {
+        showNotification("Unable to capture image. Please try again.");
+        return;
+    }
+    
+    canvas.width = videoWidth;
+    canvas.height = videoHeight;
+    const ctx = canvas.getContext('2d');
+    
+    // Draw video frame to canvas
+    ctx.drawImage(diseaseVideoElement, 0, 0, canvas.width, canvas.height);
+    
+    // Stop the camera and display captured photo
+    stopDiseaseCamera();
+    canvas.classList.remove('hidden');
+    
+    // Process the captured image
+    processDiseaseImage(canvas);
+}
+
+function handleDiseaseImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file || !file.type.match('image.*')) {
+        showNotification("Please select a valid image file");
+        return;
+    }
+    
+    // Clear the upload input for future uploads
+    event.target.value = '';
+    
+    // Check file size
+    if (file.size > 10 * 1024 * 1024) { // Larger than 10MB
+        showNotification("Image is too large. Please choose an image smaller than 10MB.");
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+            // Setup canvas for uploaded image
+            const canvas = diseaseCapturedPhoto;
+            
+            // Resize large images to prevent memory issues
+            let width = img.width;
+            let height = img.height;
+            
+            // Max dimension 1600px for performance
+            const maxDimension = 1600;
+            if (width > maxDimension || height > maxDimension) {
+                if (width > height) {
+                    height = height * (maxDimension / width);
+                    width = maxDimension;
+                } else {
+                    width = width * (maxDimension / height);
+                    height = maxDimension;
+                }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw image to canvas
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Display canvas and hide camera button
+            canvas.classList.remove('hidden');
+            diseaseCameraContainer.classList.add('hidden');
+            
+            // Process the uploaded image
+            processDiseaseImage(canvas);
+        };
+        img.onerror = function() {
+            showNotification("Unable to load image. Please try another file.");
+        };
+        img.src = e.target.result;
+    };
+    reader.onerror = function() {
+        showNotification("Error reading file. Please try another image.");
+    };
+    reader.readAsDataURL(file);
+}
+
+// Process disease image using Gemini AI
+async function processDiseaseImage(canvas) {
+    // Prevent multiple processing requests
+    if (isProcessingDisease) {
+        return;
+    }
+    
+    isProcessingDisease = true;
+    document.getElementById('diagnosisResults').classList.remove('hidden');
+    document.getElementById('loadingDiagnosis').classList.remove('hidden');
+    document.getElementById('diagnosisContent').classList.add('hidden');
+    
+    try {
+        // Get image data from canvas
+        const imageData = canvas.toDataURL('image/jpeg', 0.85); // Compress to 85% quality
+        
+        // Call Gemini API to diagnose plant disease
+        const diagnosisData = await diagnosePlantDisease(imageData);
+        
+        // Update UI with diagnosis results
+        document.getElementById('diseaseName').textContent = diagnosisData.diseaseName;
+        document.getElementById('affectedPlant').textContent = diagnosisData.affectedPlant;
+        document.getElementById('diseaseCause').textContent = diagnosisData.cause;
+        
+        // Set treatment as list if it's an array
+        const treatmentElement = document.getElementById('diseaseTreatment');
+        if (Array.isArray(diagnosisData.treatment)) {
+            treatmentElement.innerHTML = '<ul class="list-disc pl-4 space-y-1">' + 
+                diagnosisData.treatment.map(item => `<li>${item}</li>`).join('') + 
+                '</ul>';
+        } else {
+            treatmentElement.textContent = diagnosisData.treatment;
+        }
+        
+        // Set prevention as list if it's an array
+        const preventionElement = document.getElementById('diseasePrevention');
+        if (Array.isArray(diagnosisData.prevention)) {
+            preventionElement.innerHTML = '<ul class="list-disc pl-4 space-y-1">' + 
+                diagnosisData.prevention.map(item => `<li>${item}</li>`).join('') + 
+                '</ul>';
+        } else {
+            preventionElement.textContent = diagnosisData.prevention;
+        }
+        
+        // Set severity with appropriate styling
+        const severityElement = document.getElementById('diseaseSeverity');
+        severityElement.textContent = diagnosisData.severity;
+        
+        // Style based on severity
+        severityElement.className = 'px-2 py-1 text-sm rounded-full';
+        if (diagnosisData.severity.toLowerCase().includes('mild') || 
+            diagnosisData.severity.toLowerCase().includes('low')) {
+            severityElement.classList.add('bg-green-100', 'text-green-800');
+        } else if (diagnosisData.severity.toLowerCase().includes('moderate') || 
+                  diagnosisData.severity.toLowerCase().includes('medium')) {
+            severityElement.classList.add('bg-yellow-100', 'text-yellow-800');
+        } else if (diagnosisData.severity.toLowerCase().includes('severe') || 
+                  diagnosisData.severity.toLowerCase().includes('high')) {
+            severityElement.classList.add('bg-red-100', 'text-red-800');
+        } else {
+            severityElement.classList.add('bg-blue-100', 'text-blue-800');
+        }
+        
+        // Set the image
+        document.getElementById('diagnosedPlantImage').src = imageData;
+        
+        // Hide loading and show results
+        document.getElementById('loadingDiagnosis').classList.add('hidden');
+        document.getElementById('diagnosisContent').classList.remove('hidden');
+        
+    } catch (error) {
+        console.error("Error diagnosing plant disease:", error);
+        
+        // Show error message
+        document.getElementById('loadingDiagnosis').classList.add('hidden');
+        
+        // Create error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'text-center py-10';
+        errorDiv.innerHTML = `
+            <div class="text-red-500 text-5xl mb-3">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <h3 class="text-xl font-semibold mb-2">Diagnosis Failed</h3>
+            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                We couldn't diagnose this plant disease. This might be because:
+            </p>
+            <ul class="text-left mx-auto max-w-md mb-6 text-gray-600 dark:text-gray-300 pl-5 list-disc">
+                <li class="mb-1">The image doesn't clearly show the affected area</li>
+                <li class="mb-1">The symptoms aren't visible enough</li>
+                <li class="mb-1">There might be a connection issue</li>
+            </ul>
+            <div class="flex justify-center gap-4">
+                <button id="retryDiagnosis" class="btn-primary">
+                    <i class="fas fa-redo mr-2"></i>Try Again
+                </button>
+            </div>
+        `;
+        
+        document.getElementById('diagnosisResults').innerHTML = '';
+        document.getElementById('diagnosisResults').appendChild(errorDiv);
+        
+        // Add event listeners to new buttons
+        document.getElementById('retryDiagnosis').addEventListener('click', () => {
+            processDiseaseImage(diseaseCapturedPhoto);
+        });
+        
+    } finally {
+        isProcessingDisease = false;
+    }
+}
+
+
+
+
+
 // Event listeners
 tabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -1585,6 +1864,12 @@ document.addEventListener('keydown', (e) => {
         closePlantDetailModal();
     }
 });
+
+
+// Add event listeners for disease diagnosis
+diseaseStartCameraButton?.addEventListener('click', startDiseaseCamera);
+diseaseCaptureButton?.addEventListener('click', captureDiseaseImage);
+diseaseImageUpload?.addEventListener('change', handleDiseaseImageUpload);
 
 // Simulate notifications
 function setupNotifications() {
