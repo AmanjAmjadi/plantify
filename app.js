@@ -5,6 +5,28 @@ let selectedPlantId = null;
 let stream = null;
 let hasSeenWelcome = false;
 
+// DOM elements
+const tabs = document.querySelectorAll('.tab-btn');
+const tabContents = document.querySelectorAll('.tab-content');
+const themeToggle = document.getElementById('theme-toggle');
+const notification = document.getElementById('notification');
+const notificationMessage = document.getElementById('notification-message');
+const startCameraButton = document.getElementById('startCameraButton');
+const cameraContainer = document.getElementById('camera-container');
+const captureButton = document.getElementById('captureButton');
+const videoElement = document.getElementById('videoElement');
+const capturedPhoto = document.getElementById('capturedPhoto');
+const imageUpload = document.getElementById('imageUpload');
+const searchInput = document.getElementById('searchInput');
+const searchButton = document.getElementById('searchButton');
+const searchResults = document.getElementById('searchResults');
+const addToGardenButton = document.getElementById('addToGardenButton');
+const searchAddToGardenButton = document.getElementById('searchAddToGardenButton');
+const closeModalButton = document.getElementById('closeModal');
+const plantDetailModal = document.getElementById('plantDetailModal');
+const modalWaterButton = document.getElementById('modalWaterButton');
+const modalRemoveButton = document.getElementById('modalRemoveButton');
+
 // Check for saved theme preference
 if (localStorage.getItem('theme') === 'dark' || 
     (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -26,9 +48,6 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', eve
 
 // Utility functions
 function showNotification(message, duration = 3000) {
-    const notification = document.getElementById('notification');
-    const notificationMessage = document.getElementById('notification-message');
-    
     notificationMessage.textContent = message;
     notification.classList.add('show');
     
@@ -39,7 +58,6 @@ function showNotification(message, duration = 3000) {
 
 function switchTab(tabId) {
     // Update active tab button
-    const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach(tab => {
         if (tab.id === `tab-${tabId}`) {
             tab.classList.add('text-primary-color');
@@ -49,7 +67,6 @@ function switchTab(tabId) {
     });
     
     // Show active tab content
-    const tabContents = document.querySelectorAll('.tab-content');
     tabContents.forEach(content => {
         if (content.id === `${tabId}-tab`) {
             content.classList.add('active');
@@ -77,11 +94,6 @@ async function startCamera() {
         });
         
         // Show camera container and video
-        const videoElement = document.getElementById('videoElement');
-        const cameraContainer = document.getElementById('camera-container');
-        const startCameraButton = document.getElementById('startCameraButton');
-        const capturedPhoto = document.getElementById('capturedPhoto');
-        
         videoElement.srcObject = stream;
         cameraContainer.classList.remove('hidden');
         startCameraButton.classList.add('hidden');
@@ -99,11 +111,8 @@ function stopCamera() {
     if (stream) {
         stream.getTracks().forEach(track => track.stop());
         stream = null;
-        const videoElement = document.getElementById('videoElement');
         videoElement.srcObject = null;
     }
-    const cameraContainer = document.getElementById('camera-container');
-    const startCameraButton = document.getElementById('startCameraButton');
     cameraContainer.classList.add('hidden');
     startCameraButton.classList.remove('hidden');
 }
@@ -112,8 +121,7 @@ function captureImage() {
     if (!stream) return;
     
     // Setup canvas for capturing
-    const canvas = document.getElementById('capturedPhoto');
-    const videoElement = document.getElementById('videoElement');
+    const canvas = capturedPhoto;
     canvas.width = videoElement.videoWidth;
     canvas.height = videoElement.videoHeight;
     const ctx = canvas.getContext('2d');
@@ -141,7 +149,7 @@ function handleImageUpload(event) {
         const img = new Image();
         img.onload = function() {
             // Setup canvas for uploaded image
-            const canvas = document.getElementById('capturedPhoto');
+            const canvas = capturedPhoto;
             canvas.width = img.width;
             canvas.height = img.height;
             const ctx = canvas.getContext('2d');
@@ -151,7 +159,7 @@ function handleImageUpload(event) {
             
             // Display canvas and hide camera button
             canvas.classList.remove('hidden');
-            document.getElementById('camera-container').classList.add('hidden');
+            cameraContainer.classList.add('hidden');
             
             // Process the uploaded image
             processImage(canvas);
@@ -241,12 +249,12 @@ async function processImage(canvas) {
             // Add event listeners to new buttons
             document.getElementById('retryIdentification').addEventListener('click', () => {
                 // Retry identification with current image
-                processImage(document.getElementById('capturedPhoto'));
+                processImage(capturedPhoto);
             });
             
             document.getElementById('offlineIdentification').addEventListener('click', () => {
                 // Create offline fallback plant
-                createFallbackPlant(document.getElementById('capturedPhoto'));
+                createFallbackPlant(capturedPhoto);
             });
         } else {
             // Show existing error interface
@@ -285,7 +293,6 @@ function createFallbackPlant(canvas) {
 }
 
 function displaySearchResults(results) {
-    const searchResults = document.getElementById('searchResults');
     searchResults.innerHTML = '';
     
     if (results.length === 0) {
@@ -578,11 +585,7 @@ function openPlantDetailModal(plantId) {
     
     selectedPlantId = plantId;
     updatePlantDetailModal(plant);
-    
-    // Reset to the info tab when opening
-    switchModalTab('info');
-    
-    document.getElementById('plantDetailModal').classList.remove('hidden');
+    plantDetailModal.classList.remove('hidden');
 }
 
 function updatePlantDetailModal(plant) {
@@ -614,32 +617,7 @@ function updatePlantDetailModal(plant) {
 
 function closePlantDetailModal() {
     selectedPlantId = null;
-    document.getElementById('plantDetailModal').classList.add('hidden');
-}
-
-function switchModalTab(tabId) {
-    // Update tab buttons
-    const tabButtons = document.querySelectorAll('[id^="modal-tab-"]');
-    tabButtons.forEach(btn => {
-        if (btn.id === `modal-tab-${tabId}`) {
-            btn.classList.add('border-primary-color', 'active');
-            btn.setAttribute('aria-current', 'page');
-        } else {
-            btn.classList.remove('border-primary-color', 'active');
-            btn.classList.add('border-transparent', 'hover:border-gray-300');
-            btn.removeAttribute('aria-current');
-        }
-    });
-    
-    // Update tab content
-    const tabContents = document.querySelectorAll('[id^="modal-content-"]');
-    tabContents.forEach(content => {
-        if (content.id === `modal-content-${tabId}`) {
-            content.classList.remove('hidden');
-        } else {
-            content.classList.add('hidden');
-        }
-    });
+    plantDetailModal.classList.add('hidden');
 }
 
 // Helper functions
@@ -790,6 +768,9 @@ document.getElementById('google-sign-in')?.addEventListener('click', async () =>
         } else {
             showNotification("Google sign-in failed: " + (error.message || "Unknown error"));
         }
+        
+        // Show the Google setup instructions
+        document.getElementById('google-signin-setup').classList.remove('hidden');
     }
 });
 
@@ -922,8 +903,10 @@ document.getElementById('reset-api-key')?.addEventListener('click', async () => 
     }
 });
 
+
+
 // Event listeners
-document.querySelectorAll('.tab-btn').forEach(tab => {
+tabs.forEach(tab => {
     tab.addEventListener('click', () => {
         const tabId = tab.id.replace('tab-', '');
         switchTab(tabId);
@@ -943,32 +926,28 @@ document.getElementById('theme-toggle').addEventListener('click', function() {
     }
 });
 
-document.getElementById('startCameraButton').addEventListener('click', startCamera);
-document.getElementById('captureButton').addEventListener('click', captureImage);
-document.getElementById('imageUpload').addEventListener('change', handleImageUpload);
+startCameraButton.addEventListener('click', startCamera);
+captureButton.addEventListener('click', captureImage);
+imageUpload.addEventListener('change', handleImageUpload);
 
 // Search for plant after identification
 document.getElementById('searchForPlantButton')?.addEventListener('click', () => {
     if (currentPlant) {
         // Fill search field with plant name and switch to search tab
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.value = currentPlant.commonName;
-            switchTab('search');
-            
-            // Trigger search
-            setTimeout(() => {
-                const searchButton = document.getElementById('searchButton');
-                if (searchButton) searchButton.click();
-            }, 100);
-        }
+        searchInput.value = currentPlant.commonName;
+        switchTab('search');
+        
+        // Trigger search
+        setTimeout(() => {
+            searchButton.click();
+        }, 100);
     }
 });
 
-document.getElementById('searchInput').addEventListener('input', async (e) => {
+searchInput.addEventListener('input', async (e) => {
     const query = e.target.value.trim();
     if (query.length < 3) {
-        document.getElementById('searchResults').classList.add('hidden');
+        searchResults.classList.add('hidden');
         return;
     }
     
@@ -980,8 +959,8 @@ document.getElementById('searchInput').addEventListener('input', async (e) => {
     }
 });
 
-document.getElementById('searchButton').addEventListener('click', async () => {
-    const query = document.getElementById('searchInput').value.trim();
+searchButton.addEventListener('click', async () => {
+    const query = searchInput.value.trim();
     if (query.length < 3) {
         showNotification("Please enter at least 3 characters to search");
         return;
@@ -997,37 +976,60 @@ document.getElementById('searchButton').addEventListener('click', async () => {
 
 document.addEventListener('click', (e) => {
     // Close search results when clicking outside
-    if (!document.getElementById('searchInput')?.contains(e.target) && 
-        !document.getElementById('searchResults')?.contains(e.target)) {
-        document.getElementById('searchResults')?.classList.add('hidden');
+    if (!searchInput?.contains(e.target) && !searchResults?.contains(e.target)) {
+        searchResults?.classList.add('hidden');
     }
 });
 
-document.getElementById('addToGardenButton').addEventListener('click', () => {
+addToGardenButton.addEventListener('click', () => {
     if (currentPlant) {
         addToGarden(currentPlant);
     }
 });
 
-document.getElementById('searchAddToGardenButton').addEventListener('click', () => {
+searchAddToGardenButton.addEventListener('click', () => {
     if (currentPlant) {
         addToGarden(currentPlant);
     }
 });
 
-document.getElementById('closeModal').addEventListener('click', closePlantDetailModal);
+closeModalButton.addEventListener('click', closePlantDetailModal);
 
-document.getElementById('modalWaterButton').addEventListener('click', () => {
+modalWaterButton.addEventListener('click', () => {
     if (selectedPlantId) {
         waterPlant(selectedPlantId);
     }
 });
 
-document.getElementById('modalRemoveButton').addEventListener('click', () => {
+modalRemoveButton.addEventListener('click', () => {
     if (selectedPlantId) {
         removeFromGarden(selectedPlantId);
     }
 });
+
+// Simulate notifications
+function setupNotifications() {
+    if (garden.length > 0) {
+        const checkNotifications = () => {
+            const now = new Date();
+            const plantsNeedingWater = garden.filter(plant => {
+                const nextWater = new Date(plant.nextWater);
+                return nextWater <= now;
+            });
+            
+            if (plantsNeedingWater.length > 0) {
+                const plant = plantsNeedingWater[0];
+                showNotification(`${plant.commonName} needs water!`, 5000);
+            }
+        };
+        
+        // Check once when the app loads
+        setTimeout(checkNotifications, 5000);
+        
+        // Then check periodically
+        setInterval(checkNotifications, 60000); // Every minute
+    }
+}
 
 // Initialize the app
 async function initApp() {
@@ -1094,6 +1096,8 @@ async function initApp() {
     // Setup notifications
     setupNotifications();
     
+   
+    
     // Show welcome message for first-time users
     if (!hasSeenWelcome && !auth?.currentUser) {
         setTimeout(showWelcomeMessage, 1000);
@@ -1102,30 +1106,6 @@ async function initApp() {
         setTimeout(() => {
             showNotification("Welcome to Plantify! Identify and manage your plants with ease.");
         }, 1000);
-    }
-}
-
-// Simulate notifications
-function setupNotifications() {
-    if (garden.length > 0) {
-        const checkNotifications = () => {
-            const now = new Date();
-            const plantsNeedingWater = garden.filter(plant => {
-                const nextWater = new Date(plant.nextWater);
-                return nextWater <= now;
-            });
-            
-            if (plantsNeedingWater.length > 0) {
-                const plant = plantsNeedingWater[0];
-                showNotification(`${plant.commonName} needs water!`, 5000);
-            }
-        };
-        
-        // Check once when the app loads
-        setTimeout(checkNotifications, 5000);
-        
-        // Then check periodically
-        setInterval(checkNotifications, 60000); // Every minute
     }
 }
 
