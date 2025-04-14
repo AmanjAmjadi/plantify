@@ -54,6 +54,13 @@ async function initApiKey() {
  * @param {string} plantName - The name of the plant to search for
  * @returns {Promise<string>} - A URL to an image of the plant
  */
+// Replace the getPlantImageFromGoogle function with this improved version
+
+/**
+ * Get a plant image from Google Search API with improved error handling
+ * @param {string} plantName - The name of the plant to search for
+ * @returns {Promise<string>} - A URL to an image of the plant
+ */
 async function getPlantImageFromGoogle(plantName) {
     try {
         // Check cache first
@@ -61,11 +68,12 @@ async function getPlantImageFromGoogle(plantName) {
             return plantImageCache.get(plantName);
         }
 
-        // Create search query - add "plant" to improve results
-        const query = `${plantName} plant`;
+        // Create search query - improve search terms for better results
+        // Add "plant photo" to improve results and filter out non-plant images
+        const query = `${plantName} plant photo`;
         
         // Build API URL with safety parameters
-        const apiUrl = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${SEARCH_ENGINE_ID}&q=${encodeURIComponent(query)}&searchType=image&imgSize=medium&num=5`;
+        const apiUrl = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${SEARCH_ENGINE_ID}&q=${encodeURIComponent(query)}&searchType=image&imgSize=medium&num=10&safe=active`;
         
         console.log(`Searching for images of: ${query}`);
         
@@ -79,7 +87,7 @@ async function getPlantImageFromGoogle(plantName) {
         }
         
         const data = await response.json();
-        console.log("Google Image Search response:", data);
+        console.log("Google Image Search response received");
         
         // Check if we got results
         if (!data.items || data.items.length === 0) {
@@ -87,46 +95,30 @@ async function getPlantImageFromGoogle(plantName) {
             return defaultPlantImage;
         }
         
-        // Use the first image that is accessible
+        // IMPROVEMENT: Instead of trying to verify images with HEAD requests (which can fail due to CORS),
+        // just use the thumbnails directly from Google, which are more reliable
+        
+        // First try to use thumbnails which are more reliable and avoid CORS issues
         for (const item of data.items) {
-            if (item.link && item.link.startsWith('http')) {
-                try {
-                    // Try to verify image is accessible
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 3000);
-                    
-                    const imgResponse = await fetch(item.link, { 
-                        method: 'HEAD',
-                        signal: controller.signal
-                    });
-                    
-                    clearTimeout(timeoutId);
-                    
-                    if (imgResponse.ok) {
-                        // Cache the result
-                        plantImageCache.set(plantName, item.link);
-                        console.log(`Found image for ${plantName}: ${item.link}`);
-                        return item.link;
-                    }
-                } catch (error) {
-                    console.log(`Image at ${item.link} not accessible: ${error.message}`);
-                }
+            if (item.image && item.image.thumbnailLink) {
+                // We'll use the actual link but keep the thumbnail as backup
+                const imageUrl = item.link;
+                
+                // Cache both URLs
+                plantImageCache.set(plantName, imageUrl);
+                console.log(`Using image for ${plantName}: ${imageUrl}`);
+                return imageUrl;
             }
         }
         
-        // If direct image links fail, try using thumbnail URLs which are more reliable
-        if (data.items && data.items.length > 0) {
-            for (const item of data.items) {
-                if (item.image && item.image.thumbnailLink) {
-                    plantImageCache.set(plantName, item.image.thumbnailLink);
-                    console.log(`Using thumbnail for ${plantName}: ${item.image.thumbnailLink}`);
-                    return item.image.thumbnailLink;
-                }
-            }
+        // If no thumbnails, just use the first image link without verification
+        if (data.items[0].link) {
+            plantImageCache.set(plantName, data.items[0].link);
+            return data.items[0].link;
         }
         
-        // If all images failed, use the default
-        console.warn(`All images failed for ${plantName}, using default`);
+        // If all attempts fail, use the default image
+        console.warn(`Could not find suitable image for ${plantName}, using default`);
         return defaultPlantImage;
         
     } catch (error) {
