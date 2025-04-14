@@ -16,6 +16,73 @@
     --box-shadow-hover: 0 10px 15px rgba(105, 162, 112, 0.2);
 }
 
+/* Add these styles to your styles.css file */
+
+/* Styling for disease camera container (reusing camera styles) */
+#diseaseCaptureButton {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    border: 3px solid var(--primary-color);
+    cursor: pointer;
+}
+
+#diseaseCaptureInnerButton {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    transition: all 0.2s;
+}
+
+#diseaseCaptureButton:hover #diseaseCaptureInnerButton {
+    background-color: var(--primary-dark);
+    transform: scale(0.95);
+}
+
+/* Styling for severity badges */
+#diseaseSeverity.bg-green-100 {
+    background-color: rgba(220, 252, 231, 0.7);
+}
+
+#diseaseSeverity.bg-yellow-100 {
+    background-color: rgba(254, 249, 195, 0.7);
+}
+
+#diseaseSeverity.bg-red-100 {
+    background-color: rgba(254, 226, 226, 0.7);
+}
+
+#diseaseSeverity.bg-blue-100 {
+    background-color: rgba(219, 234, 254, 0.7);
+}
+
+/* Dark mode support for severity badges */
+.dark #diseaseSeverity.bg-green-100 {
+    background-color: rgba(22, 101, 52, 0.5);
+}
+
+.dark #diseaseSeverity.bg-yellow-100 {
+    background-color: rgba(133, 77, 14, 0.5);
+}
+
+.dark #diseaseSeverity.bg-red-100 {
+    background-color: rgba(153, 27, 27, 0.5);
+}
+
+.dark #diseaseSeverity.bg-blue-100 {
+    background-color: rgba(30, 58, 138, 0.5);
+}
+
 .dark {
     --bg-primary: var(--dark-bg);
     --text-primary: var(--dark-text);
