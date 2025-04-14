@@ -1,6 +1,16 @@
+// Default plant image as fallback
+const defaultPlantImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB4PSIwIiB5PSIwIiB2aWV3Qm94PSIwIDAgNjQgNjQiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDUxMiA1MTIiIHhtbDpzcGFjZT0icHJlc2VydmUiIGNsYXNzPSIiPjxnPjxwYXRoIGQ9Ik0yOS4zODYgMTIuMzA0Yy0uMTk5LS4yOTYtLjU5MS0uNDIxLS45MzQtLjMwMS0zLjMzOCAxLjE1OS04LjQ5MiAzLjg0LTEyLjkyOCA4LjQ0LTQuNjk1IDQuODcyLTcuNzI2IDEwLjk1Mi04Ljk5NSAxOC4wNTUtLjA3OS40MzcuMTMyLjg3Ny41MjIgMS4wODcuMTQ5LjA4LjMxMS4xMTkuNDczLjExOS4yNjIgMCAuNTIxLS4xMDMuNzE1LS4zMDEgNi4zNDYtNi40ODQgMTMuNzI1LTguMjA2IDE4LjUxOC04LjIwNi41MiAwIDEuMDE0LjAyMSAxLjQ3OC4wNTUuNDQzLjAzLjg1NC0uMjQ2Ljk4NC0uNjcyLjEzLS40MjYtLjA1MS0uODg2LS40MzUtMS4xMDktLjAyLS4wMTItMi4wNjQtMS4yMDctMi44Ni01LjUwMS0uNDM3LTIuMzY4LjExMi01Ljc1MiAzLjQ2Mi0xMC42NjZ6IiBmaWxsPSIjNmZiZTUxIiBvcGFjaXR5PSIxIiBkYXRhLW9yaWdpbmFsPSIjMDAwMDAwIj48L3BhdGg+PHBhdGggZD0iTTUzLjQzOSA0Mi4zYy42NjktLjI4MSAxLjMxNS0uNjEzIDEuOTEtMS4wNzUuMzc3LS4yOTIuNTA5LS44MDIuMzIxLTEuMjQzLS4xODgtLjQ0MS0uNjI5LS43MTktMS4xMDItLjY4NS0xLjA5NS4wNjUtMi4yMTYuMDk4LTMuMzMzLjA5OC04LjgzMSAwLTE1LjU4Ny0yLjI1LTE5LjQ1Ny03LjQ0OS0uMjgxLS4zNzgtLjc2NC0uNTIzLTEuMTkxLS4zNTctLjQyOC4xNjctLjcwOS41OTUtLjY5MSAxLjA1N2wuMTMzIDMuMjE4YzAgLjAxNi4wMDMuMDMxLjAwNC4wNDggMCAxMC4zMzggNi4yMTYgMTUuOTk4IDExLjMzOSAxOS4xNy42NjUuNDEyLjk2NS0uNzIxLjc4MS0xLjUwNmwtLjY1MS0yLjc2OS0uMDA3LS4wMzFjLS4wOTQtLjM5Ni0uMzYzLS43MTYtLjc0MS0uODczLS4zNzctLjE1Ny0uODA0LS4xMDctMS4xMzQuMTM5LTEuNTIzIDEuMTI5LTUuMTA0IDMuMTYzLTkuODI3IDMuNTIyQzM3LjA1MyA1OC42NiA0NC4zODkgNjQgNTIuNjE3IDY0aDQuOTE3QzU4LjYyNyA1OC41NzIgNTUuMjcgNTEuMTQgNTMuNDM5IDQyLjN6IiBmaWxsPSIjNGE5OTJzIiBvcGFjaXR5PSIxIiBkYXRhLW9yaWdpbmFsPSIjMDAwMDAwIj48L3BhdGg+PHBhdGggZD0iTTM0LjYxNCAyNC44MzNjLjM0My0xLjYwNCAxLjQ0LTUuOTg3IDQuOTA3LTEwLjQ0OS4yODEtLjM2My4yODMtLjg2NC4wMDUtMS4yMjktLjI3Ny0uMzY0LS43NTMtLjUxNS0xLjE4Ni0uMzc0LTQuNzU0IDEuNTQxLTguODQ5IDQuMjIxLTEyLjE2MiA3Ljk3NC0uMjk3LjMzNS0uMzEyLjgyOS0uMDM5IDEuMTc5LjI3My4zNS43NTIuNDY1IDEuMTUuMjc5IDEuNDYxLS42NzkgNC4xMTQtMS42NyA3LjMyNS0xLjM4eiIgZmlsbD0iIzc1ZTQ2ZSIgb3BhY2l0eT0iMSIgZGF0YS1vcmlnaW5hbD0iIzAwMDAwMCI+PC9wYXRoPjxwYXRoIGQ9Ik00Ni45NzkgMTUuOTYzYy4yODItLjA0Ni41MjYtLjIyMi42NzUtLjQ4NS4xNDktLjI2My4xNzItLjU4LjA2NS0uODYzLS4xNzctLjQ2Ni0uMzQ2LS45MDYtLjU0My0xLjM0MS0yLjc2LTYuMDg2LTYuNDY1LTkuNDE5LTExLjAyOS05LjkyM2wtLjE2NS4wMDFjLTEuMTI0LS4xMDQtMi4xNTMuNjI2LTIuNDI0IDEuNzItLjI1MyAxLjAyNy4yMzIgMi4yMzUgMS4yMTIgMi45NDRsMS4wNDYuNzU4YzUuNjE0IDQuMDY4IDkuNzM3IDYuOTk2IDExLjE2MyA3Ljg5Ni4xNzYuMTExLjM3Ni4xNjcuNTc2LjE2Ny4xNjIgMCAuMzIzLS4wMzUuNDc0LS4xMDZ6IiBmaWxsPSIjNzVlNDZlIiBvcGFjaXR5PSIxIiBkYXRhLW9yaWdpbmFsPSIjMDAwMDAwIj48L3BhdGg+PHBhdGggZD0iTTUxLjc5NSAyNC45OTJjLS4yODctLjMyOS0uNzQ0LS40NjMtMS4xNTMtLjMzNi0uNDA5LjEyNy0uNzE3LjQ3LS43NzkuODg5LS4wNzcuNTIxLS40MzMgMS4xMzgtLjk0NyAxLjYzN2wtLjAwMy0uMDAzYy0uODI1LjgxOC0xLjkxMi44MTgtMi43MjIuMDAyLTQuOTA0LTQuOTI3LTkuMzE3LTcuMzIzLTEzLjgxNS03LjUxNC0uNDc3LS4wMjItLjkyMi4yNDQtMS4xMS42ODctLjE4OC40NDItLjEwOC45NTQuMiAxLjMxNyA2LjgwOSA4LjA1NiA5LjY2NyAxOC40MjYgOS42OTEgMTguNTAyLjA5Ny4zMDQuMzM5LjU0LjY0Ni42My4zMDcuMDkuNjM3LjAxMi44NzQtLjIwN2w0LjMzMy00LjAzMnYuMDA1YzEuNzI3LTEuNzEzIDQuMzktNi4zMzggNi4xNDItMTAuNDE5LjM2Ni0uODQ1LS4wNjQtLjk1My0uMzU3LTEuMTU4eiIgZmlsbD0iIzZmYmU1MSIgb3BhY2l0eT0iMSIgZGF0YS1vcmlnaW5hbD0iIzAwMDAwMCI+PC9wYXRoPjxwYXRoIGQ9Ik0yNC45NTYgNDYuMDI0Yy0uMTM0LS40MzMtLjUzLS43NDEtLjk4My0uNzY0LS40NTItLjAyMi0uODcyLjI0Ni0xLjA0My42NjctLjA0LjA5OS0xLjAyNyAyLjQ2MS0zLjMwNyA0LjY3Ni0yLjI2NyAyLjIwNC00Ljk2OCAzLjMwOC03LjE4OCAzLjMwOGgtNC40NjhDNi43ODggNTYuNjUyIDYgNTguMjQxIDYgNjBoMTMuMzc1YzQuMTMxIDAgOC4wMDUtMS44ODMgMTAuNjEtNS4zNzJsLjAwNS4wMDRjLjk2Ni0xLjI4OCAxLjA0OC0zLjAzNy4yMDctNC40MTlsLS4wMDUtLjAwNWMtMS4wMDYtMS42NDgtMi4yNzMtMi41MzYtMy43NzQtMi42NDUtLjU4Ny0uMDQyLTEuNDYyLS41NzYtMS40NjItMS41Mzl6IiBmaWxsPSIjNGE5OTJzIiBvcGFjaXR5PSIxIiBkYXRhLW9yaWdpbmFsPSIjMDAwMDAwIj48L3BhdGg+PC9nPjwvc3ZnPg==';
+
 // Default API key - will be used as fallback
 const DEFAULT_API_KEY = "AIzaSyCbGxHgvv7vFS4lBmvFDJG6z30ks3lTdik";
 let currentApiKey = DEFAULT_API_KEY;
+
+// Google Search API configuration
+const GOOGLE_API_KEY = 'AIzaSyD0da9inNI3ZDOXeE_lyoQMAF--zmDTviI';
+const SEARCH_ENGINE_ID = '5327828c696fb4f99'; // Your Custom Search Engine ID
+
+// Cache for plant images to reduce API calls
+const plantImageCache = new Map();
 
 // Function to set an active API key
 async function setApiKey(key) {
@@ -39,68 +49,89 @@ async function initApiKey() {
     }
 }
 
-// Default plant image - more photo-realistic
-const defaultPlantImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB4PSIwIiB5PSIwIiB2aWV3Qm94PSIwIDAgNjQgNjQiIHN0eWxlPSJlbmFibGUtYmFja2dyb3VuZDpuZXcgMCAwIDUxMiA1MTIiIHhtbDpzcGFjZT0icHJlc2VydmUiIGNsYXNzPSIiPjxnPjxwYXRoIGQ9Ik0yOS4zODYgMTIuMzA0Yy0uMTk5LS4yOTYtLjU5MS0uNDIxLS45MzQtLjMwMS0zLjMzOCAxLjE1OS04LjQ5MiAzLjg0LTEyLjkyOCA4LjQ0LTQuNjk1IDQuODcyLTcuNzI2IDEwLjk1Mi04Ljk5NSAxOC4wNTUtLjA3OS40MzcuMTMyLjg3Ny41MjIgMS4wODcuMTQ5LjA4LjMxMS4xMTkuNDczLjExOS4yNjIgMCAuNTIxLS4xMDMuNzE1LS4zMDEgNi4zNDYtNi40ODQgMTMuNzI1LTguMjA2IDE4LjUxOC04LjIwNi41MiAwIDEuMDE0LjAyMSAxLjQ3OC4wNTUuNDQzLjAzLjg1NC0uMjQ2Ljk4NC0uNjcyLjEzLS40MjYtLjA1MS0uODg2LS40MzUtMS4xMDktLjAyLS4wMTItMi4wNjQtMS4yMDctMi44Ni01LjUwMS0uNDM3LTIuMzY4LjExMi01Ljc1MiAzLjQ2Mi0xMC42NjZ6IiBmaWxsPSIjNmZiZTUxIiBvcGFjaXR5PSIxIiBkYXRhLW9yaWdpbmFsPSIjMDAwMDAwIj48L3BhdGg+PHBhdGggZD0iTTUzLjQzOSA0Mi4zYy42NjktLjI4MSAxLjMxNS0uNjEzIDEuOTEtMS4wNzUuMzc3LS4yOTIuNTA5LS44MDIuMzIxLTEuMjQzLS4xODgtLjQ0MS0uNjI5LS43MTktMS4xMDItLjY4NS0xLjA5NS4wNjUtMi4yMTYuMDk4LTMuMzMzLjA5OC04LjgzMSAwLTE1LjU4Ny0yLjI1LTE5LjQ1Ny03LjQ0OS0uMjgxLS4zNzgtLjc2NC0uNTIzLTEuMTkxLS4zNTctLjQyOC4xNjctLjcwOS41OTUtLjY5MSAxLjA1N2wuMTMzIDMuMjE4YzAgLjAxNi4wMDMuMDMxLjAwNC4wNDggMCAxMC4zMzggNi4yMTYgMTUuOTk4IDExLjMzOSAxOS4xNy42NjUuNDEyLjk2NS0uNzIxLjc4MS0xLjUwNmwtLjY1MS0yLjc2OS0uMDA3LS4wMzFjLS4wOTQtLjM5Ni0uMzYzLS43MTYtLjc0MS0uODczLS4zNzctLjE1Ny0uODA0LS4xMDctMS4xMzQuMTM5LTEuNTIzIDEuMTI5LTUuMTA0IDMuMTYzLTkuODI3IDMuNTIyQzM3LjA1MyA1OC42NiA0NC4zODkgNjQgNTIuNjE3IDY0aDQuOTE3QzU4LjYyNyA1OC41NzIgNTUuMjcgNTEuMTQgNTMuNDM5IDQyLjN6IiBmaWxsPSIjNGE5OTJzIiBvcGFjaXR5PSIxIiBkYXRhLW9yaWdpbmFsPSIjMDAwMDAwIj48L3BhdGg+PHBhdGggZD0iTTM0LjYxNCAyNC44MzNjLjM0My0xLjYwNCAxLjQ0LTUuOTg3IDQuOTA3LTEwLjQ0OS4yODEtLjM2My4yODMtLjg2NC4wMDUtMS4yMjktLjI3Ny0uMzY0LS43NTMtLjUxNS0xLjE4Ni0uMzc0LTQuNzU0IDEuNTQxLTguODQ5IDQuMjIxLTEyLjE2MiA3Ljk3NC0uMjk3LjMzNS0uMzEyLjgyOS0uMDM5IDEuMTc5LjI3My4zNS43NTIuNDY1IDEuMTUuMjc5IDEuNDYxLS42NzkgNC4xMTQtMS42NyA3LjMyNS0xLjM4eiIgZmlsbD0iIzc1ZTQ2ZSIgb3BhY2l0eT0iMSIgZGF0YS1vcmlnaW5hbD0iIzAwMDAwMCI+PC9wYXRoPjxwYXRoIGQ9Ik00Ni45NzkgMTUuOTYzYy4yODItLjA0Ni41MjYtLjIyMi42NzUtLjQ4NS4xNDktLjI2My4xNzItLjU4LjA2NS0uODYzLS4xNzctLjQ2Ni0uMzQ2LS45MDYtLjU0My0xLjM0MS0yLjc2LTYuMDg2LTYuNDY1LTkuNDE5LTExLjAyOS05LjkyM2wtLjE2NS4wMDFjLTEuMTI0LS4xMDQtMi4xNTMuNjI2LTIuNDI0IDEuNzItLjI1MyAxLjAyNy4yMzIgMi4yMzUgMS4yMTIgMi45NDRsMS4wNDYuNzU4YzUuNjE0IDQuMDY4IDkuNzM3IDYuOTk2IDExLjE2MyA3Ljg5Ni4xNzYuMTExLjM3Ni4xNjcuNTc2LjE2Ny4xNjIgMCAuMzIzLS4wMzUuNDc0LS4xMDZ6IiBmaWxsPSIjNzVlNDZlIiBvcGFjaXR5PSIxIiBkYXRhLW9yaWdpbmFsPSIjMDAwMDAwIj48L3BhdGg+PHBhdGggZD0iTTUxLjc5NSAyNC45OTJjLS4yODctLjMyOS0uNzQ0LS40NjMtMS4xNTMtLjMzNi0uNDA5LjEyNy0uNzE3LjQ3LS43NzkuODg5LS4wNzcuNTIxLS40MzMgMS4xMzgtLjk0NyAxLjYzN2wtLjAwMy0uMDAzYy0uODI1LjgxOC0xLjkxMi44MTgtMi43MjIuMDAyLTQuOTA0LTQuOTI3LTkuMzE3LTcuMzIzLTEzLjgxNS03LjUxNC0uNDc3LS4wMjItLjkyMi4yNDQtMS4xMS42ODctLjE4OC40NDItLjEwOC45NTQuMiAxLjMxNyA2LjgwOSA4LjA1NiA5LjY2NyAxOC40MjYgOS42OTEgMTguNTAyLjA5Ny4zMDQuMzM5LjU0LjY0Ni42My4zMDcuMDkuNjM3LjAxMi44NzQtLjIwN2w0LjMzMy00LjAzMnYuMDA1YzEuNzI3LTEuNzEzIDQuMzktNi4zMzggNi4xNDItMTAuNDE5LjM2Ni0uODQ1LS4wNjQtLjk1My0uMzU3LTEuMTU4eiIgZmlsbD0iIzZmYmU1MSIgb3BhY2l0eT0iMSIgZGF0YS1vcmlnaW5hbD0iIzAwMDAwMCI+PC9wYXRoPjxwYXRoIGQ9Ik0yNC45NTYgNDYuMDI0Yy0uMTM0LS40MzMtLjUzLS43NDEtLjk4My0uNzY0LS40NTItLjAyMi0uODcyLjI0Ni0xLjA0My42NjctLjA0LjA5OS0xLjAyNyAyLjQ2MS0zLjMwNyA0LjY3Ni0yLjI2NyAyLjIwNC00Ljk2OCAzLjMwOC03LjE4OCAzLjMwOGgtNC40NjhDNi43ODggNTYuNjUyIDYgNTguMjQxIDYgNjBoMTMuMzc1YzQuMTMxIDAgOC4wMDUtMS44ODMgMTAuNjEtNS4zNzJsLjAwNS4wMDRjLjk2Ni0xLjI4OCAxLjA0OC0zLjAzNy4yMDctNC40MTlsLS4wMDUtLjAwNWMtMS4wMDYtMS42NDgtMi4yNzMtMi41MzYtMy43NzQtMi42NDUtLjU4Ny0uMDQyLTEuNDYyLS41NzYtMS40NjItMS41Mzl6IiBmaWxsPSIjNGE5OTJzIiBvcGFjaXR5PSIxIiBkYXRhLW9yaWdpbmFsPSIjMDAwMDAwIj48L3BhdGg+PC9nPjwvc3ZnPg==';
-
-// Get a custom plant image
-async function getCustomPlantImage(plantName) {
+/**
+ * Get a plant image from Google Search API
+ * @param {string} plantName - The name of the plant to search for
+ * @returns {Promise<string>} - A URL to an image of the plant
+ */
+async function getPlantImageFromGoogle(plantName) {
     try {
-        // Try to get a relevant image from Gemini (if available)
-        const prompt = `Generate a simple, beautiful SVG icon for the plant "${plantName}" with mostly green colors. Return ONLY the SVG code with no markdown, explanation or other text.`;
+        // Check cache first
+        if (plantImageCache.has(plantName)) {
+            return plantImageCache.get(plantName);
+        }
+
+        // Create search query - add "plant" to improve results
+        const query = `${plantName} plant`;
         
-        // Use the currentApiKey from the parent scope
-        const apiUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
+        // Build API URL with safety parameters
+        const apiUrl = `https://www.googleapis.com/customsearch/v1?key=${GOOGLE_API_KEY}&cx=${SEARCH_ENGINE_ID}&q=${encodeURIComponent(query)}&searchType=image&imgSize=medium&num=5`;
         
-        const requestData = {
-            contents: [{ parts: [{ text: prompt }] }],
-            generation_config: {
-                temperature: 0.2,
-                top_k: 32,
-                top_p: 1,
-                max_output_tokens: 2048,
-            }
-        };
+        console.log(`Searching for images of: ${query}`);
         
-        const response = await fetch(`${apiUrl}?key=${currentApiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestData)
-        });
+        // Make the request
+        const response = await fetch(apiUrl);
         
         if (!response.ok) {
-            // Log more detailed error information
             const errorText = await response.text();
-            console.error("Custom plant image API error:", errorText);
-            return null;
+            console.error("Google Search API error:", errorText);
+            throw new Error(`Google Search API failed: ${response.status} ${response.statusText}`);
         }
         
         const data = await response.json();
+        console.log("Google Image Search response:", data);
         
-        // Check if we have valid data structure
-        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts) {
-            console.error("Invalid response structure from API:", data);
-            return null;
+        // Check if we got results
+        if (!data.items || data.items.length === 0) {
+            console.warn(`No images found for plant: ${plantName}`);
+            return defaultPlantImage;
         }
         
-        const svgText = data.candidates[0].content.parts[0].text;
-        
-        // Extract just the SVG content (removing any code blocks or explanations)
-        const svgMatch = svgText.match(/<svg[\s\S]*<\/svg>/i);
-        if (svgMatch) {
-            // Validate that the SVG has a viewBox and reasonable dimensions
-            const svgContent = svgMatch[0];
-            if (!svgContent.includes('viewBox') || svgContent.includes('width="0"') || svgContent.includes('height="0"')) {
-                console.warn("Invalid SVG dimensions:", svgContent.substring(0, 100) + "...");
-                return null;
+        // Use the first image that is accessible
+        for (const item of data.items) {
+            if (item.link && item.link.startsWith('http')) {
+                try {
+                    // Try to verify image is accessible
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 3000);
+                    
+                    const imgResponse = await fetch(item.link, { 
+                        method: 'HEAD',
+                        signal: controller.signal
+                    });
+                    
+                    clearTimeout(timeoutId);
+                    
+                    if (imgResponse.ok) {
+                        // Cache the result
+                        plantImageCache.set(plantName, item.link);
+                        console.log(`Found image for ${plantName}: ${item.link}`);
+                        return item.link;
+                    }
+                } catch (error) {
+                    console.log(`Image at ${item.link} not accessible: ${error.message}`);
+                }
             }
-            
-            return 'data:image/svg+xml;base64,' + btoa(svgMatch[0]);
         }
         
-        return null;
+        // If direct image links fail, try using thumbnail URLs which are more reliable
+        if (data.items && data.items.length > 0) {
+            for (const item of data.items) {
+                if (item.image && item.image.thumbnailLink) {
+                    plantImageCache.set(plantName, item.image.thumbnailLink);
+                    console.log(`Using thumbnail for ${plantName}: ${item.image.thumbnailLink}`);
+                    return item.image.thumbnailLink;
+                }
+            }
+        }
+        
+        // If all images failed, use the default
+        console.warn(`All images failed for ${plantName}, using default`);
+        return defaultPlantImage;
+        
     } catch (error) {
-        console.error("Error getting custom plant image:", error);
-        return null;
+        console.error("Error getting plant image from Google:", error);
+        return defaultPlantImage;
     }
 }
 
@@ -416,79 +447,17 @@ async function getPlantDetails(speciesKey) {
         
         const data = await response.json();
         
-        // Get occurrence data for images with timeout
-        const occurrencePromise = fetch(`https://api.gbif.org/v1/occurrence/search?taxonKey=${speciesKey}&limit=5&mediaType=StillImage`)
-            .then(resp => {
-                if (!resp.ok) {
-                    throw new Error("Failed to fetch occurrence data");
-                }
-                return resp.json();
-            })
-            .catch(err => {
-                console.warn("Error fetching occurrence data:", err);
-                return { results: [] };
-            });
+        // Get plant name for image search
+        const plantName = data.vernacularNames && data.vernacularNames.length > 0 
+            ? data.vernacularNames[0].vernacularName 
+            : data.scientificName;
         
-        // Setup timeout for occurrence request
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error("Occurrence data request timed out")), 5000);
-        });
+        // Get image URL using Google Search
+        let imageUrl = await getPlantImageFromGoogle(plantName);
         
-        // Race between the fetch and the timeout
-        let occurrenceData;
-        try {
-            occurrenceData = await Promise.race([occurrencePromise, timeoutPromise]);
-        } catch (error) {
-            console.warn("Occurrence data error:", error);
-            occurrenceData = { results: [] };
-        }
-        
-        // Try to get a custom plant image
-        let imageUrl = null;
-        
-        // First try to find an image in the occurrences
-        if (occurrenceData.results && occurrenceData.results.length > 0) {
-            for (const result of occurrenceData.results) {
-                if (result.media && result.media.length > 0) {
-                    const mediaItem = result.media.find(m => m.type === 'StillImage');
-                    if (mediaItem && mediaItem.identifier) {
-                        // Verify the image URL is accessible with timeout
-                        try {
-                            const controller = new AbortController();
-                            const timeoutId = setTimeout(() => controller.abort(), 3000);
-                            
-                            const imgResponse = await fetch(mediaItem.identifier, { 
-                                method: 'HEAD',
-                                signal: controller.signal
-                            });
-                            
-                            clearTimeout(timeoutId);
-                            
-                            if (imgResponse.ok) {
-                                imageUrl = mediaItem.identifier;
-                                break;
-                            }
-                        } catch (error) {
-                            console.log("Image URL not accessible:", error.message);
-                        }
-                    }
-                }
-            }
-        }
-        
-        // If no image was found, try to get a custom one from Gemini
+        // If Google search fails, use default
         if (!imageUrl) {
-            const plantName = data.vernacularNames && data.vernacularNames.length > 0 
-                ? data.vernacularNames[0].vernacularName 
-                : data.scientificName;
-                
-            const customImage = await getCustomPlantImage(plantName);
-            if (customImage) {
-                imageUrl = customImage;
-            } else {
-                // If all else fails, use the default plant image
-                imageUrl = defaultPlantImage;
-            }
+            imageUrl = defaultPlantImage;
         }
         
         // Generate plant info with more realistic care data
