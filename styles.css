@@ -35,6 +35,11 @@ body {
     font-family: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+/* Prevent scrolling when modal is open */
+body.modal-open {
+    overflow: hidden;
+}
+
 .card {
     background-color: var(--card-bg);
     border-radius: 1rem;
@@ -73,6 +78,13 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+.btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
 .btn-accent {
     background-color: var(--accent-color);
     color: white;
@@ -90,6 +102,13 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
+.btn-accent:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
 .btn-secondary {
     background-color: var(--secondary-color);
     color: white;
@@ -105,6 +124,13 @@ body {
     background-color: #5A85DB;
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .plant-card {
@@ -179,6 +205,7 @@ body {
     align-items: center;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     border: 3px solid var(--primary-color);
+    cursor: pointer;
 }
 
 #captureInnerButton {
@@ -267,6 +294,8 @@ body {
     z-index: 1000;
     transform: translateX(120%);
     transition: transform 0.3s ease-out;
+    max-width: 90%;
+    word-break: break-word;
 }
 
 .notification.show {
@@ -284,6 +313,7 @@ body {
     height: 100%;
     background-color: #3498db;
     border-radius: 4px;
+    transition: width 0.5s ease-out;
 }
 
 .sun-progress-bar {
@@ -297,11 +327,44 @@ body {
     height: 100%;
     background-color: #f1c40f;
     border-radius: 4px;
+    transition: width 0.5s ease-out;
 }
 
 @media (max-width: 640px) {
     .garden-grid {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+    
+    /* Improve layout on small screens */
+    .btn-primary, .btn-accent, .btn-secondary {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Fix modal on mobile */
+    #plantDetailModal > div {
+        margin: 0.5rem;
+        max-width: calc(100% - 1rem);
+        max-height: 90vh;
+    }
+    
+    /* Better spacing in search results */
+    .search-result-item {
+        padding: 0.75rem;
+    }
+}
+
+/* Improve performance on smaller devices */
+@media (max-width: 480px) {
+    /* Reduce animations on mobile */
+    .card:hover, .plant-card:hover {
+        transform: translateY(-2px);
+    }
+    
+    /* Make buttons easier to tap */
+    .btn-primary, .btn-accent, .btn-secondary, button {
+        min-height: 44px;
+        min-width: 44px;
     }
 }
 
@@ -316,6 +379,17 @@ body {
     100% { transform: rotate(2deg); }
 }
 
+/* Pulse animation for upload button when camera fails */
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(122, 199, 79, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(122, 199, 79, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(122, 199, 79, 0); }
+}
+
+.animate-pulse {
+    animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
 /* Improved inputs */
 input[type="text"], 
 input[type="search"],
@@ -324,6 +398,7 @@ input[type="password"] {
     border: 1px solid rgba(122, 199, 79, 0.3);
     transition: all 0.3s;
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+    min-height: 44px; /* Improves tap targets on mobile */
 }
 
 input[type="text"]:focus, 
@@ -361,4 +436,36 @@ input[type="password"]:focus {
 .btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Fix iOS Safari issues */
+input[type="text"], 
+input[type="search"],
+input[type="email"],
+input[type="password"],
+textarea {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0.5rem;
+}
+
+/* Make modal more responsive */
+.max-h-90vh {
+    max-height: 90vh;
+}
+
+/* Fix tab button appearance on iOS */
+.tab-btn {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    border: none;
 }
