@@ -1565,7 +1565,8 @@ function setupNotifications() {
     }
 }
 
-// Initialize the app
+// Replace the initApp function in app.js
+
 async function initApp() {
     try {
         // Load API key from storage
@@ -1584,6 +1585,12 @@ async function initApp() {
             // If user is logged in, load data from cloud
             if (auth?.currentUser) {
                 try {
+                    // Show sync status as loading
+                    if (document.getElementById('sync-status')) {
+                        document.getElementById('sync-status').textContent = 'Loading...';
+                        document.getElementById('sync-status').className = 'text-xs px-2 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full';
+                    }
+                    
                     // Get cloud data
                     const docRef = db.collection('users').doc(auth.currentUser.uid);
                     const doc = await docRef.get();
@@ -1591,11 +1598,21 @@ async function initApp() {
                     if (doc.exists && doc.data().garden) {
                         garden = doc.data().garden;
                         
+                        // Also update local storage
+                        await saveGarden(garden);
+                        
                         // Update last sync time
                         lastSyncTime = Date.now();
                         await saveSetting('lastSyncTime', lastSyncTime);
+                        await saveSetting('lastUpdated', doc.data().lastUpdated?.toMillis() || Date.now());
+                        
+                        // Update sync status
+                        if (document.getElementById('sync-status')) {
+                            document.getElementById('sync-status').textContent = 'Synced';
+                            document.getElementById('sync-status').className = 'text-xs px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full';
+                        }
                     } else {
-                        // If no cloud data, but user has local data, push to cloud
+                        // If no cloud data, load from local and push to cloud if not empty
                         garden = await loadGarden();
                         if (garden.length > 0) {
                             await saveToCloud();
@@ -1603,11 +1620,23 @@ async function initApp() {
                             // Update last sync time
                             lastSyncTime = Date.now();
                             await saveSetting('lastSyncTime', lastSyncTime);
+                            
+                            // Update sync status
+                            if (document.getElementById('sync-status')) {
+                                document.getElementById('sync-status').textContent = 'Uploaded';
+                                document.getElementById('sync-status').className = 'text-xs px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full';
+                            }
                         }
                     }
                 } catch (error) {
                     console.error("Error loading cloud data:", error);
                     garden = await loadGarden();
+                    
+                    // Update sync status on error
+                    if (document.getElementById('sync-status')) {
+                        document.getElementById('sync-status').textContent = 'Sync error';
+                        document.getElementById('sync-status').className = 'text-xs px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full';
+                    }
                 }
             } else {
                 // Not logged in, load from IndexedDB
@@ -1616,6 +1645,12 @@ async function initApp() {
         } catch (error) {
             console.log("Firebase not initialized, continuing with local storage only");
             garden = await loadGarden();
+        }
+        
+        // Make sure garden is an array
+        if (!Array.isArray(garden)) {
+            garden = [];
+            await saveGarden(garden);
         }
         
         // Update API key UI based on whether custom key is set
