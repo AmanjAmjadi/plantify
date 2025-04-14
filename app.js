@@ -459,6 +459,7 @@ function displaySearchResults(results) {
 // Add this to app.js after processImage function
 
 // Add these debugging logs to the getAndDisplayPlantDetails function
+
 async function getAndDisplayPlantDetails(speciesKey) {
     document.getElementById('searchLoading').classList.remove('hidden');
     document.getElementById('searchContent').classList.add('hidden');
@@ -473,7 +474,16 @@ async function getAndDisplayPlantDetails(speciesKey) {
         document.getElementById('searchPlantName').textContent = currentPlant.commonName;
         document.getElementById('searchPlantScientific').textContent = currentPlant.scientificName;
         document.getElementById('searchPlantInfo').textContent = currentPlant.info;
-        document.getElementById('searchPlantImage').src = currentPlant.image;
+        
+        // Set image with error handling
+        const imgElement = document.getElementById('searchPlantImage');
+        imgElement.onerror = function() {
+            // If image fails to load, try using default image
+            console.warn("Image failed to load, using default");
+            this.src = defaultPlantImage;
+            this.onerror = null; // Prevent infinite loop if default also fails
+        };
+        imgElement.src = currentPlant.image;
         
         document.getElementById('searchContent').classList.remove('hidden');
     } catch (error) {
@@ -509,6 +519,7 @@ async function getAndDisplayPlantDetails(speciesKey) {
         document.getElementById('searchLoading').classList.add('hidden');
     }
 }
+
 
 // Garden management functions
 async function addToGarden(plant) {
@@ -881,6 +892,7 @@ function openPlantDetailModal(plantId) {
     // Add body class to prevent scrolling background
     document.body.classList.add('modal-open');
 }
+// Add this to the updatePlantDetailModal function in app.js
 
 function updatePlantDetailModal(plant) {
     const now = new Date();
@@ -898,7 +910,14 @@ function updatePlantDetailModal(plant) {
     document.getElementById('modalPlantName').textContent = plant.commonName;
     document.getElementById('modalPlantScientific').textContent = plant.scientificName;
     document.getElementById('modalPlantInfo').textContent = plant.info;
-    document.getElementById('modalPlantImage').src = plant.image;
+    
+    // Handle image with error fallback
+    const modalImg = document.getElementById('modalPlantImage');
+    modalImg.onerror = function() {
+        this.src = defaultPlantImage;
+        this.onerror = null;
+    };
+    modalImg.src = plant.image;
     
     // Update water status with appropriate styling
     const waterStatus = document.getElementById('modalWaterStatus');
@@ -916,6 +935,8 @@ function updatePlantDetailModal(plant) {
         `Needs ${plant.sunlightHours} hours of sunlight per day`;
     document.getElementById('modalSunProgress').style.width = `${sunProgress}%`;
 }
+
+
 
 function closePlantDetailModal() {
     selectedPlantId = null;
