@@ -456,13 +456,18 @@ function displaySearchResults(results) {
     searchResults.classList.remove('hidden');
 }
 
+// Add this to app.js after processImage function
+
+// Add these debugging logs to the getAndDisplayPlantDetails function
 async function getAndDisplayPlantDetails(speciesKey) {
     document.getElementById('searchLoading').classList.remove('hidden');
     document.getElementById('searchContent').classList.add('hidden');
     
     try {
+        console.log(`Getting details for plant with key: ${speciesKey}`);
         // Get plant details from GBIF API
         currentPlant = await getPlantDetails(speciesKey);
+        console.log("Retrieved plant details:", currentPlant);
         
         // Update search results
         document.getElementById('searchPlantName').textContent = currentPlant.commonName;
