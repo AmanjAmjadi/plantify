@@ -2,38 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Plantify - Plant Identification and Care</title>
+    <meta name="description" content="Identify plants, get care instructions, and manage your garden with Plantify">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHBhdGggZD0iTTI5LjM4NiAxMi4zMDRjLS4xOTktLjI5Ni0uNTkxLS40MjEtLjkzNC0uMzAxLTMuMzM4IDEuMTU5LTguNDkyIDMuODQtMTIuOTI4IDguNDQtNC42OTUgNC44NzItNy43MjYgMTAuOTUyLTguOTk1IDE4LjA1NS0uMDc5LjQzNy4xMzIuODc3LjUyMiAxLjA4Ny4xNDkuMDguMzExLjExOS40NzMuMTE5LjI2MiAwIC41MjEtLjEwMy43MTUtLjMwMSA2LjM0Ni02LjQ4NCAxMy43MjUtOC4yMDYgMTguNTE4LTguMjA2LjUyIDAgMS4wMTQuMDIxIDEuNDc4LjA1NS40NDMuMDMuODU0LS4yNDYuOTg0LS42NzIuMTMtLjQyNi0uMDUxLS44ODYtLjQzNS0xLjEwOS0uMDItLjAxMi0yLjA2NC0xLjIwNy0yLjg2LTUuNTAxLS40MzctMi4zNjguMTEyLTUuNzUyIDMuNDYyLTEwLjY2NnptMTkuNTYzIDI4LjQ3YTguMjkgOC4yOSAwIDAwMS45MS0xLjA3NWMuMzc3LS4yOTIuNTA5LS44MDIuMzIxLTEuMjQzLS4xODgtLjQ0MS0uNjI5LS43MTktMS4xMDItLjY4NS0xLjA5NS4wNjUtMi4yMTYuMDk4LTMuMzMzLjA5OC04LjgzMSAwLTE1LjU4Ny0yLjI1LTE5LjQ1Ny03LjQ0OS0uMjgxLS4zNzgtLjc2NC0uNTIzLTEuMTkxLS4zNTctLjQyOC4xNjctLjcwOS41OTUtLjY5MSAxLjA1N2wuMTMzIDMuMjE4YzAgLjAxNi4wMDMuMDMxLjAwNC4wNDggMCAxMC4zMzggNi4yMTYgMTUuOTk4IDExLjMzOSAxOS4xNy42NjUuNDEyLjk2NS0uNzIxLjc4MS0xLjUwNmwtLjY1MS0yLjc2OS0uMDA3LS4wMzFjLS4wOTQtLjM5Ni0uMzYzLS43MTYtLjc0MS0uODczLS4zNzctLjE1Ny0uODA0LS4xMDctMS4xMzQuMTM5LTEuNTIzIDEuMTI5LTUuMTA0IDMuMTYzLTkuODI3IDMuNTIyQzM3LjA1MyA1OC42NiA0NC4zODkgNjQgNTIuNjE3IDY0aDQuOTE3QzU4LjYyNyA1OC41NzIgNTUuMjcgNTEuMTQgNTMuNDM5IDQyLjN6TTM0LjYxNCAyNC44MzNjLjM0My0xLjYwNCAxLjQ0LTUuOTg3IDQuOTA3LTEwLjQ0OS4yODEtLjM2My4yODMtLjg2NC4wMDUtMS4yMjktLjI3Ny0uMzY0LS43NTMtLjUxNS0xLjE4Ni0uMzc0LTQuNzU0IDEuNTQxLTguODQ5IDQuMjIxLTEyLjE2MiA3Ljk3NC0uMjk3LjMzNS0uMzEyLjgyOS0uMDM5IDEuMTc5LjI3My4zNS43NTIuNDY1IDEuMTUuMjc5IDEuNDYxLS42NzkgNC4xMTQtMS42NyA3LjMyNS0xLjM4eiIgZmlsbD0iIzZmYmU1MSIvPjxwYXRoIGQ9Ik00Ni45NzkgMTUuOTYzYy4yODItLjA0Ni41MjYtLjIyMi42NzUtLjQ4NS4xNDktLjI2My4xNzItLjU4LjA2NS0uODYzLS4xNzctLjQ2Ni0uMzQ2LS45MDYtLjU0My0xLjM0MS0yLjc2LTYuMDg2LTYuNDY1LTkuNDE5LTExLjAyOS05LjkyM2wtLjE2NS4wMDFjLTEuMTI0LS4xMDQtMi4xNTMuNjI2LTIuNDI0IDEuNzItLjI1MyAxLjAyNy4yMzIgMi4yMzUgMS4yMTIgMi45NDRsMS4wNDYuNzU4YzUuNjE0IDQuMDY4IDkuNzM3IDYuOTk2IDExLjE2MyA3Ljg5Ni4xNzYuMTExLjM3Ni4xNjcuNTc2LjE2Ny4xNjIgMCAuMzIzLS4wMzUuNDc0LS4xMDZ6IiBmaWxsPSIjNzVlNDZlIi8+PHBhdGggZD0iTTUxLjc5NSAyNC45OTJjLS4yODctLjMyOS0uNzQ0LS40NjMtMS4xNTMtLjMzNi0uNDA5LjEyNy0uNzE3LjQ3LS43NzkuODg5LS4wNzcuNTIxLS40MzMgMS4xMzgtLjk0NyAxLjYzN2wtLjAwMy0uMDAzYy0uODI1LjgxOC0xLjkxMi44MTgtMi43MjIuMDAyLTQuOTA0LTQuOTI3LTkuMzE3LTcuMzIzLTEzLjgxNS03LjUxNC0uNDc3LS4wMjItLjkyMi4yNDQtMS4xMS42ODctLjE4OC40NDItLjEwOC45NTQuMiAxLjMxNyA2LjgwOSA4LjA1NiA5LjY2NyAxOC40MjYgOS42OTEgMTguNTAyLjA5Ny4zMDQuMzM5LjU0LjY0Ni42My4zMDcuMDkuNjM3LjAxMi44NzQtLjIwN2w0LjMzMy00LjAzMnYuMDA1YzEuNzI3LTEuNzEzIDQuMzktNi4zMzggNi4xNDItMTAuNDE5LjM2Ni0uODQ1LS4wNjQtLjk1My0uMzU3LTEuMTU4eiIgZmlsbD0iIzZmYmU1MSIvPjxwYXRoIGQ9Ik0yNC45NTYgNDYuMDI0Yy0uMTM0LS40MzMtLjUzLS43NDEtLjk4My0uNzY0LS40NTItLjAyMi0uODcyLjI0Ni0xLjA0My42NjctLjA0LjA5OS0xLjAyNyAyLjQ2MS0zLjMwNyA0LjY3Ni0yLjI2NyAyLjIwNC00Ljk2OCAzLjMwOC03LjE4OCAzLjMwOGgtNC40NjhDNi43ODggNTYuNjUyIDYgNTguMjQxIDYgNjBoMTMuMzc1YzQuMTMxIDAgOC4wMDUtMS44ODMgMTAuNjEtNS4zNzJsLjAwNS4wMDRjLjk2Ni0xLjI4OCAxLjA0OC0zLjAzNy4yMDctNC40MTlsLS4wMDUtLjAwNWMtMS4wMDYtMS42NDgtMi4yNzMtMi41MzYtMy43NzQtMi42NDUtLjU4Ny0uMDQyLTEuNDYyLS41NzYtMS40NjItMS41Mzl6IiBmaWxsPSIjNGE5OTJzIi8+PC9zdmc+">
+    <!-- Apple specific -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Plantify">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHBhdGggZD0iTTI5LjM4NiAxMi4zMDRjLS4xOTktLjI5Ni0uNTkxLS40MjEtLjkzNC0uMzAxLTMuMzM4IDEuMTU5LTguNDkyIDMuODQtMTIuOTI4IDguNDQtNC42OTUgNC44NzItNy43MjYgMTAuOTUyLTguOTk1IDE4LjA1NS0uMDc5LjQzNy4xMzIuODc3LjUyMiAxLjA4Ny4xNDkuMDguMzExLjExOS40NzMuMTE5LjI2MiAwIC41MjEtLjEwMy43MTUtLjMwMSA2LjM0Ni02LjQ4NCAxMy43MjUtOC4yMDYgMTguNTE4LTguMjA2LjUyIDAgMS4wMTQuMDIxIDEuNDc4LjA1NS40NDMuMDMuODU0LS4yNDYuOTg0LS42NzIuMTMtLjQyNi0uMDUxLS44ODYtLjQzNS0xLjEwOS0uMDItLjAxMi0yLjA2NC0xLjIwNy0yLjg2LTUuNTAxLS40MzctMi4zNjguMTEyLTUuNzUyIDMuNDYyLTEwLjY2NnptMTkuNTYzIDI4LjQ3YTguMjkgOC4yOSAwIDAwMS45MS0xLjA3NWMuMzc3LS4yOTIuNTA5LS44MDIuMzIxLTEuMjQzLS4xODgtLjQ0MS0uNjI5LS43MTktMS4xMDItLjY4NS0xLjA5NS4wNjUtMi4yMTYuMDk4LTMuMzMzLjA5OC04LjgzMSAwLTE1LjU4Ny0yLjI1LTE5LjQ1Ny03LjQ0OS0uMjgxLS4zNzgtLjc2NC0uNTIzLTEuMTkxLS4zNTctLjQyOC4xNjctLjcwOS41OTUtLjY5MSAxLjA1N2wuMTMzIDMuMjE4YzAgLjAxNi4wMDMuMDMxLjAwNC4wNDggMCAxMC4zMzggNi4yMTYgMTUuOTk4IDExLjMzOSAxOS4xNy42NjUuNDEyLjk2NS0uNzIxLjc4MS0xLjUwNmwtLjY1MS0yLjc2OS0uMDA3LS4wMzFjLS4wOTQtLjM5Ni0uMzYzLS43MTYtLjc0MS0uODczLS4zNzctLjE1Ny0uODA0LS4xMDctMS4xMzQuMTM5LTEuNTIzIDEuMTI5LTUuMTA0IDMuMTYzLTkuODI3IDMuNTIyQzM3LjA1MyA1OC42NiA0NC4zODkgNjQgNTIuNjE3IDY0aDQuOTE3QzU4LjYyNyA1OC41NzIgNTUuMjcgNTEuMTQgNTMuNDM5IDQyLjN6TTM0LjYxNCAyNC44MzNjLjM0My0xLjYwNCAxLjQ0LTUuOTg3IDQuOTA3LTEwLjQ0OS4yODEtLjM2My4yODMtLjg2NC4wMDUtMS4yMjktLjI3Ny0uMzY0LS43NTMtLjUxNS0xLjE4Ni0uMzc0LTQuNzU0IDEuNTQxLTguODQ5IDQuMjIxLTEyLjE2MiA3Ljk3NC0uMjk3LjMzNS0uMzEyLjgyOS0uMDM5IDEuMTc5LjI3My4zNS43NTIuNDY1IDEuMTUuMjc5IDEuNDYxLS42NzkgNC4xMTQtMS42NyA3LjMyNS0xLjM4eiIgZmlsbD0iIzZmYmU1MSIvPjxwYXRoIGQ9Ik00Ni45NzkgMTUuOTYzYy4yODItLjA0Ni41MjYtLjIyMi42NzUtLjQ4NS4xNDktLjI2My4xNzItLjU4LjA2NS0uODYzLS4xNzctLjQ2Ni0uMzQ2LS45MDYtLjU0My0xLjM0MS0yLjc2LTYuMDg2LTYuNDY1LTkuNDE5LTExLjAyOS05LjkyM2wtLjE2NS4wMDFjLTEuMTI0LS4xMDQtMi4xNTMuNjI2LTIuNDI0IDEuNzItLjI1MyAxLjAyNy4yMzIgMi4yMzUgMS4yMTIgMi45NDRsMS4wNDYuNzU4YzUuNjE0IDQuMDY4IDkuNzM3IDYuOTk2IDExLjE2MyA3Ljg5Ni4xNzYuMTExLjM3Ni4xNjcuNTc2LjE2Ny4xNjIgMCAuMzIzLS4wMzUuNDc0LS4xMDZ6IiBmaWxsPSIjNzVlNDZlIi8+PHBhdGggZD0iTTUxLjc5NSAyNC45OTJjLS4yODctLjMyOS0uNzQ0LS40NjMtMS4xNTMtLjMzNi0uNDA5LjEyNy0uNzE3LjQ3LS43NzkuODg5LS4wNzcuNTIxLS40MzMgMS4xMzgtLjk0NyAxLjYzN2wtLjAwMy0uMDAzYy0uODI1LjgxOC0xLjkxMi44MTgtMi43MjIuMDAyLTQuOTA0LTQuOTI3LTkuMzE3LTcuMzIzLTEzLjgxNS03LjUxNC0uNDc3LS4wMjItLjkyMi4yNDQtMS4xMS42ODctLjE4OC40NDItLjEwOC45NTQuMiAxLjMxNyA2LjgwOSA4LjA1NiA5LjY2NyAxOC40MjYgOS42OTEgMTguNTAyLjA5Ny4zMDQuMzM5LjU0LjY0Ni42My4zMDcuMDkuNjM3LjAxMi44NzQtLjIwN2w0LjMzMy00LjAzMnYuMDA1YzEuNzI3LTEuNzEzIDQuMzktNi4zMzggNi4xNDItMTAuNDE5LjM2Ni0uODQ1LS4wNjQtLjk1My0uMzU3LTEuMTU4eiIgZmlsbD0iIzZmYmU1MSIvPjxwYXRoIGQ9Ik0yNC45NTYgNDYuMDI0Yy0uMTM0LS40MzMtLjUzLS43NDEtLjk4My0uNzY0LS40NTItLjAyMi0uODcyLjI0Ni0xLjA0My42NjctLjA0LjA5OS0xLjAyNyAyLjQ2MS0zLjMwNyA0LjY3Ni0yLjI2NyAyLjIwNC00Ljk2OCAzLjMwOC03LjE4OCAzLjMwOGgtNC40NjhDNi43ODggNTYuNjUyIDYgNTguMjQxIDYgNjBoMTMuMzc1YzQuMTMxIDAgOC4wMDUtMS44ODMgMTAuNjEtNS4zNzJsLjAwNS4wMDRjLjk2Ni0xLjI4OCAxLjA0OC0zLjAzNy4yMDctNC40MTlsLS4wMDUtLjAwNWMtMS4wMDYtMS42NDgtMi4yNzMtMi41MzYtMy43NzQtMi42NDUtLjU4Ny0uMDQyLTEuNDYyLS41NzYtMS40NjItMS41Mzl6IiBmaWxsPSIjNGE5OTJzIi8+PC9zdmc+">
 </head>
 <body class="min-h-screen pb-20">
-    <div id="notification" class="notification">
+    <div id="notification" class="notification" role="alert" aria-live="assertive">
         <div id="notification-message"></div>
     </div>
 
     <nav class="bg-white shadow-md dark:bg-gray-800 fixed bottom-0 left-0 right-0 z-10">
         <div class="container mx-auto">
             <div class="flex justify-around items-center h-16">
-                <button id="tab-identify" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/5">
+                <button id="tab-identify" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/5 text-primary-color" aria-label="Identify Tab">
                     <i class="fas fa-camera text-xl mb-1"></i>
                     <span>Identify</span>
                 </button>
-                <button id="tab-search" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/5">
+                <button id="tab-search" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/5" aria-label="Search Tab">
                     <i class="fas fa-search text-xl mb-1"></i>
                     <span>Search</span>
                 </button>
-                <button id="tab-garden" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/5">
+                <button id="tab-garden" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/5" aria-label="My Garden Tab">
                     <i class="fas fa-leaf text-xl mb-1 plant-icon"></i>
                     <span>My Garden</span>
                 </button>
-                <button id="tab-care" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/5">
+                <button id="tab-care" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/5" aria-label="Care Tab">
                     <i class="fas fa-calendar-check text-xl mb-1"></i>
                     <span>Care</span>
                 </button>
-                <button id="tab-account" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/5">
+                <button id="tab-account" class="tab-btn flex flex-col items-center p-2 text-center text-sm w-1/5" aria-label="Account Tab">
                     <i class="fas fa-user text-xl mb-1"></i>
                     <span>Account</span>
                 </button>
@@ -50,7 +58,7 @@
                 <span class="ml-2 gemini-badge">Powered by Gemini AI</span>
             </div>
             <div class="flex items-center">
-                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none" aria-label="Toggle Dark Mode">
                     <i class="fas fa-moon text-gray-700 dark:text-gray-300 dark:hidden"></i>
                     <i class="fas fa-sun text-yellow-500 hidden dark:block"></i>
                 </button>
@@ -69,28 +77,28 @@
             <div class="flex flex-col items-center gap-4 mb-8">
                 <div class="camera-container mb-4 hidden" id="camera-container">
                     <video id="videoElement" autoplay playsinline></video>
-                    <button id="captureButton" type="button">
+                    <button id="captureButton" type="button" aria-label="Capture Photo">
                         <div id="captureInnerButton"></div>
                     </button>
                 </div>
                 
                 <canvas id="capturedPhoto" class="hidden rounded-lg max-w-full shadow-lg"></canvas>
                 
-                <div class="flex gap-4">
+                <div class="flex gap-4 flex-wrap justify-center">
                     <button id="startCameraButton" class="btn-primary">
                         <i class="fas fa-camera mr-2"></i>Take Photo
                     </button>
                     
                     <label class="custom-file-upload btn-primary cursor-pointer">
                         <i class="fas fa-upload mr-2"></i>Upload Image
-                        <input type="file" id="imageUpload" accept="image/*">
+                        <input type="file" id="imageUpload" accept="image/*" aria-label="Upload Plant Image">
                     </label>
                 </div>
             </div>
 
             <div id="identificationResults" class="hidden">
                 <div id="loadingIdentification" class="text-center py-10">
-                    <div class="loader"></div>
+                    <div class="loader" role="status" aria-label="Identifying plant"></div>
                     <p class="mt-3 text-gray-600 dark:text-gray-300">Identifying your plant with Gemini AI...</p>
                 </div>
 
@@ -128,17 +136,18 @@
 
             <div class="search-container mb-6">
                 <div class="flex">
-                    <input type="text" id="searchInput" placeholder="Search for plants..." 
-                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-l-md text-base focus:outline-none focus:ring-2 focus:ring-primary-color">
-                    <button id="searchButton" class="btn-primary rounded-l-none">
+                    <input type="search" id="searchInput" placeholder="Search for plants..." 
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-l-md text-base focus:outline-none focus:ring-2 focus:ring-primary-color"
+                        aria-label="Search plants">
+                    <button id="searchButton" class="btn-primary rounded-l-none" aria-label="Search">
                         <i class="fas fa-search"></i>
                     </button>
                 </div>
-                <div id="searchResults" class="search-results hidden"></div>
+                <div id="searchResults" class="search-results hidden" role="listbox" aria-label="Search results"></div>
             </div>
 
             <div id="searchLoading" class="hidden text-center py-10">
-                <div class="loader"></div>
+                <div class="loader" role="status" aria-label="Searching plants"></div>
                 <p class="mt-3 text-gray-600 dark:text-gray-300">Searching plants...</p>
             </div>
 
@@ -173,7 +182,7 @@
                 <p class="text-gray-600 dark:text-gray-300">Your garden is empty. Add plants by identifying or searching for them.</p>
             </div>
 
-            <div id="gardenContent" class="garden-grid hidden">
+            <div id="gardenContent" class="garden-grid hidden" role="grid" aria-label="Your garden plants">
                 <!-- Plant cards will be dynamically added here -->
             </div>
         </div>
@@ -190,7 +199,7 @@
                 <p class="text-gray-600 dark:text-gray-300">No care tasks scheduled. Add plants to your garden to see care schedules.</p>
             </div>
 
-            <div id="careContent" class="space-y-4 hidden">
+            <div id="careContent" class="space-y-4 hidden" role="list" aria-label="Care tasks">
                 <!-- Care tasks will be dynamically added here -->
             </div>
         </div>
@@ -202,20 +211,18 @@
                 <p class="text-gray-600 dark:text-gray-300">Manage your account and sync settings</p>
             </div>
 
-            
-
             <div id="login-section" class="card p-6 max-w-md mx-auto">
                 <div id="not-logged-in">
                     <h3 class="text-lg font-semibold mb-4">Sign In or Register</h3>
                     <p class="mb-4 text-gray-600 dark:text-gray-300">Sign in to sync your garden across devices</p>
                     
                     <div class="mb-4">
-                        <label class="block mb-2 text-sm font-medium">Email</label>
-                        <input type="email" id="email-input" class="w-full px-4 py-2 rounded border" required>
+                        <label for="email-input" class="block mb-2 text-sm font-medium">Email</label>
+                        <input type="email" id="email-input" class="w-full px-4 py-2 rounded border" required aria-required="true">
                     </div>
                     <div class="mb-4">
-                        <label class="block mb-2 text-sm font-medium">Password</label>
-                        <input type="password" id="password-input" class="w-full px-4 py-2 rounded border" required>
+                        <label for="password-input" class="block mb-2 text-sm font-medium">Password</label>
+                        <input type="password" id="password-input" class="w-full px-4 py-2 rounded border" required aria-required="true" minlength="6">
                     </div>
                     <div class="flex gap-2 mb-4">
                         <button id="sign-in-button" class="btn-primary flex-1">Sign In</button>
@@ -227,6 +234,15 @@
                             <i class="fab fa-google mr-2"></i> Google
                         </button>
                     </div>
+                    
+                    <div id="google-signin-setup" class="hidden mt-4 p-3 bg-gray-100 dark:bg-gray-700 rounded text-sm">
+                        <p class="mb-2">If Google sign-in fails, make sure:</p>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li>You're using a supported browser</li>
+                            <li>Pop-ups are allowed for this website</li>
+                            <li>You have a stable internet connection</li>
+                        </ol>
+                    </div>
                 </div>
                 
                 <div id="logged-in" class="hidden">
@@ -234,16 +250,16 @@
                         <i class="fas fa-user-circle text-4xl text-primary-color"></i>
                         <div>
                             <h3 id="user-name" class="font-semibold"></h3>
-                            <p id="user-email" class="text-sm text-gray-600"></p>
+                            <p id="user-email" class="text-sm text-gray-600 dark:text-gray-400"></p>
                         </div>
                     </div>
                     
                     <div class="mb-6">
                         <div class="flex justify-between items-center mb-2">
                             <h4 class="font-semibold">Data Sync</h4>
-                            <span id="sync-status" class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">Synced</span>
+                            <span id="sync-status" class="text-xs px-2 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full">Synced</span>
                         </div>
-                        <p class="text-sm text-gray-600 mb-3">Your garden data is securely stored and synced across all your devices.</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Your garden data is securely stored and synced across all your devices.</p>
                         <button id="sync-now-btn" class="text-primary-color text-sm flex items-center">
                             <i class="fas fa-sync-alt mr-1"></i> Sync Now
                         </button>
@@ -251,12 +267,13 @@
                     
                     <div class="mb-6 border-t border-gray-200 dark:border-gray-700 pt-4">
                         <h4 class="font-semibold mb-2">Gemini API Key</h4>
-                        <p class="text-sm text-gray-600 mb-3">You can use your own Gemini API key for plant identification.</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">You can use your own Gemini API key for plant identification.</p>
                         
                         <div id="api-key-section">
                             <div class="flex mb-2">
-                                <input type="password" id="api-key-input" class="flex-1 px-4 py-2 rounded-l border" placeholder="Enter your Gemini API key">
-                                <button id="toggle-api-key" class="bg-gray-200 px-3 rounded-r border-t border-r border-b">
+                                <input type="password" id="api-key-input" class="flex-1 px-4 py-2 rounded-l border" placeholder="Enter your Gemini API key" 
+                                    aria-label="Gemini API Key">
+                                <button id="toggle-api-key" class="bg-gray-200 dark:bg-gray-700 px-3 rounded-r border-t border-r border-b border-gray-300 dark:border-gray-600" aria-label="Toggle API key visibility">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
@@ -268,7 +285,7 @@
                         </div>
                         
                         <div id="api-key-saved-message" class="hidden">
-                            <div class="flex items-center mb-2 text-green-600">
+                            <div class="flex items-center mb-2 text-green-600 dark:text-green-400">
                                 <i class="fas fa-check-circle mr-2"></i>
                                 <span>Custom API key is active</span>
                             </div>
@@ -276,7 +293,7 @@
                         </div>
                         
                         <p class="text-xs text-gray-500 mt-2">
-                            <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-primary-color">Get your free Gemini API key</a>
+                            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-primary-color">Get your free Gemini API key</a>
                         </p>
                     </div>
                     
@@ -296,12 +313,12 @@
     </main>
 
     <!-- Plant Detail Modal -->
-    <div id="plantDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div id="plantDetailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="modalPlantName">
         <div class="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md mx-4 max-h-90vh overflow-y-auto">
             <div class="p-5">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xl font-semibold" id="modalPlantName"></h3>
-                    <button id="closeModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white">
+                    <button id="closeModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white" aria-label="Close">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
@@ -334,10 +351,10 @@
                 </div>
                 
                 <div class="flex space-x-2">
-                    <button id="modalWaterButton" class="flex-1 btn-primary">
+                    <button id="modalWaterButton" class="flex-1 btn-primary" aria-label="Water Plant">
                         <i class="fas fa-tint mr-2"></i>Water Now
                     </button>
-                    <button id="modalRemoveButton" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded">
+                    <button id="modalRemoveButton" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded" aria-label="Remove Plant">
                         <i class="fas fa-trash-alt mr-2"></i>Remove
                     </button>
                 </div>
