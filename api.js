@@ -27,9 +27,15 @@ function getApiKey() {
 
 // Initialize API key from storage
 async function initApiKey() {
-    const savedKey = await loadSetting('geminiApiKey', null);
-    if (savedKey) {
-        currentApiKey = savedKey;
+    try {
+        const savedKey = await loadSetting('geminiApiKey', null);
+        if (savedKey) {
+            currentApiKey = savedKey;
+        }
+    } catch (error) {
+        console.error("Error initializing API key:", error);
+        // Fall back to default key
+        currentApiKey = DEFAULT_API_KEY;
     }
 }
 
@@ -62,15 +68,32 @@ async function getCustomPlantImage(plantName) {
         });
         
         if (!response.ok) {
+            // Log more detailed error information
+            const errorText = await response.text();
+            console.error("Custom plant image API error:", errorText);
             return null;
         }
         
         const data = await response.json();
+        
+        // Check if we have valid data structure
+        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts) {
+            console.error("Invalid response structure from API:", data);
+            return null;
+        }
+        
         const svgText = data.candidates[0].content.parts[0].text;
         
         // Extract just the SVG content (removing any code blocks or explanations)
         const svgMatch = svgText.match(/<svg[\s\S]*<\/svg>/i);
         if (svgMatch) {
+            // Validate that the SVG has a viewBox and reasonable dimensions
+            const svgContent = svgMatch[0];
+            if (!svgContent.includes('viewBox') || svgContent.includes('width="0"') || svgContent.includes('height="0"')) {
+                console.warn("Invalid SVG dimensions:", svgContent.substring(0, 100) + "...");
+                return null;
+            }
+            
             return 'data:image/svg+xml;base64,' + btoa(svgMatch[0]);
         }
         
@@ -145,17 +168,37 @@ async function identifyPlantWithGemini(imageBase64) {
             const errorText = await response.text();
             console.error("Full API error response:", errorText);
             
+            // Handle specific error codes
+            if (response.status === 400) {
+                if (errorText.includes("API key")) {
+                    throw new Error("Invalid API key. Please check your Gemini API key in the Account tab.");
+                } else if (errorText.includes("quota")) {
+                    throw new Error("API quota exceeded. Try again later or use your own API key.");
+                }
+            } else if (response.status === 403) {
+                throw new Error("API access denied. Your API key may not have permission for this model.");
+            } else if (response.status === 429) {
+                throw new Error("Too many requests. Please try again later.");
+            } else if (response.status >= 500) {
+                throw new Error("Gemini API service unavailable. Please try again later.");
+            }
+            
             // If gemini-2.0-flash fails, try gemini-1.5-pro as fallback
             if (response.status === 404) {
                 console.log("Trying fallback model gemini-1.5-pro...");
                 return await identifyPlantWithFallbackModel(imageBase64);
             }
             
-            throw new Error(`API request failed with status ${response.status}: ${errorText}`);
+            throw new Error(`API request failed with status ${response.status}`);
         }
         
         const data = await response.json();
         console.log("Gemini API Response:", data);
+        
+        // Check data structure for errors
+        if (!data.candidates || data.candidates.length === 0 || !data.candidates[0].content || !data.candidates[0].content.parts) {
+            throw new Error("Invalid or empty response from Gemini API");
+        }
         
         // Extract text from the response
         const text = data.candidates[0].content.parts[0].text;
@@ -167,9 +210,39 @@ async function identifyPlantWithGemini(imageBase64) {
         }
         
         // Parse JSON and return the plant data
-        return JSON.parse(jsonMatch[0]);
+        try {
+            const plantData = JSON.parse(jsonMatch[0]);
+            
+            // Validate the required fields
+            if (!plantData.commonName || !plantData.scientificName || !plantData.description || 
+                typeof plantData.waterDays !== 'number' || typeof plantData.sunlightHours !== 'number') {
+                
+                // If validation fails, try to fix the data
+                if (!plantData.waterDays || isNaN(plantData.waterDays)) {
+                    plantData.waterDays = 7; // Default to weekly watering
+                }
+                
+                if (!plantData.sunlightHours || isNaN(plantData.sunlightHours)) {
+                    plantData.sunlightHours = 6; // Default to 6 hours
+                }
+                
+                // If still missing critical data, throw error
+                if (!plantData.commonName || !plantData.scientificName || !plantData.description) {
+                    throw new Error("Missing required plant data fields");
+                }
+            }
+            
+            return plantData;
+        } catch (jsonError) {
+            console.error("JSON parsing error:", jsonError, "Raw JSON:", jsonMatch[0]);
+            throw new Error("Error parsing plant data JSON");
+        }
         
     } catch (error) {
+        // Check for network errors
+        if (error.name === "TypeError" && error.message.includes("fetch")) {
+            throw new Error("Network error. Please check your internet connection.");
+        }
         console.error("Error in Gemini API:", error);
         throw error;
     }
@@ -232,11 +305,27 @@ async function identifyPlantWithFallbackModel(imageBase64) {
         
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(`Fallback API request failed with status ${response.status}: ${errorText}`);
+            console.error("Fallback API error response:", errorText);
+            
+            // Handle specific error types
+            if (response.status === 400) {
+                if (errorText.includes("API key")) {
+                    throw new Error("Invalid API key. Please check your Gemini API key in the Account tab.");
+                } else if (errorText.includes("quota")) {
+                    throw new Error("API quota exceeded. Try again later or use your own API key.");
+                }
+            }
+            
+            throw new Error(`Fallback API request failed with status ${response.status}`);
         }
         
         const data = await response.json();
         console.log("Fallback Gemini API Response:", data);
+        
+        // Check data structure for errors
+        if (!data.candidates || data.candidates.length === 0 || !data.candidates[0].content || !data.candidates[0].content.parts) {
+            throw new Error("Invalid or empty response from fallback Gemini API");
+        }
         
         const text = data.candidates[0].content.parts[0].text;
         const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -245,7 +334,24 @@ async function identifyPlantWithFallbackModel(imageBase64) {
             throw new Error("No valid JSON found in fallback response");
         }
         
-        return JSON.parse(jsonMatch[0]);
+        // Parse and validate JSON
+        try {
+            const plantData = JSON.parse(jsonMatch[0]);
+            
+            // Validate the required fields and provide defaults if needed
+            if (!plantData.waterDays || isNaN(plantData.waterDays)) {
+                plantData.waterDays = 7; // Default to weekly watering
+            }
+            
+            if (!plantData.sunlightHours || isNaN(plantData.sunlightHours)) {
+                plantData.sunlightHours = 6; // Default to 6 hours
+            }
+            
+            return plantData;
+        } catch (jsonError) {
+            console.error("Fallback JSON parsing error:", jsonError);
+            throw new Error("Error parsing plant data from fallback model");
+        }
         
     } catch (error) {
         console.error("Error in fallback Gemini API:", error);
@@ -258,6 +364,13 @@ async function searchPlantsByName(query) {
     try {
         // Use GBIF API to search for plants, prioritizing vernacular (common) names
         const response = await fetch(`https://api.gbif.org/v1/species/search?q=${encodeURIComponent(query)}&rank=SPECIES&kingdom=Plantae&limit=20`);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("GBIF search error:", errorText);
+            throw new Error(`GBIF API request failed with status ${response.status}`);
+        }
+        
         const data = await response.json();
         
         if (data.results && data.results.length > 0) {
@@ -283,8 +396,12 @@ async function searchPlantsByName(query) {
         }
         return [];
     } catch (error) {
+        // Check for network errors
+        if (error.name === "TypeError" && error.message.includes("fetch")) {
+            throw new Error("Network error when searching plants. Please check your internet connection.");
+        }
         console.error("Error searching GBIF:", error);
-        throw error;
+        throw new Error("Failed to search for plants: " + (error.message || "Unknown error"));
     }
 }
 
@@ -292,11 +409,39 @@ async function getPlantDetails(speciesKey) {
     try {
         // Get species details from GBIF API
         const response = await fetch(`https://api.gbif.org/v1/species/${speciesKey}`);
+        
+        if (!response.ok) {
+            throw new Error(`GBIF API request failed with status ${response.status}`);
+        }
+        
         const data = await response.json();
         
-        // Get occurrence data for images
-        const occurrenceResponse = await fetch(`https://api.gbif.org/v1/occurrence/search?taxonKey=${speciesKey}&limit=5&mediaType=StillImage`);
-        const occurrenceData = await occurrenceResponse.json();
+        // Get occurrence data for images with timeout
+        const occurrencePromise = fetch(`https://api.gbif.org/v1/occurrence/search?taxonKey=${speciesKey}&limit=5&mediaType=StillImage`)
+            .then(resp => {
+                if (!resp.ok) {
+                    throw new Error("Failed to fetch occurrence data");
+                }
+                return resp.json();
+            })
+            .catch(err => {
+                console.warn("Error fetching occurrence data:", err);
+                return { results: [] };
+            });
+        
+        // Setup timeout for occurrence request
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error("Occurrence data request timed out")), 5000);
+        });
+        
+        // Race between the fetch and the timeout
+        let occurrenceData;
+        try {
+            occurrenceData = await Promise.race([occurrencePromise, timeoutPromise]);
+        } catch (error) {
+            console.warn("Occurrence data error:", error);
+            occurrenceData = { results: [] };
+        }
         
         // Try to get a custom plant image
         let imageUrl = null;
@@ -307,15 +452,24 @@ async function getPlantDetails(speciesKey) {
                 if (result.media && result.media.length > 0) {
                     const mediaItem = result.media.find(m => m.type === 'StillImage');
                     if (mediaItem && mediaItem.identifier) {
-                        // Verify the image URL is accessible
+                        // Verify the image URL is accessible with timeout
                         try {
-                            const imgResponse = await fetch(mediaItem.identifier, { method: 'HEAD' });
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 3000);
+                            
+                            const imgResponse = await fetch(mediaItem.identifier, { 
+                                method: 'HEAD',
+                                signal: controller.signal
+                            });
+                            
+                            clearTimeout(timeoutId);
+                            
                             if (imgResponse.ok) {
                                 imageUrl = mediaItem.identifier;
                                 break;
                             }
                         } catch (error) {
-                            console.log("Image URL not accessible, trying next option");
+                            console.log("Image URL not accessible:", error.message);
                         }
                     }
                 }
@@ -337,9 +491,27 @@ async function getPlantDetails(speciesKey) {
             }
         }
         
-        // Generate plant info
-        const waterDays = Math.floor(Math.random() * 10) + 2; // Random between 2-12 days
-        const sunlightHours = Math.floor(Math.random() * 6) + 3; // Random between 3-8 hours
+        // Generate plant info with more realistic care data
+        // Use family information when available
+        const family = data.family || 'plant';
+        
+        // Generate more realistic watering frequency based on plant type
+        let waterDays, sunlightHours;
+        
+        // Set watering frequency based on plant family (simplified)
+        if (family.toLowerCase().includes('cactaceae') || family.toLowerCase().includes('succulent')) {
+            // Cacti and succulents need less frequent watering
+            waterDays = Math.floor(Math.random() * 7) + 14; // 14-21 days
+            sunlightHours = Math.floor(Math.random() * 3) + 6; // 6-8 hours
+        } else if (family.toLowerCase().includes('fern')) {
+            // Ferns need more frequent watering
+            waterDays = Math.floor(Math.random() * 3) + 3; // 3-5 days
+            sunlightHours = Math.floor(Math.random() * 2) + 2; // 2-3 hours (indirect)
+        } else {
+            // Default for other plants
+            waterDays = Math.floor(Math.random() * 4) + 4; // 4-7 days
+            sunlightHours = Math.floor(Math.random() * 3) + 4; // 4-6 hours
+        }
         
         return {
             id: data.key,
@@ -347,7 +519,7 @@ async function getPlantDetails(speciesKey) {
             commonName: data.vernacularNames && data.vernacularNames.length > 0 
                 ? data.vernacularNames[0].vernacularName 
                 : data.scientificName,
-            info: `${data.scientificName} belongs to the ${data.family || 'plant'} family. ` +
+            info: `${data.scientificName} belongs to the ${family} family. ` +
                   `Native to various regions, it's known for its adaptability and beauty. ` +
                   `This plant prefers ${sunlightHours} hours of sunlight and should be watered every ${waterDays} days.`,
             image: imageUrl,
@@ -355,7 +527,11 @@ async function getPlantDetails(speciesKey) {
             sunlightHours: sunlightHours
         };
     } catch (error) {
+        // Check for network errors
+        if (error.name === "TypeError" && error.message.includes("fetch")) {
+            throw new Error("Network error when getting plant details. Please check your internet connection.");
+        }
         console.error("Error getting plant details:", error);
-        throw error;
+        throw new Error("Failed to load plant details: " + (error.message || "Unknown error"));
     }
 }
