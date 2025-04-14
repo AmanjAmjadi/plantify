@@ -596,6 +596,8 @@ async function addToGarden(plant) {
     }
 }
 
+// Replace the removeFromGarden function in app.js
+
 async function removeFromGarden(plantId) {
     const plantIndex = garden.findIndex(p => p.id === plantId);
     if (plantIndex >= 0) {
@@ -605,15 +607,28 @@ async function removeFromGarden(plantId) {
         const removedPlant = garden[plantIndex];
         const originalGarden = [...garden];
         
+        // Add loading state to modal remove button
+        if (document.getElementById('modalRemoveButton')) {
+            const btn = document.getElementById('modalRemoveButton');
+            btn.disabled = true;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Removing...';
+        }
+        
         // Remove from array
         garden.splice(plantIndex, 1);
         
         try {
-            // If user is logged in, save directly to cloud
+            // First save locally to ensure UI is updated
+            await saveGarden(garden);
+            
+            // If user is logged in, save to cloud explicitly
             if (auth?.currentUser) {
                 await saveToCloud();
-            } else {
-                await saveGarden(garden);
+                
+                // Update last sync time
+                lastSyncTime = Date.now();
+                await saveSetting('lastSyncTime', lastSyncTime);
             }
             
             // Update UI
@@ -630,50 +645,17 @@ async function removeFromGarden(plantId) {
             // Restore garden if save failed
             garden = originalGarden;
             showNotification("Error removing plant. Please try again.");
+            
+            // Restore button state
+            if (document.getElementById('modalRemoveButton')) {
+                document.getElementById('modalRemoveButton').disabled = false;
+                document.getElementById('modalRemoveButton').innerHTML = '<i class="fas fa-trash-alt mr-2"></i>Remove';
+            }
         }
     }
 }
 
-async function waterPlant(plantId) {
-    const plantIndex = garden.findIndex(p => p.id === plantId);
-    if (plantIndex >= 0) {
-        const plant = garden[plantIndex];
-        const now = new Date();
-        
-        // Keep a backup in case save fails
-        const originalPlant = { ...plant };
-        
-        // Update plant data
-        plant.lastWatered = now.toISOString();
-        plant.nextWater = new Date(now.getTime() + (plant.waterInterval * 24 * 60 * 60 * 1000)).toISOString();
-        
-        try {
-            // If user is logged in, save directly to cloud
-            if (auth?.currentUser) {
-                await saveToCloud();
-            } else {
-                await saveGarden(garden);
-            }
-            
-            // Update UI
-            renderGarden();
-            renderCare();
-            
-            // If modal is open, update it
-            if (selectedPlantId === plantId) {
-                updatePlantDetailModal(plant);
-            }
-            
-            showNotification(`${plant.commonName} has been watered!`);
-        } catch (error) {
-            console.error("Error updating plant water status:", error);
-            
-            // Restore original data if save failed
-            Object.assign(plant, originalPlant);
-            showNotification("Error updating plant status. Please try again.");
-        }
-    }
-}
+// Replace the renderGarden function in app.js
 
 function renderGarden() {
     const gardenContent = document.getElementById('gardenContent');
@@ -681,7 +663,10 @@ function renderGarden() {
     
     if (!gardenContent || !emptyGarden) return;
     
-    if (garden.length === 0) {
+    // Important: Clear the existing content first
+    gardenContent.innerHTML = '';
+    
+    if (!garden || garden.length === 0) {
         gardenContent.classList.add('hidden');
         emptyGarden.classList.remove('hidden');
         return;
@@ -689,8 +674,6 @@ function renderGarden() {
     
     gardenContent.classList.remove('hidden');
     emptyGarden.classList.add('hidden');
-    
-    gardenContent.innerHTML = '';
     
     garden.forEach(plant => {
         const now = new Date();
@@ -735,6 +718,57 @@ function renderGarden() {
         gardenContent.appendChild(plantCard);
     });
 }
+
+
+
+
+
+
+async function waterPlant(plantId) {
+    const plantIndex = garden.findIndex(p => p.id === plantId);
+    if (plantIndex >= 0) {
+        const plant = garden[plantIndex];
+        const now = new Date();
+        
+        // Keep a backup in case save fails
+        const originalPlant = { ...plant };
+        
+        // Update plant data
+        plant.lastWatered = now.toISOString();
+        plant.nextWater = new Date(now.getTime() + (plant.waterInterval * 24 * 60 * 60 * 1000)).toISOString();
+        
+        try {
+            // If user is logged in, save directly to cloud
+            if (auth?.currentUser) {
+                await saveToCloud();
+            } else {
+                await saveGarden(garden);
+            }
+            
+            // Update UI
+            renderGarden();
+            renderCare();
+            
+            // If modal is open, update it
+            if (selectedPlantId === plantId) {
+                updatePlantDetailModal(plant);
+            }
+            
+            showNotification(`${plant.commonName} has been watered!`);
+        } catch (error) {
+            console.error("Error updating plant water status:", error);
+            
+            // Restore original data if save failed
+            Object.assign(plant, originalPlant);
+            showNotification("Error updating plant status. Please try again.");
+        }
+    }
+}
+
+
+    
+  
+
 
 function renderCare() {
     const careContent = document.getElementById('careContent');
