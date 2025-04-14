@@ -23,6 +23,272 @@ async function setApiKey(key) {
     return false;
 }
 
+
+
+// Add this function to api.js file
+
+/**
+ * Diagnose plant disease using Gemini AI
+ * @param {string} imageBase64 - Base64 encoded image
+ * @returns {Promise<Object>} - Diagnosis data
+ */
+async function diagnosePlantDisease(imageBase64) {
+    try {
+        const imageData = imageBase64.split(',')[1]; // Remove data URL prefix
+        
+        // Using the Gemini model for multimodal (image) inputs
+        const apiUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
+        
+        // The prompt for diagnosis
+        const prompt = `
+            Examine this plant image carefully and identify any diseases or disorders affecting it. 
+            If you see signs of disease or nutrient deficiency, provide a detailed diagnosis.
+            If the plant appears healthy, state that there are no signs of disease.
+            
+            Please provide the following details:
+            
+            1. Disease Name: Identify the specific disease, disorder, or state that "No disease detected" if plant appears healthy
+            2. Affected Plant: If possible, identify what type of plant this is
+            3. Severity: Rate as Mild, Moderate, or Severe
+            4. Cause: What causes this disease or disorder (pathogen, environmental factor, pest, etc.)
+            5. Treatment: Specific actions to treat the existing condition
+            6. Prevention: Steps to prevent this issue in the future
+            
+            Return the information in JSON format with these exact keys:
+            {
+                "diseaseName": "...",
+                "affectedPlant": "...",
+                "severity": "...", 
+                "cause": "...",
+                "treatment": ["..." , "..." , "..."],
+                "prevention": ["..." , "..." , "..."]
+            }
+            
+            Be specific and practical in your recommendations. If you're unsure about the exact disease, provide the most likely diagnosis based on visible symptoms.
+        `;
+        
+        // Format request data
+        const requestData = {
+            contents: [
+                {
+                    parts: [
+                        { text: prompt },
+                        {
+                            inline_data: {
+                                mime_type: "image/jpeg",
+                                data: imageData
+                            }
+                        }
+                    ]
+                }
+            ],
+            generation_config: {
+                temperature: 0.4,
+                top_k: 32,
+                top_p: 1,
+                max_output_tokens: 4096,
+            }
+        };
+        
+        // Make request to Gemini API with API key as URL parameter
+        const response = await fetch(`${apiUrl}?key=${currentApiKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Plant disease diagnosis API error:", errorText);
+            
+            // If gemini-2.0-flash fails, try gemini-1.5-pro as fallback
+            if (response.status === 404) {
+                console.log("Trying fallback model for disease diagnosis...");
+                return await diagnosePlantDiseaseWithFallbackModel(imageBase64);
+            }
+            
+            throw new Error(`API request failed with status ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log("Gemini API Disease Diagnosis Response:", data);
+        
+        // Extract text from the response
+        const text = data.candidates[0].content.parts[0].text;
+        
+        // Extract JSON from the response
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error("No valid JSON found in response");
+        }
+        
+        // Parse JSON and return the diagnosis data
+        try {
+            const diagnosisData = JSON.parse(jsonMatch[0]);
+            
+            // Set default values for missing fields
+            if (!diagnosisData.diseaseName) {
+                diagnosisData.diseaseName = "Unknown Issue";
+            }
+            
+            if (!diagnosisData.affectedPlant) {
+                diagnosisData.affectedPlant = "Unknown Plant";
+            }
+            
+            if (!diagnosisData.severity) {
+                diagnosisData.severity = "Unknown";
+            }
+            
+            if (!diagnosisData.cause) {
+                diagnosisData.cause = "Could not determine the cause based on the image.";
+            }
+            
+            if (!diagnosisData.treatment || !Array.isArray(diagnosisData.treatment)) {
+                diagnosisData.treatment = ["Consult with a plant specialist for proper diagnosis and treatment."];
+            }
+            
+            if (!diagnosisData.prevention || !Array.isArray(diagnosisData.prevention)) {
+                diagnosisData.prevention = ["Maintain good plant hygiene and proper growing conditions."];
+            }
+            
+            return diagnosisData;
+        } catch (jsonError) {
+            console.error("JSON parsing error for disease diagnosis:", jsonError, "Raw JSON:", jsonMatch[0]);
+            throw new Error("Error parsing plant disease diagnosis data");
+        }
+        
+    } catch (error) {
+        console.error("Error diagnosing plant disease:", error);
+        throw error;
+    }
+}
+
+// Fallback model for plant disease diagnosis
+async function diagnosePlantDiseaseWithFallbackModel(imageBase64) {
+    try {
+        const imageData = imageBase64.split(',')[1];
+        const fallbackApiUrl = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent";
+        
+        // Same prompt as the main function
+        const prompt = `
+            Examine this plant image carefully and identify any diseases or disorders affecting it. 
+            If you see signs of disease or nutrient deficiency, provide a detailed diagnosis.
+            If the plant appears healthy, state that there are no signs of disease.
+            
+            Please provide the following details:
+            
+            1. Disease Name: Identify the specific disease, disorder, or state that "No disease detected" if plant appears healthy
+            2. Affected Plant: If possible, identify what type of plant this is
+            3. Severity: Rate as Mild, Moderate, or Severe
+            4. Cause: What causes this disease or disorder (pathogen, environmental factor, pest, etc.)
+            5. Treatment: Specific actions to treat the existing condition
+            6. Prevention: Steps to prevent this issue in the future
+            
+            Return the information in JSON format with these exact keys:
+            {
+                "diseaseName": "...",
+                "affectedPlant": "...",
+                "severity": "...", 
+                "cause": "...",
+                "treatment": ["..." , "..." , "..."],
+                "prevention": ["..." , "..." , "..."]
+            }
+            
+            Be specific and practical in your recommendations. If you're unsure about the exact disease, provide the most likely diagnosis based on visible symptoms.
+        `;
+        
+        const requestData = {
+            contents: [
+                {
+                    parts: [
+                        { text: prompt },
+                        {
+                            inline_data: {
+                                mime_type: "image/jpeg",
+                                data: imageData
+                            }
+                        }
+                    ]
+                }
+            ],
+            generation_config: {
+                temperature: 0.4,
+                top_k: 32,
+                top_p: 1,
+                max_output_tokens: 4096,
+            }
+        };
+        
+        const response = await fetch(`${fallbackApiUrl}?key=${currentApiKey}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Fallback model disease diagnosis error:", errorText);
+            throw new Error(`Fallback model request failed with status ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Extract text from the response
+        const text = data.candidates[0].content.parts[0].text;
+        
+        // Extract JSON from the response
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error("No valid JSON found in fallback response");
+        }
+        
+        // Parse JSON and return the diagnosis data
+        try {
+            const diagnosisData = JSON.parse(jsonMatch[0]);
+            
+            // Set default values for missing fields (same as main function)
+            if (!diagnosisData.diseaseName) {
+                diagnosisData.diseaseName = "Unknown Issue";
+            }
+            
+            if (!diagnosisData.affectedPlant) {
+                diagnosisData.affectedPlant = "Unknown Plant";
+            }
+            
+            if (!diagnosisData.severity) {
+                diagnosisData.severity = "Unknown";
+            }
+            
+            if (!diagnosisData.cause) {
+                diagnosisData.cause = "Could not determine the cause based on the image.";
+            }
+            
+            if (!diagnosisData.treatment || !Array.isArray(diagnosisData.treatment)) {
+                diagnosisData.treatment = ["Consult with a plant specialist for proper diagnosis and treatment."];
+            }
+            
+            if (!diagnosisData.prevention || !Array.isArray(diagnosisData.prevention)) {
+                diagnosisData.prevention = ["Maintain good plant hygiene and proper growing conditions."];
+            }
+            
+            return diagnosisData;
+        } catch (jsonError) {
+            console.error("Fallback JSON parsing error:", jsonError);
+            throw new Error("Error parsing plant disease data from fallback model");
+        }
+        
+    } catch (error) {
+        console.error("Error in fallback disease diagnosis:", error);
+        throw error;
+    }
+}
+
+
+
 // Function to reset to default API key
 async function resetApiKey() {
     currentApiKey = DEFAULT_API_KEY;
