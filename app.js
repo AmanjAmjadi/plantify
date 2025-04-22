@@ -37,6 +37,7 @@ const diseaseCaptureButton = document.getElementById('diseaseCaptureButton');
 const diseaseVideoElement = document.getElementById('diseaseVideoElement');
 const diseaseCapturedPhoto = document.getElementById('diseaseCapturedPhoto');
 const diseaseImageUpload = document.getElementById('diseaseImageUpload');
+const langSelector = document.getElementById('language-selector');
 
 // Check for saved theme preference
 if (localStorage.getItem('theme') === 'dark' || 
@@ -59,6 +60,13 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', eve
 
 // Utility functions
 function showNotification(message, duration = 3000) {
+     // If message is a translation key, translate it
+    if (window.plantifyLanguage && typeof message === 'string' && message.indexOf(' ') === -1) {
+        const translated = window.plantifyLanguage.getText(message);
+        if (translated !== message) {
+            message = translated;
+        }
+    }
     // Hide any existing notification first
     notification.classList.remove('show');
     
@@ -1899,6 +1907,10 @@ function setupNotifications() {
 
 async function initApp() {
     try {
+        // Initialize language support
+        if (window.plantifyLanguage) {
+            window.plantifyLanguage.init();
+        }
         // Load API key from storage
         await initApiKey();
         
