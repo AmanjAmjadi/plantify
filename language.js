@@ -12,73 +12,6 @@ let currentLanguage = localStorage.getItem('plantify-language') || 'en';
 // All translations
 const translations = {
     en: {
-
-        "Error loading plant details": "Error loading plant details",
-    "Please check your internet connection": "Please check your internet connection",
-    "Error identifying plant": "Error identifying plant",
-    "Network error": "Network error",
-    "API quota exceeded": "API quota exceeded",
-    "Try again later": "Try again later",
-    "File size too large": "File size too large",
-    "Please choose a smaller image": "Please choose a smaller image",
-    "Camera access denied": "Camera access denied",
-    "Please enable camera permissions": "Please enable camera permissions",
-    
-    // Plant care related
-    "Needs water now!": "Needs water now!",
-    "Water in": "Water in",
-    "Watered": "Watered",
-    "Last watered": "Last watered",
-    "Next water": "Next water",
-    "days ago": "days ago",
-    "hours ago": "hours ago",
-    "minutes ago": "minutes ago",
-    "just now": "just now",
-    "in": "in",
-    "days": "days",
-    "hours": "hours",
-    "minutes": "minutes",
-    "Needs": "Needs",
-    "hours of sunlight per day": "hours of sunlight per day",
-    
-    // Disease diagnosis
-    "Mild": "Mild",
-    "Moderate": "Moderate",
-    "Severe": "Severe",
-    "No disease detected": "No disease detected",
-    "Diagnosis Failed": "Diagnosis Failed",
-    "We couldn't diagnose this plant disease": "We couldn't diagnose this plant disease",
-    "This might be because:": "This might be because:",
-    "The image doesn't clearly show the affected area": "The image doesn't clearly show the affected area",
-    "The symptoms aren't visible enough": "The symptoms aren't visible enough",
-    "There might be a connection issue": "There might be a connection issue",
-    
-    // Buttons and actions
-    "Cancel": "Cancel",
-    "Delete": "Delete",
-    "Save": "Save",
-    "Retry": "Retry",
-    "Continue": "Continue",
-    "Watering completed!": "Watering completed!",
-    "Plant removed from your garden": "Plant removed from your garden",
-    "Added to your garden!": "Added to your garden!",
-    "API key saved": "API key saved",
-    "Using default API key": "Using default API key",
-    "Successfully signed in": "Successfully signed in",
-    "Sign in failed": "Sign in failed",
-    "Registration successful": "Registration successful",
-    "Registration failed": "Registration failed",
-    "Signed out successfully": "Signed out successfully",
-    
-    // Time-related
-    "Today": "Today",
-    "Tomorrow": "Tomorrow",
-    "Yesterday": "Yesterday",
-    
-    // Plant status
-    "Healthy": "Healthy",
-    "Needs attention": "Needs attention",
-    "Critical": "Critical"
         // Navigation
         "Identify": "Identify",
         "Search": "Search",
@@ -153,81 +86,79 @@ const translations = {
         "Treatment:": "Treatment:",
         "Prevention:": "Prevention:",
         
-        // Misc
-        "Loading...": "Loading...",
-        "No internet connection": "No internet connection",
-        "Try Again": "Try Again",
-        "Synced": "Synced",
-        "Change Language": "Change Language"
+        // Error messages
+        "Error loading plant details": "Error loading plant details",
+        "Please check your internet connection": "Please check your internet connection",
+        "Error identifying plant": "Error identifying plant",
+        "Network error": "Network error",
+        "API quota exceeded": "API quota exceeded",
+        "Try again later": "Try again later",
+        "File size too large": "File size too large",
+        "Please choose a smaller image": "Please choose a smaller image",
+        "Camera access denied": "Camera access denied",
+        "Please enable camera permissions": "Please enable camera permissions",
+        
+        // Plant care related
+        "Needs water now!": "Needs water now!",
+        "Water in": "Water in",
+        "Watered": "Watered",
+        "Last watered": "Last watered",
+        "Next water": "Next water",
+        "days ago": "days ago",
+        "hours ago": "hours ago",
+        "minutes ago": "minutes ago",
+        "just now": "just now",
+        "in": "in",
+        "days": "days",
+        "hours": "hours",
+        "minutes": "minutes",
+        "Needs": "Needs",
+        "hours of sunlight per day": "hours of sunlight per day",
+        
+        // Disease diagnosis
+        "Mild": "Mild",
+        "Moderate": "Moderate",
+        "Severe": "Severe",
+        "No disease detected": "No disease detected",
+        "Diagnosis Failed": "Diagnosis Failed",
+        "We couldn't diagnose this plant disease": "We couldn't diagnose this plant disease",
+        "This might be because:": "This might be because:",
+        "The image doesn't clearly show the affected area": "The image doesn't clearly show the affected area",
+        "The symptoms aren't visible enough": "The symptoms aren't visible enough",
+        "There might be a connection issue": "There might be a connection issue",
+        
+        // Buttons and actions
+        "Cancel": "Cancel",
+        "Delete": "Delete",
+        "Save": "Save",
+        "Retry": "Retry",
+        "Continue": "Continue",
+        "Watering completed!": "Watering completed!",
+        "Plant removed from your garden": "Plant removed from your garden",
+        "Added to your garden!": "Added to your garden!",
+        "API key saved": "API key saved",
+        "Using default API key": "Using default API key",
+        "Successfully signed in": "Successfully signed in",
+        "Sign in failed": "Sign in failed",
+        "Registration successful": "Registration successful",
+        "Registration failed": "Registration failed",
+        "Signed out successfully": "Signed out successfully",
+        
+        // Time-related
+        "Today": "Today",
+        "Tomorrow": "Tomorrow",
+        "Yesterday": "Yesterday",
+        
+        // Plant status
+        "Healthy": "Healthy",
+        "Needs attention": "Needs attention",
+        "Critical": "Critical",
+        
+        // Language Dialog
+        "Welcome to Plantify!": "Welcome to Plantify!",
+        "Please select your preferred language:": "Please select your preferred language:"
     },
     fa: {
-        "Error loading plant details": "خطا در بارگذاری اطلاعات گیاه",
-    "Please check your internet connection": "لطفاً اتصال اینترنت خود را بررسی کنید",
-    "Error identifying plant": "خطا در شناسایی گیاه",
-    "Network error": "خطای شبکه",
-    "API quota exceeded": "سهمیه API تمام شده است",
-    "Try again later": "لطفاً بعداً دوباره امتحان کنید",
-    "File size too large": "اندازه فایل بسیار بزرگ است",
-    "Please choose a smaller image": "لطفاً تصویر کوچکتری انتخاب کنید",
-    "Camera access denied": "دسترسی به دوربین رد شد",
-    "Please enable camera permissions": "لطفاً مجوزهای دوربین را فعال کنید",
-    
-    // Plant care related
-    "Needs water now!": "هم اکنون نیاز به آبیاری دارد!",
-    "Water in": "آبیاری در",
-    "Watered": "آبیاری شده",
-    "Last watered": "آخرین آبیاری",
-    "Next water": "آبیاری بعدی",
-    "days ago": "روز پیش",
-    "hours ago": "ساعت پیش",
-    "minutes ago": "دقیقه پیش",
-    "just now": "همین الان",
-    "in": "در",
-    "days": "روز",
-    "hours": "ساعت",
-    "minutes": "دقیقه",
-    "Needs": "نیاز به",
-    "hours of sunlight per day": "ساعت نور خورشید در روز",
-    
-    // Disease diagnosis
-    "Mild": "خفیف",
-    "Moderate": "متوسط",
-    "Severe": "شدید",
-    "No disease detected": "هیچ بیماری تشخیص داده نشد",
-    "Diagnosis Failed": "تشخیص ناموفق بود",
-    "We couldn't diagnose this plant disease": "ما نتوانستیم این بیماری گیاه را تشخیص دهیم",
-    "This might be because:": "این ممکن است به دلایل زیر باشد:",
-    "The image doesn't clearly show the affected area": "تصویر به وضوح منطقه آسیب دیده را نشان نمی‌دهد",
-    "The symptoms aren't visible enough": "علائم به اندازه کافی قابل مشاهده نیستند",
-    "There might be a connection issue": "ممکن است مشکل اتصال وجود داشته باشد",
-    
-    // Buttons and actions
-    "Cancel": "لغو",
-    "Delete": "حذف",
-    "Save": "ذخیره",
-    "Retry": "تلاش مجدد",
-    "Continue": "ادامه",
-    "Watering completed!": "آبیاری انجام شد!",
-    "Plant removed from your garden": "گیاه از باغچه شما حذف شد",
-    "Added to your garden!": "به باغچه شما اضافه شد!",
-    "API key saved": "کلید API ذخیره شد",
-    "Using default API key": "استفاده از کلید API پیش‌فرض",
-    "Successfully signed in": "با موفقیت وارد شدید",
-    "Sign in failed": "ورود ناموفق بود",
-    "Registration successful": "ثبت‌نام موفقیت‌آمیز بود",
-    "Registration failed": "ثبت‌نام ناموفق بود",
-    "Signed out successfully": "با موفقیت خارج شدید",
-    
-    // Time-related
-    "Today": "امروز",
-    "Tomorrow": "فردا",
-    "Yesterday": "دیروز",
-    
-    // Plant status
-    "Healthy": "سالم",
-    "Needs attention": "نیاز به توجه دارد",
-    "Critical": "وضعیت بحرانی"
-        
         // Navigation
         "Identify": "شناسایی",
         "Search": "جستجو",
@@ -255,7 +186,6 @@ const translations = {
         "Searching plants...": "در حال جستجوی گیاهان...",
         
         // Garden Tab
-        "My Garden": "باغچه من",
         "Your collection of saved plants": "مجموعه گیاهان ذخیره شده شما",
         "Your garden is empty. Add plants by identifying or searching for them.": "باغچه شما خالی است. با شناسایی یا جستجوی گیاهان، آنها را اضافه کنید.",
         
@@ -303,216 +233,79 @@ const translations = {
         "Treatment:": "درمان:",
         "Prevention:": "پیشگیری:",
         
-        // Misc
-        "Loading...": "در حال بارگذاری...",
-        "No internet connection": "اتصال به اینترنت وجود ندارد",
-        "Try Again": "تلاش مجدد",
-        "Synced": "همگام شده",
-        "Change Language": "تغییر زبان"
+        // Error messages
+        "Error loading plant details": "خطا در بارگذاری اطلاعات گیاه",
+        "Please check your internet connection": "لطفاً اتصال اینترنت خود را بررسی کنید",
+        "Error identifying plant": "خطا در شناسایی گیاه",
+        "Network error": "خطای شبکه",
+        "API quota exceeded": "سهمیه API تمام شده است",
+        "Try again later": "لطفاً بعداً دوباره امتحان کنید",
+        "File size too large": "اندازه فایل بسیار بزرگ است",
+        "Please choose a smaller image": "لطفاً تصویر کوچکتری انتخاب کنید",
+        "Camera access denied": "دسترسی به دوربین رد شد",
+        "Please enable camera permissions": "لطفاً مجوزهای دوربین را فعال کنید",
+        
+        // Plant care related
+        "Needs water now!": "هم اکنون نیاز به آبیاری دارد!",
+        "Water in": "آبیاری در",
+        "Watered": "آبیاری شده",
+        "Last watered": "آخرین آبیاری",
+        "Next water": "آبیاری بعدی",
+        "days ago": "روز پیش",
+        "hours ago": "ساعت پیش",
+        "minutes ago": "دقیقه پیش",
+        "just now": "همین الان",
+        "in": "در",
+        "days": "روز",
+        "hours": "ساعت",
+        "minutes": "دقیقه",
+        "Needs": "نیاز به",
+        "hours of sunlight per day": "ساعت نور خورشید در روز",
+        
+        // Disease diagnosis
+        "Mild": "خفیف",
+        "Moderate": "متوسط",
+        "Severe": "شدید",
+        "No disease detected": "هیچ بیماری تشخیص داده نشد",
+        "Diagnosis Failed": "تشخیص ناموفق بود",
+        "We couldn't diagnose this plant disease": "ما نتوانستیم این بیماری گیاه را تشخیص دهیم",
+        "This might be because:": "این ممکن است به دلایل زیر باشد:",
+        "The image doesn't clearly show the affected area": "تصویر به وضوح منطقه آسیب دیده را نشان نمی‌دهد",
+        "The symptoms aren't visible enough": "علائم به اندازه کافی قابل مشاهده نیستند",
+        "There might be a connection issue": "ممکن است مشکل اتصال وجود داشته باشد",
+        
+        // Buttons and actions
+        "Cancel": "لغو",
+        "Delete": "حذف",
+        "Save": "ذخیره",
+        "Retry": "تلاش مجدد",
+        "Continue": "ادامه",
+        "Watering completed!": "آبیاری انجام شد!",
+        "Plant removed from your garden": "گیاه از باغچه شما حذف شد",
+        "Added to your garden!": "به باغچه شما اضافه شد!",
+        "API key saved": "کلید API ذخیره شد",
+        "Using default API key": "استفاده از کلید API پیش‌فرض",
+        "Successfully signed in": "با موفقیت وارد شدید",
+        "Sign in failed": "ورود ناموفق بود",
+        "Registration successful": "ثبت‌نام موفقیت‌آمیز بود",
+        "Registration failed": "ثبت‌نام ناموفق بود",
+        "Signed out successfully": "با موفقیت خارج شدید",
+        
+        // Time-related
+        "Today": "امروز",
+        "Tomorrow": "فردا",
+        "Yesterday": "دیروز",
+        
+        // Plant status
+        "Healthy": "سالم",
+        "Needs attention": "نیاز به توجه دارد",
+        "Critical": "وضعیت بحرانی",
+        
+        // Language Dialog
+        "Welcome to Plantify!": "به پلنتیفای خوش آمدید!",
+        "Please select your preferred language:": "لطفاً زبان مورد نظر خود را انتخاب کنید:"
     }
 };
-
-
-// addToLanguage.js
-// Copy these translations and add them to your language.js file's translations object
-
-// Add these to the English translations object
-const additionalEnglishTranslations = {
-    // Error messages
-    "Error loading plant details": "Error loading plant details",
-    "Please check your internet connection": "Please check your internet connection",
-    "Error identifying plant": "Error identifying plant",
-    "Network error": "Network error",
-    "API quota exceeded": "API quota exceeded",
-    "Try again later": "Try again later",
-    "File size too large": "File size too large",
-    "Please choose a smaller image": "Please choose a smaller image",
-    "Camera access denied": "Camera access denied",
-    "Please enable camera permissions": "Please enable camera permissions",
-    
-    // Plant care related
-    "Needs water now!": "Needs water now!",
-    "Water in": "Water in",
-    "Watered": "Watered",
-    "Last watered": "Last watered",
-    "Next water": "Next water",
-    "days ago": "days ago",
-    "hours ago": "hours ago",
-    "minutes ago": "minutes ago",
-    "just now": "just now",
-    "in": "in",
-    "days": "days",
-    "hours": "hours",
-    "minutes": "minutes",
-    "Needs": "Needs",
-    "hours of sunlight per day": "hours of sunlight per day",
-    
-    // Disease diagnosis
-    "Mild": "Mild",
-    "Moderate": "Moderate",
-    "Severe": "Severe",
-    "No disease detected": "No disease detected",
-    "Diagnosis Failed": "Diagnosis Failed",
-    "We couldn't diagnose this plant disease": "We couldn't diagnose this plant disease",
-    "This might be because:": "This might be because:",
-    "The image doesn't clearly show the affected area": "The image doesn't clearly show the affected area",
-    "The symptoms aren't visible enough": "The symptoms aren't visible enough",
-    "There might be a connection issue": "There might be a connection issue",
-    
-    // Buttons and actions
-    "Cancel": "Cancel",
-    "Delete": "Delete",
-    "Save": "Save",
-    "Retry": "Retry",
-    "Continue": "Continue",
-    "Watering completed!": "Watering completed!",
-    "Plant removed from your garden": "Plant removed from your garden",
-    "Added to your garden!": "Added to your garden!",
-    "API key saved": "API key saved",
-    "Using default API key": "Using default API key",
-    "Successfully signed in": "Successfully signed in",
-    "Sign in failed": "Sign in failed",
-    "Registration successful": "Registration successful",
-    "Registration failed": "Registration failed",
-    "Signed out successfully": "Signed out successfully",
-    
-    // Time-related
-    "Today": "Today",
-    "Tomorrow": "Tomorrow",
-    "Yesterday": "Yesterday",
-    
-    // Plant status
-    "Healthy": "Healthy",
-    "Needs attention": "Needs attention",
-    "Critical": "Critical"
-};
-
-// Add these to the Persian translations object
-const additionalPersianTranslations = {
-    // Error messages
-    "Error loading plant details": "خطا در بارگذاری اطلاعات گیاه",
-    "Please check your internet connection": "لطفاً اتصال اینترنت خود را بررسی کنید",
-    "Error identifying plant": "خطا در شناسایی گیاه",
-    "Network error": "خطای شبکه",
-    "API quota exceeded": "سهمیه API تمام شده است",
-    "Try again later": "لطفاً بعداً دوباره امتحان کنید",
-    "File size too large": "اندازه فایل بسیار بزرگ است",
-    "Please choose a smaller image": "لطفاً تصویر کوچکتری انتخاب کنید",
-    "Camera access denied": "دسترسی به دوربین رد شد",
-    "Please enable camera permissions": "لطفاً مجوزهای دوربین را فعال کنید",
-    
-    // Plant care related
-    "Needs water now!": "هم اکنون نیاز به آبیاری دارد!",
-    "Water in": "آبیاری در",
-    "Watered": "آبیاری شده",
-    "Last watered": "آخرین آبیاری",
-    "Next water": "آبیاری بعدی",
-    "days ago": "روز پیش",
-    "hours ago": "ساعت پیش",
-    "minutes ago": "دقیقه پیش",
-    "just now": "همین الان",
-    "in": "در",
-    "days": "روز",
-    "hours": "ساعت",
-    "minutes": "دقیقه",
-    "Needs": "نیاز به",
-    "hours of sunlight per day": "ساعت نور خورشید در روز",
-    
-    // Disease diagnosis
-    "Mild": "خفیف",
-    "Moderate": "متوسط",
-    "Severe": "شدید",
-    "No disease detected": "هیچ بیماری تشخیص داده نشد",
-    "Diagnosis Failed": "تشخیص ناموفق بود",
-    "We couldn't diagnose this plant disease": "ما نتوانستیم این بیماری گیاه را تشخیص دهیم",
-    "This might be because:": "این ممکن است به دلایل زیر باشد:",
-    "The image doesn't clearly show the affected area": "تصویر به وضوح منطقه آسیب دیده را نشان نمی‌دهد",
-    "The symptoms aren't visible enough": "علائم به اندازه کافی قابل مشاهده نیستند",
-    "There might be a connection issue": "ممکن است مشکل اتصال وجود داشته باشد",
-    
-    // Buttons and actions
-    "Cancel": "لغو",
-    "Delete": "حذف",
-    "Save": "ذخیره",
-    "Retry": "تلاش مجدد",
-    "Continue": "ادامه",
-    "Watering completed!": "آبیاری انجام شد!",
-    "Plant removed from your garden": "گیاه از باغچه شما حذف شد",
-    "Added to your garden!": "به باغچه شما اضافه شد!",
-    "API key saved": "کلید API ذخیره شد",
-    "Using default API key": "استفاده از کلید API پیش‌فرض",
-    "Successfully signed in": "با موفقیت وارد شدید",
-    "Sign in failed": "ورود ناموفق بود",
-    "Registration successful": "ثبت‌نام موفقیت‌آمیز بود",
-    "Registration failed": "ثبت‌نام ناموفق بود",
-    "Signed out successfully": "با موفقیت خارج شدید",
-    
-    // Time-related
-    "Today": "امروز",
-    "Tomorrow": "فردا",
-    "Yesterday": "دیروز",
-    
-    // Plant status
-    "Healthy": "سالم",
-    "Needs attention": "نیاز به توجه دارد",
-    "Critical": "وضعیت بحرانی"
-};
-
-// Add this to language.js
-function showLanguageDialog() {
-    // Only show if it's the first visit
-    if (!localStorage.getItem('plantify-language-selected')) {
-        
-        // Create overlay
-        const overlay = document.createElement('div');
-        overlay.className = 'fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center';
-        
-        // Create dialog box
-        const dialog = document.createElement('div');
-        dialog.className = 'bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm text-center';
-        dialog.innerHTML = `
-            <h2 class="text-xl font-semibold mb-4">Welcome to Plantify!</h2>
-            <p class="mb-6">Please select your preferred language:</p>
-            <div class="flex flex-col space-y-3">
-                <button class="language-option py-3 px-4 rounded-lg border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
-                    English
-                </button>
-                <button class="language-option py-3 px-4 rounded-lg border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700" dir="rtl">
-                    فارسی
-                </button>
-            </div>
-        `;
-        
-        overlay.appendChild(dialog);
-        document.body.appendChild(overlay);
-        
-        // Add event listeners
-        const buttons = dialog.querySelectorAll('.language-option');
-        buttons[0].addEventListener('click', function() {
-            switchLanguage('en');
-            closeDialog();
-        });
-        
-        buttons[1].addEventListener('click', function() {
-            switchLanguage('fa');
-            closeDialog();
-        });
-        
-        function closeDialog() {
-            document.body.removeChild(overlay);
-            localStorage.setItem('plantify-language-selected', 'true');
-        }
-        
-        // Try to auto-detect language based on browser settings
-        const browserLang = navigator.language.startsWith('fa') ? 'fa' : 'en';
-        if (browserLang === 'fa') {
-            buttons[1].style.backgroundColor = 'rgba(124, 199, 79, 0.2)'; // Highlight Persian
-        } else {
-            buttons[0].style.backgroundColor = 'rgba(124, 199, 79, 0.2)'; // Highlight English
-        }
-    }
-}
-
 
 // Get translation for a key
 function getText(key) {
@@ -568,6 +361,61 @@ function translateTextNodes(rootElement = document) {
     });
 }
 
+// First-time language dialog
+function showLanguageDialog() {
+    // Only show if it's the first visit
+    if (!localStorage.getItem('plantify-language-selected')) {
+        
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center';
+        
+        // Create dialog box
+        const dialog = document.createElement('div');
+        dialog.className = 'bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm text-center';
+        dialog.innerHTML = `
+            <h2 class="text-xl font-semibold mb-4">Welcome to Plantify!</h2>
+            <p class="mb-6">Please select your preferred language:</p>
+            <div class="flex flex-col space-y-3">
+                <button class="language-option py-3 px-4 rounded-lg border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700">
+                    English
+                </button>
+                <button class="language-option py-3 px-4 rounded-lg border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700" dir="rtl">
+                    فارسی
+                </button>
+            </div>
+        `;
+        
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+        
+        // Add event listeners
+        const buttons = dialog.querySelectorAll('.language-option');
+        buttons[0].addEventListener('click', function() {
+            switchLanguage('en');
+            closeDialog();
+        });
+        
+        buttons[1].addEventListener('click', function() {
+            switchLanguage('fa');
+            closeDialog();
+        });
+        
+        function closeDialog() {
+            document.body.removeChild(overlay);
+            localStorage.setItem('plantify-language-selected', 'true');
+        }
+        
+        // Try to auto-detect language based on browser settings
+        const browserLang = navigator.language.startsWith('fa') ? 'fa' : 'en';
+        if (browserLang === 'fa') {
+            buttons[1].style.backgroundColor = 'rgba(124, 199, 79, 0.2)'; // Highlight Persian
+        } else {
+            buttons[0].style.backgroundColor = 'rgba(124, 199, 79, 0.2)'; // Highlight English
+        }
+    }
+}
+
 // Update all text elements with the current language
 function updateLanguage() {
     // Set document direction
@@ -586,6 +434,12 @@ function updateLanguage() {
     
     // Save current language preference
     localStorage.setItem('plantify-language', currentLanguage);
+    
+    // Dispatch an event for components to update
+    const event = new CustomEvent('languageChanged', { 
+        detail: { language: currentLanguage } 
+    });
+    window.dispatchEvent(event);
 }
 
 // Switch language
@@ -593,74 +447,19 @@ function switchLanguage(lang) {
     if (languages[lang]) {
         currentLanguage = lang;
         updateLanguage();
+        
+        // Update language toggle button text if it exists
+        const langToggle = document.getElementById('language-toggle-button');
+        if (langToggle && langToggle.querySelector('span')) {
+            langToggle.querySelector('span').textContent = languages[lang];
+        }
+        
         return true;
     }
     return false;
 }
-// Add this to language.js
-function detectLanguage() {
-    // Check if language is already set
-    if (localStorage.getItem('plantify-language-selected')) {
-        return;
-    }
-    
-    // Detect browser language
-    const browserLang = navigator.language.startsWith('fa') ? 'fa' : 'en';
-    
-    // If browser language is Persian, show prompt to confirm
-    if (browserLang === 'fa') {
-        showLanguageBanner();
-    } else {
-        // Mark as selected so we don't show banner again
-        localStorage.setItem('plantify-language-selected', 'true');
-    }
-}
-
-function showLanguageBanner() {
-    const banner = document.createElement('div');
-    banner.className = 'fixed bottom-0 left-0 right-0 bg-primary-color text-white p-4 flex justify-between items-center z-50 transform transition-transform';
-    banner.style.transform = 'translateY(100%)';
-    banner.dir = 'rtl';
-    banner.innerHTML = `
-        <div class="flex-1">
-            <p class="font-bold">آیا میخواهید زبان به فارسی تغییر کند؟</p>
-            <p class="text-sm">به نظر می‌رسد زبان مرورگر شما فارسی است.</p>
-        </div>
-        <div class="flex space-x-2 ml-4">
-            <button id="banner-yes" class="px-4 py-1 bg-white text-primary-color rounded-md hover:bg-gray-100">بله</button>
-            <button id="banner-no" class="px-4 py-1 bg-transparent border border-white rounded-md hover:bg-primary-dark">خیر</button>
-        </div>
-    `;
-    
-    document.body.appendChild(banner);
-    
-    // Animate banner in
-    setTimeout(() => {
-        banner.style.transform = 'translateY(0)';
-    }, 500);
-    
-    // Add event listeners
-    document.getElementById('banner-yes').addEventListener('click', function() {
-        switchLanguage('fa');
-        closeBanner();
-    });
-    
-    document.getElementById('banner-no').addEventListener('click', function() {
-        closeBanner();
-    });
-    
-    function closeBanner() {
-        banner.style.transform = 'translateY(100%)';
-        setTimeout(() => {
-            document.body.removeChild(banner);
-        }, 300);
-        localStorage.setItem('plantify-language-selected', 'true');
-    }
-}
-
 
 // Add language selector to the page
-// Replace the addLanguageSelector function with this
 function addLanguageSelector() {
     // Create language selector if it doesn't exist
     if (!document.getElementById('language-selector')) {
@@ -669,26 +468,23 @@ function addLanguageSelector() {
         if (header) {
             const langSelector = document.createElement('div');
             langSelector.id = 'language-selector';
-            langSelector.className = 'flex items-center mr-3';
+            langSelector.className = 'flex items-center mr-2';
             
-            // Create a more visible button that shows current language
             const langButton = document.createElement('button');
             langButton.id = 'language-toggle-button';
-            langButton.className = 'flex items-center px-3 py-1 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none transition-colors';
+            langButton.className = 'p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none';
             langButton.setAttribute('aria-label', 'Change Language');
-            
-            // Show current language name
-            const currentLangName = languages[currentLanguage];
-            langButton.innerHTML = `
-                <i class="fas fa-globe text-gray-700 dark:text-gray-300 mr-1"></i>
-                <span class="text-sm text-gray-800 dark:text-gray-200">${currentLangName}</span>
-            `;
+            langButton.innerHTML = `<i class="fas fa-globe text-gray-700 dark:text-gray-300"></i>`;
             
             langSelector.appendChild(langButton);
             
             // Insert before the theme toggle
             const themeToggle = document.getElementById('theme-toggle');
-            header.insertBefore(langSelector, themeToggle);
+            if (themeToggle) {
+                header.insertBefore(langSelector, themeToggle);
+            } else {
+                header.appendChild(langSelector);
+            }
             
             // Create dropdown menu
             const dropdown = document.createElement('div');
@@ -709,8 +505,6 @@ function addLanguageSelector() {
                 
                 option.onclick = () => {
                     switchLanguage(code);
-                    // Update button text
-                    langButton.querySelector('span').textContent = name;
                     dropdown.classList.add('hidden');
                 };
                 dropdown.appendChild(option);
@@ -735,12 +529,14 @@ function addLanguageSelector() {
 
 // Initialize language support
 function initLanguage() {
-    detectLanguage();
+    // Add language selector to the UI
     addLanguageSelector();
-    showLanguageDialog();
-    updateLanguage();
     
-
+    // Show language dialog for first time visitors
+    showLanguageDialog();
+    
+    // Apply translations
+    updateLanguage();
     
     // Add event listener for dynamic content changes
     const observer = new MutationObserver(mutations => {
