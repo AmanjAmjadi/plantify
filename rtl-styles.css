@@ -1,0 +1,151 @@
+/* RTL (Right-to-Left) Support for Persian Language */
+
+/* Base RTL direction setting */
+.rtl {
+    direction: rtl;
+    text-align: right;
+}
+
+/* Flip icons and adjust padding in RTL mode */
+html.rtl .fa-camera,
+html.rtl .fa-search,
+html.rtl .fa-leaf,
+html.rtl .fa-calendar-check,
+html.rtl .fa-user,
+html.rtl .fa-microscope,
+html.rtl .fa-upload,
+html.rtl .fa-plus,
+html.rtl .fa-tint,
+html.rtl .fa-trash-alt,
+html.rtl .fa-redo,
+html.rtl .fa-download,
+html.rtl .fa-sync-alt {
+    transform: scaleX(-1);
+}
+
+/* Adjust tab navigation layout for RTL */
+html.rtl .tab-btn {
+    flex-direction: column;
+}
+
+/* Fix form elements alignment */
+html.rtl input[type="text"],
+html.rtl input[type="search"],
+html.rtl input[type="email"],
+html.rtl input[type="password"] {
+    text-align: right;
+}
+
+/* Adjust specific elements for RTL layout */
+html.rtl .mr-2 {
+    margin-right: 0;
+    margin-left: 0.5rem;
+}
+
+html.rtl .ml-2 {
+    margin-left: 0;
+    margin-right: 0.5rem;
+}
+
+html.rtl .rounded-l-md {
+    border-radius: 0 0.375rem 0.375rem 0;
+}
+
+html.rtl .rounded-r-md {
+    border-radius: 0.375rem 0 0 0.375rem;
+}
+
+html.rtl .rounded-l-none {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+html.rtl .rounded-r-none {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Fix search results positioning */
+html.rtl .search-results {
+    right: 0;
+    left: 0;
+}
+
+/* Fix list styles in RTL mode */
+html.rtl .list-disc {
+    padding-right: 1rem;
+    padding-left: 0;
+}
+
+html.rtl ul.list-disc li {
+    margin-right: 1.25rem;
+    margin-left: 0;
+}
+
+/* Fix modal layout */
+html.rtl #plantDetailModal .flex.justify-between {
+    flex-direction: row-reverse;
+}
+
+html.rtl #closeModal {
+    margin-left: 0;
+    margin-right: auto;
+}
+
+/* Fix flexbox direction */
+html.rtl .flex-row {
+    flex-direction: row-reverse;
+}
+
+html.rtl .md\:flex-row {
+    flex-direction: row-reverse;
+}
+
+/* Fix layout for the language selector dropdown */
+html.rtl #language-dropdown {
+    right: 0;
+    left: auto;
+    text-align: right;
+}
+
+/* Adjust the order of elements in forms */
+html.rtl .flex.justify-between {
+    justify-content: space-between;
+}
+
+/* Font adjustments for Persian */
+html.rtl body,
+html.rtl button,
+html.rtl input,
+html.rtl select,
+html.rtl textarea {
+    font-family: 'Vazirmatn', 'Nunito', sans-serif;
+}
+
+/* Fix padding for specific components */
+html.rtl .search-container .flex {
+    flex-direction: row-reverse;
+}
+
+/* Adjust positioning for notifications */
+html.rtl .notification {
+    right: auto;
+    left: 20px;
+    transform: translateX(-120%);
+}
+
+html.rtl .notification.show {
+    transform: translateX(0);
+}
+
+/* Fix spacing in cards */
+html.rtl .card .flex.justify-between {
+    flex-direction: row-reverse;
+}
+
+/* Additional tweaks for specific components may be needed */
+@media (max-width: 640px) {
+    html.rtl .garden-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+}
