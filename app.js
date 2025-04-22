@@ -58,6 +58,31 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', eve
     }
 });
 
+
+// Function to translate dynamic content created after page load
+function translateDynamicContent(element) {
+    if (window.plantifyLanguage) {
+        window.plantifyLanguage.translateNode(element);
+    }
+}
+
+// Update notification function to support translations
+function showTranslatedNotification(messageKey, duration = 3000) {
+    if (window.plantifyLanguage) {
+        const translatedMessage = window.plantifyLanguage.getText(messageKey);
+        showNotification(translatedMessage, duration);
+    } else {
+        showNotification(messageKey, duration);
+    }
+}
+
+// Helper function to get translated text directly
+function getTranslatedText(key) {
+    if (window.plantifyLanguage) {
+        return window.plantifyLanguage.getText(key);
+    }
+    return key;
+}
 // Utility functions
 function showNotification(message, duration = 3000) {
      // If message is a translation key, translate it
@@ -1782,6 +1807,30 @@ document.getElementById('searchForPlantButton')?.addEventListener('click', () =>
     }
 });
 
+
+
+// Add this to your event listeners section
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize language support
+    if (window.plantifyLanguage) {
+        window.plantifyLanguage.init();
+    }
+    
+    // Listen for language changes and update dynamic content
+    window.addEventListener('languageChanged', function() {
+        if (garden.length > 0) {
+            renderGarden();
+            renderCare();
+        }
+        
+        // Update other dynamic elements
+        if (currentPlant) {
+            updatePlantDetailModal(currentPlant);
+        }
+    });
+});
+
+
 searchInput?.addEventListener('input', async (e) => {
     const query = e.target.value.trim();
     if (query.length < 3) {
@@ -1797,6 +1846,9 @@ searchInput?.addEventListener('input', async (e) => {
         showNotification("Error searching plants. Please check your internet connection.");
     }
 });
+
+
+
 
 searchButton?.addEventListener('click', async () => {
     const query = searchInput.value.trim();
@@ -1825,6 +1877,9 @@ searchButton?.addEventListener('click', async () => {
         }
     }
 });
+
+
+
 
 document.addEventListener('click', (e) => {
     // Close search results when clicking outside
